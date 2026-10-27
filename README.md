@@ -14,7 +14,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Or download the v1.1.0 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.1.0.tar.gz
+Or download the v1.1.1 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.1.1.tar.gz
 
 Then install dependencies (Node 20 or newer, and Python 3) and start a search file:
 
@@ -28,7 +28,7 @@ cp CRITERIA.example.yaml CRITERIA.yaml
 
 ## What it does
 - Checks property-manager pages every 5–15 minutes, depending on your plan.
-- Reads Zillow, Redfin and HotPads alert emails on the schedule you pick (see [COSTS.md](COSTS.md)).
+- Reads Zillow, Redfin and HotPads alert emails on the schedule you pick (see [docs/COSTS.md](docs/COSTS.md)).
 - Sends one short text per new place, price drop or relist. Quiet days mean nothing fit.
 - **Decide together:** invite a partner or roommate. You both get each place, see each other's thoughts and share a shortlist.
 - Text "what can you do" anytime for the list. Text STOP to stop, "leave" to leave, or "no check-ins" to skip the occasional check-in texts.
@@ -56,17 +56,17 @@ cp CRITERIA.example.yaml CRITERIA.yaml
 
 ## Start here
 1. [FOR_YOU.md](FOR_YOU.md): one page, only the steps you do yourself.
-2. [FOR_YOUR_BOT.md](FOR_YOUR_BOT.md): the internals, for your bot.
-3. [SETUP.md](SETUP.md): the full setup reference.
-4. [COSTS.md](COSTS.md): what uses AI, and where to check Photon pricing.
-5. [PRIVACY.md](PRIVACY.md): what's stored, and how to delete it.
-6. [DISCLAIMER.md](DISCLAIMER.md): please read.
-7. [SAMPLE_MESSAGE.txt](SAMPLE_MESSAGE.txt): every text, as it looks on a phone.
-8. [CHANGELOG.md](CHANGELOG.md): what's new.
+2. [FOR_YOUR_BOT.md](FOR_YOUR_BOT.md): the internals, commands, and file list, for your bot.
+3. [docs/SETUP.md](docs/SETUP.md): the full setup reference, including the setup conversation script.
+4. [docs/COSTS.md](docs/COSTS.md): what uses AI, and where to check Photon pricing.
+5. [docs/PRIVACY.md](docs/PRIVACY.md): what's stored, and how to delete it.
+6. [docs/DISCLAIMER.md](docs/DISCLAIMER.md): please read.
+7. [docs/SAMPLE_MESSAGE.txt](docs/SAMPLE_MESSAGE.txt): every text, as it looks on a phone.
+8. [docs/CHANGELOG.md](docs/CHANGELOG.md): what's new.
 
 ## Support and updates
 - **Support is best effort, with no guarantees.** Text a bug or idea to your bot ("bug, the link didn't open"). After you say yes, it goes to the template's builder for review. Nothing is changed or built automatically.
-- **Updates:** see [CHANGELOG.md](CHANGELOG.md). The current version is in `VERSION`. To update a running install, `git pull` (or download the new release archive) and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
+- **Updates:** see [docs/CHANGELOG.md](docs/CHANGELOG.md). The current version is in `VERSION`. To update a running install, `git pull` (or download the new release archive) and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
 
 ## License
 MIT. Copyright errnsterr. See [LICENSE](LICENSE).

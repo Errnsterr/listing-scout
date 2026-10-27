@@ -584,7 +584,7 @@ STOP turns texts off.
 I never contact landlords.
 ```
 
-## Flow B: replies (replies.py --as, sandbox state)
+## Flow B: replies (src/replies.py --as, sandbox state)
 
 ### Sarah says "OK" -> Sarah
 ```
@@ -2160,7 +2160,7 @@ STOP turns texts off.
 I never contact landlords.
 ```
 
-## Flow B: replies (replies.py --as, sandbox state)
+## Flow B: replies (src/replies.py --as, sandbox state)
 
 ### Sarah says "OK" -> Sarah
 ```

@@ -6,7 +6,8 @@
 - Criteria hygiene: tradeoff(), near_misses(), hygiene_due(), suggest_change() (must-have vs nice-to-have).
 Nothing here sends a text."""
 import os, re, json, time, shutil, glob, yaml
-HERE = os.path.dirname(os.path.abspath(__file__))
+_SRC = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
 OUT = os.path.join(HERE, "out")
 load = lambda f, d: json.load(open(f)) if os.path.exists(f) else d
 DEFAULT_QUIET = {"start": 22, "end": 7}   # 10 PM to 7 AM local; only used by people who turn Sleep mode on
@@ -238,7 +239,7 @@ def local_now(C, ts=None):
 def local_hour(C, ts=None): return local_now(C, ts).hour
 def local_str(C, fmt="%F %T %Z", ts=None): return local_now(C, ts).strftime(fmt)
 
-ROUTINE_HOURS = {"lean": 12, "standard": 2, "hands_on": 1}   # how often the inbox-reader routine runs per plan (COSTS.md)
+ROUTINE_HOURS = {"lean": 12, "standard": 2, "hands_on": 1}   # how often the inbox-reader routine runs per plan (docs/COSTS.md)
 def email_stale_limit(C):
     """Seconds before 'email sync stalled' is worth a note: the plan's routine interval + 3h drift. api pull runs every loop."""
     if (C or {}).get("inbox_pull") == "api": return 3 * 3600

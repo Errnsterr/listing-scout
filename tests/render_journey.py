@@ -1,7 +1,7 @@
 """Owner vs member journey, beat by beat, rendered from real code + CRITERIA. Sends nothing.
 Usage: python3 tests/render_journey.py [MemberName] -> out/journey-compare.md"""
 import os, sys, json, re, yaml
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); os.chdir(HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import style, scout as sc
 C = yaml.safe_load(open("CRITERIA.yaml")); sc.CFG.update(C)
 R = C["recipients"]; own = R[0]["name"].split()[0]

@@ -5,10 +5,13 @@ People reply naturally: "yes", "no", "no, too far from work", "love the kitchen"
   street picks one; otherwise it attaches to the first place in that text, and every relay names the street.
 - Keywords (yes / no / love / tour / pass) only mark the shared shortlist. The person's own words are relayed
   verbatim, trimmed and quoted. Never reworded, never invented. No landlord contact, no booking.
-  python3 replies.py --as "Alex" --text "love the kitchen"     # simulate (no Photon, prints what would be sent)
-  echo '{"from": "+1...", "text": "yes"}' | python3 replies.py --send   # live (from listen.mjs)"""
+  python3 src/replies.py --as "Alex" --text "love the kitchen"     # simulate (no Photon, prints what would be sent)
+  echo '{"from": "+1...", "text": "yes"}' | python3 src/replies.py --send   # live (from listen.mjs)"""
 import os, sys, re, json, time
-HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+_SRC = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
+sys.path.insert(0, _SRC)
+_IN_SRC = os.path.basename(_SRC) == "src"
 import yaml, style, features
 CRIT_PATH = os.environ.get("SCOUT_CRITERIA", os.path.join(HERE, "CRITERIA.yaml"))
 C = yaml.safe_load(open(CRIT_PATH))
@@ -87,7 +90,7 @@ def do_pending(pend, me, P, M, owner, save_m):
         if really and not sim:
             features.apply_change(pend["change"], CRIT_PATH)
             import subprocess   # quiet re-seed so places already out there don't flood in
-            subprocess.Popen(["python3", "scout.py", "--seed"], cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+            subprocess.Popen(["python3", "src/scout.py" if _IN_SRC else "scout.py", "--seed"], cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         else: print(f"[sim] would back up and update CRITERIA ({pend['change']['kind']} = {pend['change']['value']}), then re-seed quietly")
         deliver(me, style.change_done())
         by = pend.get("by")
@@ -179,7 +182,7 @@ def main():
         deliver(owner, style.owner_member_in(first, me["role"], bool(C.get("replies"))))
         if really and not sim:   # snapshot a minute later, same as the owner's
             import subprocess
-            subprocess.Popen(f'sleep 60 && python3 notify.py snapshot "{me["name"]}" --send', shell=True, cwd=HERE,
+            subprocess.Popen(f'sleep 60 && python3 {"src/notify.py" if _IN_SRC else "notify.py"} snapshot "{me["name"]}" --send', shell=True, cwd=HERE,
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         else: print(f"(in 60s) --> to {me['name']}: snapshot, same as the owner's")
         return

@@ -3,9 +3,9 @@ Checks every end-user template and today's sample alerts for style problems:
 lone words, two sentences on one line, long lines, links not alone, list numbers alone."""
 import os, sys, json, copy, yaml
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, HERE); os.chdir(HERE)
+sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import style, importlib.util
-spec = importlib.util.spec_from_file_location("scout", os.path.join(HERE, "scout.py"))
+spec = importlib.util.spec_from_file_location("scout", os.path.join(HERE, "src", "scout.py"))
 sc = importlib.util.module_from_spec(spec); sys.argv = ["x"]; spec.loader.exec_module(sc)
 REAL = os.path.exists("CRITERIA.yaml") and os.path.exists("tests/sample_alerts.json")
 C = yaml.safe_load(open("CRITERIA.yaml" if REAL else "tests/fixtures/CRITERIA.test.yaml"))

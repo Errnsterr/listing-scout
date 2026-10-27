@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Make it better: review what people sent. GATE: nothing is ever auto-queued or built.
-  python3 review_feedback.py                 # list items still pending_review
-  python3 review_feedback.py --all           # list everything
-  python3 review_feedback.py --approve ID    # only after the owner explicitly says yes; marks it approved (builds nothing)
-  python3 review_feedback.py --decline ID
-  python3 review_feedback.py --fixed ID      # after an approved fix ships; prints the draft 'You asked, it's fixed' text
+  python3 src/review_feedback.py                 # list items still pending_review
+  python3 src/review_feedback.py --all           # list everything
+  python3 src/review_feedback.py --approve ID    # only after the owner explicitly says yes; marks it approved (builds nothing)
+  python3 src/review_feedback.py --decline ID
+  python3 src/review_feedback.py --fixed ID      # after an approved fix ships; prints the draft 'You asked, it's fixed' text
 The draft is never sent from here. Send it by hand, to the person who asked, only with the owner's okay."""
 import os, sys, json, time
-HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+_SRC = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
+sys.path.insert(0, _SRC)
 import features, style
 
 def save(items):

@@ -1,7 +1,7 @@
 """The listing's own apply link (rent) / agent link (buy): parsed only when labeled, cleaned of tokens, skipped when opaque,
 shown for people to tap, never followed by the bot. SYNTHETIC fixtures in tests/fixtures/email_actions. Sends nothing."""
 import os, sys, copy, glob, socket, urllib.request
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); os.chdir(HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import yaml, scout as sc, style
 FX = "tests/fixtures/email_actions"
 RENT = yaml.safe_load(open("CRITERIA.example.yaml"))

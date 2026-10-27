@@ -6,26 +6,27 @@ Recipients must already be Users in the Photon project (dashboard /users). Their
 is looked up from Photon's Users list at send time by last 4 digits.
 
 Nothing is sent unless --send is given.
-  python3 notify.py check                  # read-only: auth + users + plan; resolve each recipient
-  python3 notify.py alerts FILE [--send]   # FILE = `scout.py --json` output; bundles within the hour
-  NEW_USER_PHONE=+1... python3 notify.py add_user "Name" --confirm
+  python3 src/notify.py check                  # read-only: auth + users + plan; resolve each recipient
+  python3 src/notify.py alerts FILE [--send]   # FILE = `scout.py --json` output; bundles within the hour
+  NEW_USER_PHONE=+1... python3 src/notify.py add_user "Name" --confirm
                                            # adds a household member as a Photon project user (shared line).
                                            # Number comes ONLY from env NEW_USER_PHONE (secure form); prints last 4 only.
-  python3 notify.py welcome "Name" [--card] [--send]  # merged test + welcome (owner vs household wording); --card attaches out/Listing-Scout-<Name>.vcf
-  python3 notify.py emailwatch [--send]    # owner only: unreadable alert email / email sync stalled (plan interval + 3h) / a site quiet 48h
-  python3 notify.py snapshot [--send]      # end of setup: "what's out there right now" (counts by tier + top 3), once, owner only
-  python3 notify.py firstday [--send]      # fallback one-time note (after 6 PM; skipped if the snapshot or any alert went out)
-  python3 notify.py seeded                 # record the quiet first run time
-  python3 notify.py morning [--send]       # Sleep mode: held overnight finds at wake time + the one-time offer
-  python3 notify.py gone [--send]          # Still available?: liked places gone ~24h -> "no longer listed"
+  python3 src/notify.py welcome "Name" [--card] [--send]  # merged test + welcome (owner vs household wording); --card attaches out/Listing-Scout-<Name>.vcf
+  python3 src/notify.py emailwatch [--send]    # owner only: unreadable alert email / email sync stalled (plan interval + 3h) / a site quiet 48h
+  python3 src/notify.py snapshot [--send]      # end of setup: "what's out there right now" (counts by tier + top 3), once, owner only
+  python3 src/notify.py firstday [--send]      # fallback one-time note (after 6 PM; skipped if the snapshot or any alert went out)
+  python3 src/notify.py seeded                 # record the quiet first run time
+  python3 src/notify.py morning [--send]       # Sleep mode: held overnight finds at wake time + the one-time offer
+  python3 src/notify.py gone [--send]          # Still available?: liked places gone ~24h -> "no longer listed"
 """
 import time, os, sys, json, time, base64, subprocess, tempfile, urllib.request, urllib.error, yaml, importlib.util
-HERE = os.path.dirname(os.path.abspath(__file__))
+_SRC = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
 C = yaml.safe_load(open(os.environ.get("SCOUT_CRITERIA", os.path.join(HERE, "CRITERIA.yaml"))))
 for _r in C.get("recipients") or []:   # "co-decider" / "Co Decider" -> "co_decider"
     if _r.get("role"): _r["role"] = __import__("re").sub(r"[\s-]+", "_", str(_r["role"]).strip().lower())
 PID = os.environ.get("PHOTON_PROJECT_ID") or C.get("photon", {}).get("project_id")
-sys.path.insert(0, HERE)
+sys.path.insert(0, _SRC)
 import style, features
 KIND = "home" if C.get("mode") == "buy" else "rental"
 REPLIES = bool(C.get("replies"))   # 'decide together' stays hidden until a live round trip is verified
@@ -59,7 +60,7 @@ def sdk_channel(phone):
     Returns 'imessage' | 'sms' | 'rcs', or None if the check failed or isn't available. Read-only; sends nothing."""
     if not (phone and os.environ.get("PHOTON_API_KEY") and PID): return None
     try:
-        p = subprocess.run(["node", os.path.join(HERE, "photon_send.mjs"), "channel", phone],
+        p = subprocess.run(["node", os.path.join(_SRC, "photon_send.mjs"), "channel", phone],
                            env={**os.environ, "PHOTON_PROJECT_ID": PID}, capture_output=True, text=True, timeout=60)
         m = __import__("re").search(r"^channel: (imessage|sms|rcs)$", p.stdout, __import__("re").M)
         return m.group(1) if m else None
@@ -114,7 +115,7 @@ def _send(r, text, really, card, ch="imessage"):
     with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f: f.write(text)
     env = {**os.environ, "PHOTON_PROJECT_ID": PID}
     for attempt in (1, 2, 3):   # Photon hiccup: quiet retries, no one is told
-        p = subprocess.run(["node", os.path.join(HERE, "photon_send.mjs"), "send", r["phone"], f.name, "--send"] + (["--card", card] if card else []),
+        p = subprocess.run(["node", os.path.join(_SRC, "photon_send.mjs"), "send", r["phone"], f.name, "--send"] + (["--card", card] if card else []),
                            env=env, capture_output=True, text=True, timeout=120)
         if p.returncode == 0 or "not allowed" in (p.stdout + p.stderr).lower(): break
         time.sleep(30 * attempt)
@@ -148,7 +149,7 @@ def is_owner(r): return r.get("role") == "owner" or r["name"] == C["recipients"]
 def sample_text():
     """Proof of life: 'what's out there right now' snapshot from the quiet first run
     (out/sample.json = every current MATCH, written by scout.py --seed or --sample). Real data only."""
-    sp = importlib.util.spec_from_file_location("scout", os.path.join(HERE, "scout.py"))
+    sp = importlib.util.spec_from_file_location("scout", os.path.join(_SRC, "scout.py"))
     sc = importlib.util.module_from_spec(sp); sp.loader.exec_module(sc)
     f = os.path.join(HERE, "out", "sample.json")
     A = json.load(open(f)) if os.path.exists(f) else []
@@ -165,7 +166,7 @@ def short_where(l):
     st = re.sub(SUFFIX, "", st, flags=re.I).strip()
     return st or (l.get("zip") or "that one")
 def _sc():
-    sp = importlib.util.spec_from_file_location("scout", os.path.join(HERE, "scout.py"))
+    sp = importlib.util.spec_from_file_location("scout", os.path.join(_SRC, "scout.py"))
     m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m); return m
 def record_numbered(alerts):
     """Which places were in the latest text, in order (replies attach to these). Clears relay contexts."""
@@ -234,7 +235,7 @@ def main():
     if a[0] == "check":
         print("project:", api("")["name"], "| plan:", api("billing/subscription")["tier"], "| iMessage:", api("imessage/")["type"])
         for r in recipients():
-            p = subprocess.run(["node", os.path.join(HERE, "photon_send.mjs"), "check", r["phone"]],
+            p = subprocess.run(["node", os.path.join(_SRC, "photon_send.mjs"), "check", r["phone"]],
                                env={**os.environ, "PHOTON_PROJECT_ID": PID}, capture_output=True, text=True, timeout=90)
             print(f"{r['name']}: line ***{r['line_last4']} ->", "reachable via SDK" if p.returncode == 0 else "SDK lookup failed")
     elif a[0] == "outage":   # a source down > 1 day: tell the owner once, gently
@@ -250,7 +251,7 @@ def main():
         for r in recipients():
             if r["name"].lower() == a[1].lower():
                 card = card_for(r) if ("--card" in a or not is_owner(r)) else None   # members always get their card with the welcome
-                if "--card" in a and not card: print("no contact card yet: run make_contact.py first"); return
+                if "--card" in a and not card: print("no contact card yet: run python3 src/make_contact.py first"); return
                 first = r["name"].split()[0]
                 t = style.owner_welcome(first, n_places(), bool(card), KIND) if is_owner(r) else style.member_welcome(first, owner, _sc().reflect(C), KIND, r.get("role", "co_decider"), REPLIES, bool(card))
                 if send(r, t, really, card) and really and not is_owner(r):   # for the one-time owner nudge
@@ -319,7 +320,7 @@ def main():
     elif a[0] == "alerts":
         if C.get("paused"):
             print("alerts paused (CRITERIA.yaml paused: true); nothing sent"); return
-        spec = importlib.util.spec_from_file_location("scout", os.path.join(HERE, "scout.py"))
+        spec = importlib.util.spec_from_file_location("scout", os.path.join(_SRC, "scout.py"))
         sc = importlib.util.module_from_spec(spec); spec.loader.exec_module(sc)
         obf = os.path.join(HERE, "outbox.json")
         ob = json.load(open(obf)) if os.path.exists(obf) else {"queue": [], "last_sent": 0}
@@ -374,7 +375,7 @@ def main():
         if really: json.dump(ob, open(obf, "w"), indent=1)
     elif a[0] == "morning":   # Sleep mode: send held finds as one bundle at wake time; offer Sleep mode once after a late alert
         if features.in_quiet(C): print("still quiet hours; nothing sent"); return
-        spec = importlib.util.spec_from_file_location("scout", os.path.join(HERE, "scout.py"))
+        spec = importlib.util.spec_from_file_location("scout", os.path.join(_SRC, "scout.py"))
         sc = importlib.util.module_from_spec(spec); spec.loader.exec_module(sc)
         obf = os.path.join(HERE, "outbox.json"); ob = json.load(open(obf)) if os.path.exists(obf) else {"queue": [], "last_sent": 0}
         for r in recipients():

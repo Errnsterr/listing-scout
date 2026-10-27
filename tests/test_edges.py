@@ -1,6 +1,6 @@
 """Edge cases (approved 2026-10-26). Runs on a temp copy; never touches live state, never sends."""
 import os, sys, json, copy, shutil, subprocess, tempfile
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); os.chdir(HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import yaml, scout as sc, style
 SAMPLES = "tests/sample_alerts.json" if os.path.exists("tests/sample_alerts.json") else "tests/fixtures/sample_alerts.test.json"
 CRIT = "CRITERIA.yaml" if os.path.exists("CRITERIA.yaml") else "CRITERIA.example.yaml"
@@ -30,7 +30,7 @@ def test_templates_clean():
         assert ok(m), (m, style.check(m))
 
 def _replies():
-    d = tempfile.mkdtemp(); [shutil.copy(f, d) for f in ("replies.py", "style.py", "notify.py", "scout.py", "features.py", CRIT)]
+    d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("replies.py", "style.py", "notify.py", "scout.py", "features.py", CRIT)]
     os.makedirs(f"{d}/out"); c = yaml.safe_load(open(CRIT)); c["replies"] = True
     c["recipients"] = [{"name": "Alex", "role": "owner"}, {"name": "Sarah", "role": "co_decider"}]
     yaml.safe_dump(c, open(f"{d}/CRITERIA.yaml", "w"))

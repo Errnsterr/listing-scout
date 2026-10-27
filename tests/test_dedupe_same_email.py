@@ -1,6 +1,6 @@
 """Same alert email twice in one run must still alert once (skipped-alert fix 2026-10-26)."""
 import os, sys, json, shutil, subprocess, tempfile
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src"))
 import scout
 
 def L(i, addr="100 Example Ln, Los Angeles, CA 90001"):

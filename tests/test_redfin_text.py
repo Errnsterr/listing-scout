@@ -1,7 +1,7 @@
 """Redfin for-sale alert rendered as text (real layout, SYNTHETIC values): '[image: ...] (URL) $X' price lines,
 '&middot;' separators, opaque trackers (never used as links), and 'Nearby similar homes' excluded."""
 import os, sys
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); os.chdir(HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import scout as sc
 F = "tests/fixtures/email_redfin_text/redfin_forsale_instant.txt"
 

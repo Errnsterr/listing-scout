@@ -215,7 +215,10 @@ def proven_sites(here=None):
     """Alert-email sites proven by a real parsed alert (out/sources_proven.json), in the order they were proven.
     Config-driven: nothing is hardcoded; scout.py records each site the first time one of its emails parses."""
     import json as _j
-    f = os.path.join(here or os.path.dirname(os.path.abspath(__file__)), "out", "sources_proven.json")
+    if here is None:
+        _src = os.path.dirname(os.path.abspath(__file__))
+        here = os.path.dirname(_src) if os.path.basename(_src) == "src" else _src
+    f = os.path.join(here, "out", "sources_proven.json")
     try: d = _j.load(open(f))
     except Exception: return []
     return sorted(d, key=lambda k: str(d[k].get("first", ""))) if isinstance(d, dict) else []

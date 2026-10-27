@@ -4,7 +4,7 @@ import tempfile
 SRC = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TMP = tempfile.mkdtemp(prefix="render_all-"); SB = os.path.join(TMP, "sb")
 shutil.copytree(SRC, SB, ignore=shutil.ignore_patterns("node_modules", "logs", "__pycache__"))
-os.chdir(SB); sys.path.insert(0, SB)
+os.chdir(SB); sys.path.insert(0, os.path.join(SB, "src"))
 crit = os.environ.get("RENDER_CRITERIA") or ("CRITERIA.yaml" if os.path.exists("CRITERIA.yaml") else "CRITERIA.example.yaml")   # RENDER_CRITERIA=tests/fixtures/CRITERIA.buy.test.yaml for buy mode
 C = yaml.safe_load(open(crit))
 C["recipients"] = [dict(C["recipients"][0], phone_last4="0000", **({"name": "Alex"} if crit.endswith("example.yaml") else {})), {"name": "Sarah", "channel": "imessage", "phone_last4": "1111", "role": "co_decider"}]
@@ -50,10 +50,10 @@ R("B3 owner: member is in", style.owner_member_in("Sarah", "co_decider", True))
 R("B4 member prefs", style.member_prefs(own)); R("B5 owner nudge (no OK)", style.owner_nudge("Sarah"))
 R("B6 hint: target not allowed", style.hint_target_not_allowed("Sarah", "XXXX"))
 R("B7 full household (plan limit)", style.full_household(10)); R("B8 help", style.how_replies_work(own))
-OUT.append("## Flow B: replies (replies.py --as, sandbox state)\n")
+OUT.append("## Flow B: replies (src/replies.py --as, sandbox state)\n")
 json.dump([{"id": x["l"]["id"], "where": __import__("notify").short_where(x["l"]), "price": f"${x['l']['price']:,.0f}/mo" if x["l"].get("price") else None} for x in A[:2]], open("out/last_numbered.json", "w"))
 def sim(who, text, kind=None):
-    cmd = ["python3", "replies.py", "--as", who, "--text", text] + (["--kind", kind] if kind else [])
+    cmd = ["python3", "src/replies.py", "--as", who, "--text", text] + (["--kind", kind] if kind else [])
     r = subprocess.run(cmd, capture_output=True, text=True)
     msgs = [m for m in r.stdout.split("--> to ") if m.strip()]
     if r.returncode: OUT.append(f"ERROR {r.stderr}\n")

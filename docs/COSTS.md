@@ -37,7 +37,7 @@ All modes text you the same way; quiet days mean no texts. With `inbox_pull: api
 **Email-alert timing:** on Lean, a Zillow/Redfin/HotPads listing can reach you up to ~12 hours after its email arrives. Property-manager listings are checked every 15 minutes on Lean, or every 5 on Standard and Hands-on. You can switch anytime by saying "switch to lean".
 
 ## How it runs
-A small script on the bot's computer does the checking. It restarts itself after a computer restart, and a weekly health check confirms it's running. Technical details are in `BOT_NOTES.md`.
+A small script on the bot's computer does the checking. It restarts itself after a computer restart, and a weekly health check confirms it's running. Technical details are in `FOR_YOUR_BOT.md`.
 
 ## Extra features and cost
 Sleep mode, Still available?, One home one text, Fine-tune the search, We found it and the data clean-up all run in the same no-AI script, so they add no AI use. Texts they send count like every other text on your Photon plan. The only AI step is closing the Zillow/Redfin/HotPads saved searches at the finish line, done once by the bot in its browser.

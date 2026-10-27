@@ -1,9 +1,9 @@
 // Photon (Stable / Spectrum) delivery helper. Credentials from env only:
 //   PHOTON_PROJECT_ID, PHOTON_API_KEY (= Project secret from Photon's Configure page)
 // Usage:
-//   node photon_send.mjs check  <+1phone>             # connects + resolves the user; sends NOTHING
-//   node photon_send.mjs send   <+1phone> <textfile> --send   # sends the file's text as one iMessage DM
-//   node photon_send.mjs channel <+1phone>            # read-only: iMessage availability (Photon SDK); prints "channel: imessage|sms|rcs|unknown"
+//   node src/photon_send.mjs check  <+1phone>             # connects + resolves the user; sends NOTHING
+//   node src/photon_send.mjs send   <+1phone> <textfile> --send   # sends the file's text as one iMessage DM
+//   node src/photon_send.mjs channel <+1phone>            # read-only: iMessage availability (Photon SDK); prints "channel: imessage|sms|rcs|unknown"
 //   add  --card <file.vcf>  to send a contact card right after the text (spectrum-ts contact(): vCard as a file attachment)
 import { readFileSync } from "node:fs";
 import { Spectrum, contact } from "spectrum-ts";
@@ -14,7 +14,7 @@ const really = process.argv.includes("--send");
 const ci = process.argv.indexOf("--card"); const card = ci > 0 ? process.argv[ci + 1] : null;
 const need = (n) => { const v = process.env[n]; if (!v) { console.error(`Missing env ${n}`); process.exit(2); } return v; };
 if (!["check", "send", "channel"].includes(mode) || !/^\+\d{10,15}$/.test(phone || "")) {
-  console.error("usage: node photon_send.mjs check|send +15551234567 [textfile] [--send]"); process.exit(2);
+  console.error("usage: node src/photon_send.mjs check|send +15551234567 [textfile] [--send]"); process.exit(2);
 }
 const mask = (p) => "***" + p.slice(-4);
 const app = await Spectrum({

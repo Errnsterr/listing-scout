@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """listing-scout: simple listing alerts to your criteria.
-Usage: python3 scout.py [--criteria CRITERIA.yaml] [--state state.json] [--dry-run] [--all]
+Usage: python3 src/scout.py [--criteria CRITERIA.yaml] [--state state.json] [--dry-run] [--all]
 Fetches each source, parses listings, filters, dedupes (id+price), stores state,
 prints formatted text messages (one per alert, separated by '---'). Never sends anything.
 Unknown fields are printed as 'unknown' — nothing is invented."""

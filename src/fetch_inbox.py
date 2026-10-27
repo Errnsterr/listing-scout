@@ -8,7 +8,9 @@ Same contract as the 'pull site alert emails' routine:
 - out/routine_heartbeat.txt is written every run (notify.py emailwatch flags it after the plan interval + 3h).
 Reads every page of the inbox listing (not just the newest 50). Sends nothing."""
 import os, re, sys, json, time, urllib.request, urllib.parse, yaml
-HERE = os.path.dirname(os.path.abspath(__file__)); os.chdir(HERE)
+_SRC = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
+os.chdir(HERE)
 API = "https://api.agentmail.to/v0"
 DOMAINS = ("zillow.com", "redfin.com", "hotpads.com", "trulia.com", "rent.com", "apartments.com", "realtor.com", "move.com", "zumper.com")   # realtor.com mail may also come from move.com mailers (unverified)
 SKIP = re.compile(r"verif|welcome|one-time code|confirm your|password|sign in|log in", re.I)

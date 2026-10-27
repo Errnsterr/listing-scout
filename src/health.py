@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """Weekly health check for Listing Scout (no AI, sends nothing). Prints a short plain report.
-  python3 health.py            # report; exit 1 if something needs attention
-  python3 health.py --restart  # also restart the loop if it is down (keeps exactly one)
+  python3 src/health.py            # report; exit 1 if something needs attention
+  python3 src/health.py --restart  # also restart the loop if it is down (keeps exactly one)
 The weekly bot routine runs this with --restart and tells the owner only if something is wrong."""
 import os, sys, re, json, time, subprocess, yaml
-HERE = os.path.dirname(os.path.abspath(__file__)); os.chdir(HERE)
+_SRC = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
+os.chdir(HERE)
 C = yaml.safe_load(open("CRITERIA.yaml")); issues = []
 pid = open("logs/loop.pid").read().strip() if os.path.exists("logs/loop.pid") else ""
 alive = bool(pid) and os.path.exists(f"/proc/{pid}/cmdline") and b"run_loop.sh" in open(f"/proc/{pid}/cmdline", "rb").read()
-n = len(subprocess.run(["pgrep", "-f", "bash ./run_loop.sh"], capture_output=True, text=True).stdout.split())
+n = len(subprocess.run(["pgrep", "-f", "bash ./src/run_loop.sh"], capture_output=True, text=True).stdout.split())
 if not alive:
     issues.append("watcher loop is not running")
-    if "--restart" in sys.argv: subprocess.run(["./ensure_running.sh"]); issues[-1] += " (restart attempted)"
+    if "--restart" in sys.argv: subprocess.run(["./src/ensure_running.sh"]); issues[-1] += " (restart attempted)"
 if n > 1: issues.append(f"{n} loops running; should be 1")
 log = open("logs/loop.log").read().splitlines() if os.path.exists("logs/loop.log") else []
 runs = [l for l in log if " ok mode=" in l or "scout failed" in l]
@@ -42,7 +44,7 @@ if C.get("replies"):
     lp = open("logs/listen.pid").read().strip() if os.path.exists("logs/listen.pid") else ""
     if not (lp and os.path.exists(f"/proc/{lp}/cmdline") and b"listen.mjs" in open(f"/proc/{lp}/cmdline", "rb").read()):
         issues.append("reply listener is not running" + (" (restart attempted)" if "--restart" in sys.argv else ""))
-        if "--restart" in sys.argv: subprocess.run(["./ensure_running.sh"])
+        if "--restart" in sys.argv: subprocess.run(["./src/ensure_running.sh"])
 print(f"Listing Scout health {time.strftime('%F %H:%M %Z')}")
 print(f"loop: {'running' if alive else 'DOWN'} (pid {pid or '-'}), {len(runs)} checks logged, plan {C.get('plan_mode')}")
 print(f"tracking {len(st)} listings; {len(inbox)} alert emails in inbox/")

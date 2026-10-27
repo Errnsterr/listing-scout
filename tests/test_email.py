@@ -1,7 +1,7 @@
 """Email alert flow (approved 2026-10-26). Fixtures in tests/fixtures/email_tracked are SYNTHETIC (made-up listings and
 tracker tokens, shaped like real Zillow / Redfin / HotPads alerts). Runs on temp copies; never touches live state, never sends."""
 import os, re, sys, json, copy, shutil, subprocess, tempfile, time, importlib.util
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); os.chdir(HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import yaml, scout as sc
 FX = "tests/fixtures/email_tracked"
 CRIT = "CRITERIA.yaml" if os.path.exists("CRITERIA.yaml") else "CRITERIA.example.yaml"
@@ -30,7 +30,7 @@ def test_no_price_only_cards():
     assert all(l["price"] != 3000 for l in by_file()["zillow_tracked.html"])   # 'Prices from $3,000' footer is not a home
 
 def run_scout(files, state=None):
-    d = tempfile.mkdtemp(); [shutil.copy(f, d) for f in ("scout.py", "style.py", "features.py")]
+    d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("scout.py", "style.py", "features.py")]
     os.makedirs(f"{d}/inbox"); [shutil.copy(os.path.join(FX, f), f"{d}/inbox/{f}") for f in files]
     c = copy.deepcopy(C); c["sources"] = [{"name": "Alerts", "type": "email", "dir": "./inbox"}]
     c["area"] = {**c["area"], "zips": ["90001", "90002", "90003"], "cities": ["Los Angeles", "Shelbyville"]}   # the fixtures' (synthetic) area
@@ -58,7 +58,7 @@ def test_report_and_zero():
 
 # ---------- notify: owner-only watch + per-person sends ----------
 def notify_box():
-    d = tempfile.mkdtemp(); [shutil.copy(f, d) for f in ("notify.py", "scout.py", "style.py", "features.py")]
+    d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("notify.py", "scout.py", "style.py", "features.py")]
     os.makedirs(f"{d}/out"); os.makedirs(f"{d}/logs"); c = copy.deepcopy(C)
     c["recipients"] = [{"name": "Alex", "role": "owner"}, {"name": "Sarah", "role": "co_decider"}]
     c["alert_inbox"] = "alerts@example.com"; c["paused"] = False; c["daily_cap"] = 0

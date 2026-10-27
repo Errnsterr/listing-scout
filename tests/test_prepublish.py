@@ -1,6 +1,6 @@
 """Pre-publish fixes: fair housing, configurable plan limit, first-run alert in an exported copy. Sends nothing."""
 import os, re, sys, shutil, subprocess, tempfile, yaml
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src"))
 import style, scout
 
 def test_steer_note_and_rx():
@@ -33,7 +33,7 @@ def test_example_criteria():
 
 def test_no_photon_price_claims():
     rx = re.compile(r"up to 10|\$0\b|costs nothing|free for 10|Free on Photon", re.I)
-    for f in ["README.md", "SETUP.md", "PHOTON_FAQ.md", "COSTS.md", "SETUP_SCRIPT.md", "skill/SKILL.md", "notify.py", "style.py"]:
+    for f in ["README.md", "docs/SETUP.md", "docs/PHOTON_FAQ.md", "docs/COSTS.md", "docs/skill/SKILL.md", "src/notify.py", "src/style.py"]:
         bad = [ln for ln in open(os.path.join(HERE, f)) if rx.search(ln)]
         assert not bad, (f, bad[:2])
 
@@ -48,7 +48,7 @@ def test_first_run_alert_in_exported_copy():
         C["sources"] += [{"name": f"Reader {i}", "type": "email", "dir": "./inbox"} for i in range(5)]; C["match"]["price_max"] = 5000   # old example: many sources on one inbox (was 0 alerts)
         yaml.safe_dump(C, open(os.path.join(d, "CRITERIA.yaml"), "w"))
         env = {k: v for k, v in os.environ.items() if k != "PHOTON_API_KEY"}
-        run = lambda *a: subprocess.run([sys.executable, "-B", "scout.py", *a], cwd=d, env=env, capture_output=True, text=True, timeout=120)
+        run = lambda *a: subprocess.run([sys.executable, "-B", "src/scout.py", *a], cwd=d, env=env, capture_output=True, text=True, timeout=120)
         r = run("--seed"); assert "saved 0 current" in r.stderr, r.stderr[-400:]
         shutil.copy(os.path.join(HERE, "tests/fixtures/email_tracked/zillow_tracked.html"), os.path.join(d, "inbox"))
         r = run("--json", "--matches-only")

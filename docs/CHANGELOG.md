@@ -2,6 +2,14 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.1.1 (October 27, 2026): File layout
+
+- Code is in `src/`. Longer docs are in `docs/`. `README.md`, `FOR_YOU.md`, and `FOR_YOUR_BOT.md` stay at the top.
+- Commands and technical detail from `FOR_YOUR_BOT.md` are in `FOR_YOUR_BOT.md`. The setup conversation script from `docs/SETUP.md` is in `docs/SETUP.md`. The file list from `FOR_YOUR_BOT.md` is in `FOR_YOUR_BOT.md`.
+- `PUBLISH_CHECKLIST.md` is removed.
+- Run commands from the repo root, for example `python3 src/notify.py alerts out/alerts.json --send` and `./src/ensure_running.sh`.
+- Rentals, buying (experimental), and the texts are unchanged.
+
 ## v1.1.0 (October 26, 2026): Buying (experimental)
 
 - New, **experimental**: home-buying alerts (`mode: buy`) from Zillow, Redfin and Realtor.com for-sale emails. Rentals stay the default.

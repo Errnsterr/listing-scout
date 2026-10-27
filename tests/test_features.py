@@ -1,7 +1,7 @@
 """Extra features: 30-character lines, address over link, Take a break, Sleep mode, Still available?,
 One home one text, Fine-tune the search, We found it, Your data stays put. Temp copies only; never sends."""
 import os, sys, json, copy, shutil, subprocess, tempfile, time
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); os.chdir(HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import yaml, style, features, scout as sc
 SAMPLES = "tests/sample_alerts.json" if os.path.exists("tests/sample_alerts.json") else "tests/fixtures/sample_alerts.test.json"
 CRIT = "CRITERIA.yaml" if os.path.exists("CRITERIA.yaml") else "tests/fixtures/CRITERIA.test.yaml"
@@ -11,7 +11,7 @@ for a in A: a["l"].setdefault("flags", [])
 ok = lambda m: not style.check(m)
 
 def sandbox(members=None, shortlist=None):
-    d = tempfile.mkdtemp(); [shutil.copy(f, d) for f in ("replies.py", "style.py", "notify.py", "scout.py", "features.py")]
+    d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("replies.py", "style.py", "notify.py", "scout.py", "features.py")]
     os.makedirs(f"{d}/out"); os.makedirs(f"{d}/logs"); c = copy.deepcopy(C); c["replies"] = True
     c["recipients"] = [{"name": "Alex", "role": "owner"}, {"name": "Sarah", "role": "co_decider"}]
     yaml.safe_dump(c, open(f"{d}/CRITERIA.yaml", "w"))

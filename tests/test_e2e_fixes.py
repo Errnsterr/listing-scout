@@ -1,6 +1,6 @@
 """e2e-audit fixes: timezone (New York user), plan-aware email staleness, end my search. Temp copies only; never sends."""
 import os, sys, json, time, calendar
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "tests"))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); sys.path.insert(0, os.path.join(HERE, "tests"))
 import style, features
 from test_features import sandbox
 

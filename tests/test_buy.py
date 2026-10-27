@@ -1,6 +1,6 @@
 """Buy mode: synthetic Zillow / Redfin / Realtor.com for-sale emails (made-up addresses). No network, nothing sent."""
 import os, sys, json, copy, shutil, subprocess, tempfile, glob
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); os.chdir(HERE)
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import yaml, style, features, scout as sc
 C = yaml.safe_load(open("tests/fixtures/CRITERIA.buy.test.yaml")); sc.CFG.clear(); sc.CFG.update(C)
 ok = lambda m: not style.check(m)
@@ -55,7 +55,7 @@ def test_pace():
     assert features.parse_change("text me everything right away", C)["value"] == "instant"
     assert features.parse_change("just the evening roundup", C)["value"] == "evening"
 def _sandbox(shortlist):
-    d = tempfile.mkdtemp(); [shutil.copy(f, d) for f in ("notify.py", "style.py", "features.py", "scout.py", "replies.py")]
+    d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("notify.py", "style.py", "features.py", "scout.py", "replies.py")]
     os.makedirs(f"{d}/out"); os.makedirs(f"{d}/logs"); c = copy.deepcopy(C); c["shadow"] = True
     c["recipients"] = [{"name": "Alex", "role": "owner", "phone_last4": "0000"}, {"name": "Sam", "role": "co_decider", "phone_last4": "1111"}]
     yaml.safe_dump(c, open(f"{d}/CRITERIA.yaml", "w")); json.dump(shortlist, open(f"{d}/out/shortlist.json", "w"))

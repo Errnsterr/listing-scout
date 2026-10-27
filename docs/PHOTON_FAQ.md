@@ -1,6 +1,6 @@
 # Photon FAQ (texting for Listing Scout)
 For you: short answers. **For the bot:** how to spot the situation, what to check, and what to say.
-Setup order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (welcome = test, then snapshot). Exact wording is in `SETUP_SCRIPT.md`. For errors: say what happened, that nothing is wrong on their side, and the one next step.
+Setup order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (welcome = test, then snapshot). Exact wording is in `docs/SETUP.md`. For errors: say what happened, that nothing is wrong on their side, and the one next step.
 ✅ = confirmed (Photon's site, docs, or our own test on 2026-10-26). ⚠️ = unverified.
 
 ---
@@ -8,7 +8,7 @@ Setup order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 sa
 ## Pre-flight checklist (the bot runs this before any send)
 1. `PHOTON_API_KEY` is set (the Project secret). Never print it.
 2. The Project ID is set (`photon.project_id` in CRITERIA.yaml, or `PHOTON_PROJECT_ID`).
-3. `python3 notify.py check` passes. This sends nothing. It should show the project name, the plan, and "reachable" for each person.
+3. `python3 src/notify.py check` passes. This sends nothing. It should show the project name, the plan, and "reachable" for each person.
 4. Every recipient in CRITERIA.yaml (`phone_last4`) is on the Photon Users list.
 5. Each recipient saved the Listing Scout contact and texted it anything, like **"hi"** (setup steps 5 and 6).
 6. The person approved this kind of message (the welcome/test, or a sample alert). The quiet first run happens once, as part of the install.
@@ -22,7 +22,7 @@ Setup order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 sa
 Photon is the service that sends our alerts as iMessages from a real phone number. ✅
 - Plans, prices and how many people each allows change over time. Check photon.codes/pricing before you pick.
 
-**For the bot:** check the plan with `notify.py check`, which shows the plan. Never quote prices or limits; link photon.codes/pricing.
+**For the bot:** check the plan with `src/notify.py check`, which shows the plan. Never quote prices or limits; link photon.codes/pricing.
 
 ### How do I sign up?
 Go to app.photon.codes and choose **Continue with Google**. ✅
@@ -49,15 +49,15 @@ No. It's safe to share, and it's stored in CRITERIA.yaml. ✅
 - Each person gets a **Photon number**, the number their texts will come from. It's shown on the Users page. Next: save it as a contact (step 5) and send the first text (step 6).
 
 **For the bot:**
-- **Spot it:** `notify.py` prints "skip NAME: not a Photon project user yet".
-- **For the bot:** add people with the secure form (number into `NEW_USER_PHONE`) and `notify.py add_user "NAME" --confirm`, never by asking for digits in chat.
+- **Spot it:** `src/notify.py` prints "skip NAME: not a Photon project user yet".
+- **For the bot:** add people with the secure form (number into `NEW_USER_PHONE`) and `src/notify.py add_user "NAME" --confirm`, never by asking for digits in chat.
 - **Then:** update `phone_last4` in CRITERIA.yaml.
 
 ### Why does each person have to text their Photon number once?
 On Free and Pro, Photon only lets the shared number text people who are registered on the project. In our test, it also needed one text from the person. ✅ **Confirmed fix:** sends failed with "Target not allowed for this project" until the person texted the line once. After that, the test went through.
 
 **For the bot:**
-- **Spot it:** the error text contains "Target not allowed for this project". `notify.py` prints a hint.
+- **Spot it:** the error text contains "Target not allowed for this project". `src/notify.py` prints a hint.
 - **Tell the user:** "That text didn't go through. Nothing is wrong with your phone. Your line just isn't open yet. Please text anything, like **"hi"**, to the Listing Scout contact (number ending XXXX), and I'll try again."
 - **Still failing after that?** See "Nothing arrived" below for the handle check.
 
@@ -65,7 +65,7 @@ On Free and Pro, Photon only lets the shared number text people who are register
 So alerts arrive from **Listing Scout**, a name you know, instead of a strange number. iPhone can move messages from unknown senders into a separate list you might not check. Saving the contact also makes it easy to send your first text. ⚠️ We haven't tested whether saving the contact alone changes filtering, but it's Apple's normal behavior for known contacts. Photon's own guidance also recommends sharing a contact card early.
 
 **For the bot:**
-- Run `python3 make_contact.py {Name}`. It looks up their Photon number live and writes `out/Listing-Scout-{Name}.vcf`. It adds a photo if `assets/avatar.png` exists. Personal numbers are never written to the card.
+- Run `python3 src/make_contact.py {Name}`. It looks up their Photon number live and writes `out/Listing-Scout-{Name}.vcf`. It adds a photo if `src/assets/avatar.png` exists. Personal numbers are never written to the card.
 - Send them the card. Ask them to tap it and choose **Create New Contact**.
 - If alerts land in Unknown Senders, ask whether the contact is saved.
 
@@ -80,7 +80,7 @@ Anything works, like **"hi"**. Send it from the Listing Scout contact. This open
 ### I used Photon before. Do I still need to do that?
 Yes. **Photon assigns each person their own line** in this project, so a number from another project doesn't count. ✅
 
-**For the bot:** always give the number ending from this project's Users list (`line_last4` in `notify.py` output).
+**For the bot:** always give the number ending from this project's Users list (`line_last4` in `src/notify.py` output).
 
 ### Can we get alerts in one group chat?
 Not on Free or Pro. Each person gets their own one-on-one thread with the same alert. Group chats need Business. ✅
@@ -119,11 +119,11 @@ Say "add my partner" (or wife, roommate…). The bot sends a secure form for the
 
 **For the bot:**
 - Collect the number only through the secure form, into env `NEW_USER_PHONE`.
-- Run `notify.py add_user "Name" --confirm` only after the owner says yes.
+- Run `src/notify.py add_user "Name" --confirm` only after the owner says yes.
 - Never text them before they text the line. Photon rejects it anyway ("Target not allowed").
 - Ask the owner before sending the welcome text.
 - Check the total fits your plan (photon.codes/pricing). Set `photon.user_limit` to have the bot check it.
-- Templates are in SETUP.md and SETUP_SCRIPT.md.
+- Templates are in `docs/SETUP.md`, including the setup conversation script.
 
 ### Can they get fewer texts than me?
 Yes. Their CRITERIA entry can say `tiers: [target]` (only places in your target range).
@@ -131,7 +131,7 @@ Yes. Their CRITERIA entry can say `tiers: [target]` (only places in your target 
 **For the bot:** ask the owner which one they prefer. Confirm the choice back in plain words.
 
 ### What does this cost me?
-For Photon costs, see photon.codes/pricing. Listing checks use no AI. AI is used only for conversations, reading alert emails, and the extras you choose. See `COSTS.md`, and check Grok Bot Settings → Usage for your actual spend.
+For Photon costs, see photon.codes/pricing. Listing checks use no AI. AI is used only for conversations, reading alert emails, and the extras you choose. See `docs/COSTS.md`, and check Grok Bot Settings → Usage for your actual spend.
 
 **For the bot:** never quote token or dollar figures for AI. Point to Usage settings.
 

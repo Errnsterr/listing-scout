@@ -2,12 +2,13 @@
 """Make a 'Listing Scout' contact card (.vcf) for each recipient's assigned Photon line.
 The Photon line number is looked up from the API at run time (it is not a secret).
 Personal numbers are never written to the card or to files.
-Usage: python3 make_contact.py [NAME ...]   -> out/Listing-Scout-<Name>.vcf
+Usage: python3 src/make_contact.py [NAME ...]   -> out/Listing-Scout-<Name>.vcf
 Needs env PHOTON_API_KEY (Project secret); Project ID from CRITERIA.yaml or PHOTON_PROJECT_ID."""
 import os, sys, base64, json, urllib.request, yaml
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_SRC = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
+sys.path.insert(0, _SRC)
 import style
-HERE = os.path.dirname(os.path.abspath(__file__))
 C = yaml.safe_load(open(os.path.join(HERE, "CRITERIA.yaml")))
 PID = os.environ.get("PHOTON_PROJECT_ID") or C["photon"]["project_id"]
 KEY = os.environ.get("PHOTON_API_KEY") or sys.exit("Missing env PHOTON_API_KEY.")
@@ -29,7 +30,7 @@ def vcard(line, photo=None):
 
 want = set(a.lower() for a in sys.argv[1:])
 U = users(); os.makedirs(os.path.join(HERE, "out"), exist_ok=True)
-photo = os.path.join(HERE, "assets", "avatar.png"); photo = photo if os.path.exists(photo) else None
+photo = os.path.join(_SRC, "assets", "avatar.png"); photo = photo if os.path.exists(photo) else None
 for r in C["recipients"]:
     first = r["name"].replace("'s", "s").replace(" ", "-")
     if want and first.lower() not in want and r["name"].lower() not in want: continue

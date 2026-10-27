@@ -1,12 +1,12 @@
 """Heads-ups: welcome lines, the one-time first-alert note, proven sites, Android help. Run: python3 tests/test_headsups.py"""
 import os, sys, json, copy, time, shutil, tempfile, importlib.util, subprocess
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); os.chdir(HERE); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "tests"))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); os.chdir(HERE); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); sys.path.insert(0, os.path.join(HERE, "tests"))
 import yaml, style
 CF = next(f for f in ("CRITERIA.yaml", "tests/fixtures/CRITERIA.test.yaml") if os.path.exists(f)); C = yaml.safe_load(open(CF))
 SAMPLE = next(f for f in ("tests/sample_alerts.json", "tests/fixtures/sample_alerts.test.json") if os.path.exists(f))
 NOTE = "Quick note on that one."
 def box(shadow=False, members=None):
-    d = tempfile.mkdtemp(); [shutil.copy(f, d) for f in ("notify.py", "scout.py", "style.py", "features.py")]
+    d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("notify.py", "scout.py", "style.py", "features.py")]
     os.makedirs(f"{d}/out"); os.makedirs(f"{d}/logs"); c = copy.deepcopy(C)
     c["recipients"] = [{"name": "Alex", "role": "owner", "phone_last4": "0000"}, {"name": "Sarah", "role": "co_decider", "phone_last4": "1111"}]
     c.update(paused=False, daily_cap=0, shadow=shadow, quiet_hours={"start": 0, "end": 0}); c.pop("mode", None)
@@ -63,8 +63,8 @@ def test_note_failed_alert_no_note():
     n.send = lambda r, t, really, card=None: (sent.append((r["name"], t.startswith(NOTE))) or r["name"] != "Sarah")
     alerts(n, d, 1); assert ("Sarah", True) not in sent and ("Alex", True) in sent
 def test_note_shadow_only_logs():
-    if "shadow_texts" not in open("notify.py").read(): return   # install without shadow mode
-    d = tempfile.mkdtemp(); [shutil.copy(f, d) for f in ("notify.py", "scout.py", "style.py", "features.py")]
+    if "shadow_texts" not in open(os.path.join(HERE, "src", "notify.py")).read(): return   # install without shadow mode
+    d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("notify.py", "scout.py", "style.py", "features.py")]
     os.makedirs(f"{d}/out"); os.makedirs(f"{d}/logs"); c = copy.deepcopy(C); c.update(shadow=True, paused=False, daily_cap=0); c.pop("mode", None)
     c["recipients"] = [{"name": "Alex", "role": "owner", "phone_last4": "0000"}]; yaml.safe_dump(c, open(f"{d}/CRITERIA.yaml", "w"))
     json.dump([{"reason": "new", "was": None, "market": None, "l": json.load(open(SAMPLE))[0]["l"]}], open(f"{d}/a.json", "w"))
