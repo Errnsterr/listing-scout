@@ -13,7 +13,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.5.tar.gz
+Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.6.tar.gz
 
 Then copy `CRITERIA.example.yaml` to `CRITERIA.yaml`. Install dependencies: Node 20 or newer, `npm install`, and Python 3 with pyyaml, bs4 and Pillow (`python3 -m pip install pyyaml beautifulsoup4 Pillow`). Commands are in this file, under "Commands and technical detail".
 
@@ -55,7 +55,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.5. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.6. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |
@@ -82,7 +82,7 @@ Not shipped (owner-only): `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/*`
 
 ---
 
-## Commands and technical detail (template 1.2.5)
+## Commands and technical detail (template 1.2.6)
 
 User-facing docs (`docs/SETUP.md`, `docs/PHOTON_FAQ.md`, `docs/COSTS.md`) stay plain. Every command and technical detail lives here.
 
@@ -187,7 +187,7 @@ Household welcome: `python3 src/notify.py welcome "Name" --send` (member wording
 - **Take a break:** STOP keywords in src/replies.py (instant, silent). Owner "remove {first}" → `pending: remove` → on yes `features.purge_member()`.
 - **Sleep mode:** `members.json` `sleep: true`. `src/notify.py alerts` holds that person's finds during `quiet_hours` (default 22→7) in `outbox.json` `held`; `src/notify.py morning --send` (run by the loop every pass) sends them as one bundle after wake time and, once, offers Sleep mode to anyone who got an alert during quiet hours (`late_at`).
 - **Still available?:** `src/scout.py` sets `gone_since`; `src/notify.py gone --send` (loop) texts owner + co-deciders once (`gone_told`) for shortlisted places gone ≥24h (`features.gone_liked`). Wording: "It's no longer listed." `style.check()` rejects "rented".
-- **One home, one text:** `scout.cross_source()` runs before a new id alerts: same normalized address (`addr_key`) still listed → attach silently (`dup_of`, `also_ids`), or a price-drop alert if lower. No address → alerts as new.
+- **One home, one text:** `scout.cross_source()` runs before a new id alerts: same normalized address (`addr_key`: house number + street name without directional or suffix + unit; `same_place()` also needs the ZIP to agree, or the city when a ZIP is missing, and conflicting directionals never match; two ids from one manager feed never merge; listing ids still use `addr_id_key`, unchanged) still listed → attach silently (`dup_of`, `also_ids`), or a price-drop alert if lower. No address → alerts as new.
 - **Fine-tune the search:** `features.parse_change()` (zip add/remove, target/stretch, beds_min; unclear → ask). On the owner's yes: `features.apply_change()` backs up to `out/CRITERIA.backup-*.yaml`, edits the line in place (comments kept), then `src/scout.py --seed` runs quietly.
 - **We found it:** owner yes → `wrapped_up` to all, `out/search_ended.json` (src/run_loop.sh exits, src/ensure_running.sh starts nothing, src/notify.py sends nothing) → `wrapup_data` question. Yes → `features.purge_all(everything=True)` and prints `CLOSE_SAVED_SEARCHES` (the bot closes the Zillow/Redfin/HotPads saved searches by hand). Either answer prints `LISTENER_STOP`, and src/listen.mjs exits.
 

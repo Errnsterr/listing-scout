@@ -105,7 +105,7 @@ def _card_id(portal, blob, addr):
     if z: return f"email:Zillow:{z.group(1) or z.group(2)}"
     r = re.search(r"redfin\.com/[^\s\"'<>]*?/home/(\d{4,})|/home/(\d{4,})", blob, re.I)
     if r and portal == "Redfin": return f"email:Redfin:{r.group(1) or r.group(2)}"
-    ak = addr_key(addr)
+    ak = addr_id_key(addr)
     if ak: return f"email:addr:{ak.replace(' ', '-')}"
     return None
 
@@ -216,7 +216,7 @@ def _parse_text_cards(body, portal, fname):
         price = None if rg else num(PRICE_LINE.match(L[i]).group(1)); beds = num(bd.group(1)) if bd else None
         zr = _card_id(portal, " ".join(seg) + " " + body if len(starts) == 1 else " ".join(L[max(0, i - 8):end]), None)
         if zr: lid = zr
-        elif ad and addr_key(ad): lid = f"email:addr:{addr_key(ad).replace(' ', '-')}"
+        elif ad and addr_id_key(ad): lid = f"email:addr:{addr_id_key(ad).replace(' ', '-')}"
         else: lid = f"email:{portal}:m{msgid}-{int(price) if price else 'x'}-{int(beds) if beds is not None else 'x'}-{sq.group(1).replace(',', '') if sq else 'x'}"
         if lid in ids: continue
         ids.add(lid)
@@ -277,7 +277,7 @@ def _parse_hotpads_text(body, fname):
                 addr = f"{seg[k - 1]}, {y}"
             if cm:
                 city, state, zp = cm.group(1).strip(), cm.group(2), cm.group(3); break
-        ak = addr_key(addr)
+        ak = addr_id_key(addr)
         lid = f"email:addr:{ak.replace(' ', '-')}" if ak else "email:HotPads:" + urllib.parse.urlparse(url).path.strip("/").replace("/", "-")
         if lid in ids: continue
         ids.add(lid); t = " ".join(seg)
@@ -385,7 +385,7 @@ def _street_from_url(l):
     if not st: return l
     new = ", ".join([st] + parts[-2:])
     l = dict(l, address=new, building=parts[0])
-    if not re.match(r"email:Zillow:\d", l["id"]) and addr_key(new): l["id"] = f"email:addr:{addr_key(new).replace(' ', '-')}"
+    if not re.match(r"email:Zillow:\d", l["id"]) and addr_id_key(new): l["id"] = f"email:addr:{addr_id_key(new).replace(' ', '-')}"
     return l
 
 def parse_email_file(f):
@@ -587,8 +587,8 @@ def comps_note(l, pool, C):
     if pct <= -C.get("scam_flags", {}).get("below_comps_pct", 999): l["flags"].append(f"price {abs(pct):.0f}% below similar — verify before paying anything")
     return f"{'+' if pct>=0 else ''}{pct:.0f}% vs median ${med:,.0f} of {len(sim)} similar {int(l['beds'])}bd seen"
 
-def addr_key(a):
-    """normalize '241 Example Street - A, Los Angeles, CA 90001' == '241 Example Street Unit A, ...'"""
+def addr_id_key(a):
+    """Listing-id part (kept as-is so saved ids never change): '241 Example Street - A, City, CA 90001' -> '241 example a'."""
     if not a: return None
     parts = [p.strip() for p in a.lower().split(",")]
     if len(parts) < 3: return None
@@ -597,12 +597,69 @@ def addr_key(a):
     toks = re.sub(r"[#\-.]", " ", st).split()
     return " ".join(toks) if toks and toks[0].isdigit() else None
 
+DIRS = {"n": "n", "north": "n", "s": "s", "south": "s", "e": "e", "east": "e", "w": "w", "west": "w",
+        "ne": "ne", "northeast": "ne", "nw": "nw", "northwest": "nw", "se": "se", "southeast": "se", "sw": "sw", "southwest": "sw"}
+SUFFIX = {"street", "st", "avenue", "ave", "av", "drive", "dr", "road", "rd", "lane", "ln", "place", "pl", "boulevard", "blvd", "court", "ct",
+          "way", "wy", "circle", "cir", "terrace", "ter", "parkway", "pkwy", "highway", "hwy", "trail", "trl", "square", "sq", "loop", "row"}
+UNIT_RX = re.compile(r"(?:#|\b(?:unit|apt|apartment|ste|suite|spc|space|no)\b\.?)\s*([a-z0-9-]+)\s*$|\s-\s*([a-z0-9]+)\s*$", re.I)
+
+def addr_parts(a):
+    """'125 E Baker St #2, Costa Mesa, CA 92626' -> ('125', 'baker', 'e', '2', '92626', 'costa mesa'). None if no house number."""
+    if not a: return None
+    parts = [p.strip() for p in a.lower().split(",") if p.strip()]
+    if len(parts) < 3: return None
+    zp = (re.findall(r"\b(\d{5})\b", parts[-1]) or [None])[-1]
+    city = re.sub(r"[^a-z ]", "", parts[-2]).strip()
+    st = " ".join(parts[:-2])
+    unit = None
+    m = UNIT_RX.search(st)
+    if m: unit = (m.group(1) or m.group(2)).lstrip("0") or "0"; st = st[:m.start()]
+    st = re.sub(r"(\d)\.5\b", r"\1 1/2", st)                       # 218.5 -> 218 1/2
+    toks = re.sub(r"[^a-z0-9/ -]", " ", st).replace(" - ", " ").split()
+    if toks and not unit:   # '308-A2 Santa Isabel Ave': the unit rides on the house number
+        m2 = re.fullmatch(r"(\d+)-([a-z][a-z0-9]*|\d+[a-z][a-z0-9]*)", toks[0])
+        if m2: toks[0], unit = m2.group(1), m2.group(2)
+    if not toks or not re.fullmatch(r"\d+(?:-\d+)?[a-z]?", toks[0]): return None
+    num, rest = toks[0], toks[1:]
+    if rest and rest[0] == "1/2": num += " 1/2"; rest = rest[1:]
+    isdir = lambda t: t in DIRS and len(rest) > 1
+    dirs = "".join(sorted(DIRS[t] for t in rest if isdir(t)))
+    name = [t for t in rest if not isdir(t) and t not in SUFFIX] or [t for t in rest if not isdir(t)] or rest
+    return num, " ".join(name), dirs, unit, zp, city
+
+def addr_loc(a):
+    """What must also agree for two same-key addresses to be one home: directional, ZIP, city."""
+    p = addr_parts(a)
+    return {"dirs": p[2], "zip": p[4], "city": p[5]} if p else {}
+
+def same_place(x, y):
+    """N vs S Main are different homes (a missing directional matches either). ZIPs must agree when both have one;
+    otherwise the city must."""
+    if not x or not y: return True   # an older saved record with no place info: the key alone decides (as before)
+    if x.get("dirs") and y.get("dirs") and x["dirs"] != y["dirs"]: return False
+    if x.get("zip") and y.get("zip"): return x["zip"] == y["zip"]
+    return bool(x.get("city")) and x.get("city") == y.get("city")
+
+def addr_key(a):
+    """Cross-site match key: house number + street name (no directional or suffix) + unit.
+    '125 Baker St' == '125 E Baker St' == '125 East Baker Street'; units never merge with each other.
+    Use with same_place() (directional, ZIP or city)."""
+    p = addr_parts(a)
+    if not p: return None
+    return f"{p[0]}|{p[1]}|{p[3] or ''}"
+
+def _same_feed(a, b):
+    """Two ids from one manager feed (appfolio:, tt:...) are two listings, never one home. Email ids are shared across sites."""
+    pa, pb = a.split(":", 1)[0], b.split(":", 1)[0]
+    return pa == pb and pa != "email"
+
 def cross_source(l, S, ak):
     """A home already alerted under another id (e.g. a PM feed, then a Zillow email hours later).
     -> None (not seen: alert as new), ("skip", id) (same or higher price: attach quietly), ("lower", id, old_price).
     No address, or one we can't normalize, never matches: it alerts as usual (we never guess a match)."""
     if not ak: return None
-    hit = next((k for k, v in S.items() if k != l["id"] and v.get("addr") == ak and not v.get("gone_since")), None)
+    loc = addr_loc(l.get("address"))
+    hit = next((k for k, v in S.items() if k != l["id"] and v.get("addr") == ak and not v.get("gone_since") and same_place(loc, v.get("loc") or {}) and not _same_feed(l["id"], k)), None)
     if not hit: return None
     old = S[hit].get("price")
     if l.get("price") is not None and old and l["price"] < old: return ("lower", hit, old)
@@ -613,6 +670,9 @@ def merge_dupes(L, C):
     out, by = [], {}
     for l in L:
         k = addr_key(l.get("address"))
+        if k and k in by and (not same_place(addr_loc(l.get("address")), addr_loc(by[k].get("address")))
+                              or (l.get("source") == by[k].get("source") and l["id"] != by[k]["id"])):   # different place, or two units one feed lists separately
+            k = k + "|" + l["id"]
         if k and k in by:
             b = by[k]
             took_link = not b.get("url") and l.get("url")   # the link comes from this source, so "Via" must name it
@@ -1067,14 +1127,14 @@ def main():
             if oid != l["id"]: S.setdefault(oid, {"first_seen": today, "price_history": []}).update(last_seen=today, gone_since=None)
         ak = addr_key(l.get("address"))
         if prev is None and ak:   # relisted under a new id: same street address, gone a while
-            old = next((k for k, v in S.items() if v.get("addr") == ak and v.get("gone_since")), None)
+            old = next((k for k, v in S.items() if v.get("addr") == ak and v.get("gone_since") and same_place(addr_loc(l.get("address")), v.get("loc") or {})), None)
             if old: prev = dict(S[old])
         dup = cross_source(l, S, ak) if prev is None else None   # One home, one text (across runs and sources)
         if dup:
             S[dup[1]].setdefault("also_ids", []); S[dup[1]]["also_ids"] = sorted(set(S[dup[1]]["also_ids"]) | {l["id"]})
             if dup[0] == "skip":   # same home, same or higher price: attach the new source quietly
                 S[l["id"]] = {"first_seen": today, "price_history": [[today, l.get("price")]] if l.get("price") else [], "price": l.get("price"),
-                              "last_seen": today, "gone_since": None, "eligible": l["eligible"], "addr": ak, "dup_of": dup[1]}
+                              "last_seen": today, "gone_since": None, "eligible": l["eligible"], "addr": ak, "loc": addr_loc(l.get("address")), "dup_of": dup[1]}
                 continue
             prev = {"price": dup[2], "price_history": [], "first_seen": today}   # lower elsewhere: a normal price-drop alert
         if prev is None and l.get("email_was_price") and l.get("price") and l["email_was_price"] > l["price"]:
@@ -1095,7 +1155,7 @@ def main():
         rec = prev or {"first_seen": today, "price_history": []}
         if l.get("price") is not None and (not rec["price_history"] or rec["price_history"][-1][1] != l["price"]):
             rec["price_history"].append([today, l["price"]])
-        rec.update(price=l.get("price"), last_seen=today, gone_since=None, eligible=l["eligible"], addr=ak)
+        rec.update(price=l.get("price"), last_seen=today, gone_since=None, eligible=l["eligible"], addr=ak, loc=addr_loc(l.get("address")))
         S[l["id"]] = rec
         if rec.get("held_review") and not a.all: continue   # owner decides (out/pending_review.json); never auto-sent
         if not l["eligible"] or (reason is None and not a.all): continue

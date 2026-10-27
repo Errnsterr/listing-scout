@@ -17,7 +17,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Or download the v1.2.5 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.5.tar.gz
+Or download the v1.2.6 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.6.tar.gz
 
 Then install dependencies (Node 20 or newer, and Python 3) and start a search file:
 
@@ -64,7 +64,7 @@ cp CRITERIA.example.yaml CRITERIA.yaml
 - **Always a street address.** When an email names only a building, the street comes from the listing page's own address (for example `100 Example St #4`). Half-numbers (`417 1/2`) and ranges (`301-307`) are kept. If no street can be found anywhere, the building name stays. Nothing is guessed.
 - **The watchdog waits for your plan's schedule.** Routines drift and sites go quiet. A short alarm warned people about nothing, so it waits for the plan's inbox-reading interval plus 3 hours before saying anything, and then says it calmly.
 - **Test new things with sending off.** New sources and buying (experimental) start in shadow mode (`shadow: true`). Would-be texts go to `out/shadow_texts.jsonl` until real emails parse cleanly.
-- **Duplicates across sites happen.** In testing, the same house came from Zillow, Redfin and HotPads. The scout matches them by address, so each home shows up once.
+- **Duplicates across sites happen.** In testing, the same house came from Zillow, Redfin and HotPads. The scout matches them by address, so each home shows up once. Small differences don't matter: "125 Baker St" and "125 E Baker Street" are the same home. Different house numbers, different units, or "N" and "S" on one street stay separate.
 - **Apply and agent links are rare.** Real alert emails almost never include them, so that line shows only when a site sends one. Nothing is made up.
 - **Keep site filters loose.** A pet filter and Redfin's "deals" option quietly hid places that fit. Set sites to rent plus area, and let the scout filter.
 
