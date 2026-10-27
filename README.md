@@ -17,7 +17,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Or download the v1.2.2 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.2.tar.gz
+Or download the v1.2.4 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.4.tar.gz
 
 Then install dependencies (Node 20 or newer, and Python 3) and start a search file:
 
@@ -60,7 +60,8 @@ cp CRITERIA.example.yaml CRITERIA.yaml
 ## What we learned building this
 
 - **Prove each site separately.** Zillow, Redfin and HotPads all format alert emails differently. A site counts as working only after one of its real alert emails parses (see `out/sources_proven.json`).
-- **Never use tracked links.** Links inside alert emails carry your account's sign-in tokens. Alerts use the plain listing link instead (for example `zillow.com/homedetails/<id>_zpid/`).
+- **Never use tracked links.** Links inside alert emails carry your account's sign-in tokens. Alerts use the plain listing link instead (for example `zillow.com/homedetails/<id>_zpid/`). When a Redfin or Zillow email only has a tracked link, your bot follows it once (no cookies kept) and texts only the plain listing page it leads to. If there isn't one, the place goes out with no link.
+- **Always a street address.** When an email names only a building, the street comes from the listing page's own address (for example `100 Example St #4`). Half-numbers (`417 1/2`) and ranges (`301-307`) are kept. If no street can be found anywhere, the building name stays. Nothing is guessed.
 - **The watchdog waits for your plan's schedule.** Routines drift and sites go quiet. A short alarm warned people about nothing, so it waits for the plan's inbox-reading interval plus 3 hours before saying anything, and then says it calmly.
 - **Test new things with sending off.** New sources and buying (experimental) start in shadow mode (`shadow: true`). Would-be texts go to `out/shadow_texts.jsonl` until real emails parse cleanly.
 - **Duplicates across sites happen.** In testing, the same house came from Zillow, Redfin and HotPads. The scout matches them by address, so each home shows up once.

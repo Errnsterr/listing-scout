@@ -6,10 +6,10 @@ description: >-
   (everyone gets every place, sees each other's thoughts, and shares a shortlist). Use
   from the owner's first message about finding a rental or copying the bot, and whenever
   they say "add my partner", "pause", "shortlist", or "change my search".
-version: 1.2.2
+version: 1.2.4
 ---
 
-# Listing Scout: setup and care (v1.2.2)
+# Listing Scout: setup and care (v1.2.4)
 
 Built by [@errnsterr](https://x.com/errnsterr).
 
@@ -38,7 +38,7 @@ Human-only steps (share this with the owner): `FOR_YOU.md`. Internals map: `FOR_
 
 ## Day one: what you create yourself (before step 1 is finished)
 
-1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.2.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
+1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.4.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
 2. **An alerts inbox.** Claim an email address for listing-site alerts (for example `{firstname}-homes@…`). Ask the owner to approve the name first; a claim is permanent. Put it in `alert_inbox`.
 3. **The Photon secret.** Ask for it with a secure form in step 3. Keep it as the `PHOTON_API_KEY` environment setting only.
 4. **The watcher.** After step 8's approval, run the install in `FOR_YOUR_BOT.md` (quiet first run, then `src/ensure_running.sh`). It keeps exactly one copy running. Add the one-line restart hook to `~/.bashrc` (in `FOR_YOUR_BOT.md`) so it comes back after a restart.
@@ -541,7 +541,7 @@ Name each feature by its benefit when it first matters, never as instructions:
 - **We found it**: only the owner's yes ends it.
 - **Your data stays put**: in setup step 2 (the promise), add one line in chat: "Everything stays on my computer, and logs are deleted after 30 days." Point to "What I keep" in docs/SETUP.md when asked.
 
-Text style: every bot line is one whole thought of 30 characters or fewer (`style.MAX`). Links are alone on their own line, with the street address directly above. Member words are relayed verbatim and are exempt.
+Text style: every bot line is one whole thought of 30 characters or fewer (`style.MAX`). Links are alone on their own line, with the street address directly above. Links are always the plain listing page (tracked email links are resolved or left out), and a building-name-only address uses the street from that page. Member words are relayed verbatim and are exempt.
 
 ## What I keep
 

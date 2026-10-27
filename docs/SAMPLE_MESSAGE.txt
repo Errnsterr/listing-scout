@@ -236,6 +236,26 @@ No rush.
 I'll keep watching.
 ```
 
+### C11 building name in the email, street from the listing page (Redfin)
+```
+New place that fits
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Via Redfin
+
+100 Example St #4
+https://www.redfin.com/CA/Los-Angeles/100-Example-St-90001/unit-4/home/99000001
+
+No rush.
+
+I'll keep watching.
+```
+
 ### C7 scam caution (one signal)
 ```
 New place that fits

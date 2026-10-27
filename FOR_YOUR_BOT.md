@@ -13,7 +13,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.2.tar.gz
+Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.4.tar.gz
 
 Then copy `CRITERIA.example.yaml` to `CRITERIA.yaml`. Install dependencies: Node 20 or newer, `npm install`, and Python 3 with pyyaml, bs4 and Pillow (`python3 -m pip install pyyaml beautifulsoup4 Pillow`). Commands are in this file, under "Commands and technical detail".
 
@@ -55,7 +55,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.2. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.4. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |
@@ -82,7 +82,7 @@ Not shipped (owner-only): `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/*`
 
 ---
 
-## Commands and technical detail (template 1.2.2)
+## Commands and technical detail (template 1.2.4)
 
 User-facing docs (`docs/SETUP.md`, `docs/PHOTON_FAQ.md`, `docs/COSTS.md`) stay plain. Every command and technical detail lives here.
 
@@ -132,7 +132,7 @@ Household welcome: `python3 src/notify.py welcome "Name" --send` (member wording
 
   Without the key it prints "skipped" and the inbox-reader routine does the same job on the plan's schedule (Lean twice a day, Standard every 2 h, Hands-on hourly; docs/COSTS.md).
 
-- `src/scout.py` parser reads listing cards (price, beds, baths, address) from Zillow, Redfin and HotPads alert bodies, including tracked click links (click.mail.zillow.com, redmail*.redfin.com, HotPads /pad). IDs: Zillow zpid or Redfin home id when in the email, else normalized address + unit (same home on two sites = one text). A "was $X" in the email counts as a price drop.
+- `src/scout.py` parser reads listing cards (price, beds, baths, address) from Zillow, Redfin and HotPads alert bodies, including tracked click links (click.mail.zillow.com, redmail*.redfin.com, HotPads /pad). An opaque Redfin/Zillow tracker is resolved once by following its redirects (`resolve_tracker`: HEAD, then GET; 6 s timeout; no cookies). Only a www.redfin.com `/home/` or `/apartment/` page or a www.zillow.com `homedetails` page is kept, with no query string. Results are cached in `out/link_cache.json` under a hash (a miss is retried after 6 h), and the tracker itself is never stored or texted. A building-name address takes its street (and unit) from that clean URL's slug (`slug_street`). Street numbers like `417 1/2` and `301-307` are read whole, and a number inside a name ("Eight 80 Newport Beach") is never taken as a street number. IDs: Zillow zpid or Redfin home id when in the email, else normalized address + unit (same home on two sites = one text). A "was $X" in the email counts as a price drop.
 
   Missing fields stay "not listed yet". Tested on SYNTHETIC tracked-link fixtures in `tests/fixtures/email_tracked/` (`tests/test_email.py`); Unverified: check the first real email of each site by hand and save a redacted copy as a fixture.
 

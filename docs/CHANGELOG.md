@@ -2,6 +2,15 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.4 (October 27, 2026): real links and street addresses
+
+- Redfin places from alert emails now come with their listing link. Redfin emails only have tracked links, so these places used to go out with no link. Your bot now follows the tracked link once and texts only the plain listing page it leads to. Zillow emails with tracked links get the same fix.
+- If a tracked link doesn't lead to a listing page, the place goes out with no link, as before. Tracked links are never texted or saved.
+- When an email names only a building or community (for example "Example Villas"), the text shows the street address from the listing page instead, with the unit. The building name shows only when no street can be found. Nothing is guessed.
+- Street numbers like "417 1/2" and "301-307" are read whole. A number inside a building name, like "Eight 80", is no longer read as a street number.
+- The text format is the same. The street sits on its own line, right above its link.
+- There is no v1.2.3 release.
+
 ## v1.2.2 (October 26, 2026): faster checks
 
 - The script checks listings every 5 minutes on every plan. Set `loop_minutes` in `CRITERIA.yaml` to change it. Plans still decide how often alert emails are read.

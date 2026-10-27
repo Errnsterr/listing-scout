@@ -36,6 +36,8 @@ a = copy.deepcopy(A[0]["l"]); b = copy.deepcopy(a); b.update(id="zillow:x", sour
 R("C5 two sites, two prices", sc.render(al(sc.merge_dupes([a, b], C)[0]), C))
 l = copy.deepcopy(A[0]["l"]); l.update(price=None, beds=None, address=None, available="", url=None); R("C6 missing fields", sc.render(al(l), C))
 l = copy.deepcopy(A[0]["l"]); l["apply_url"] = "https://www.zillow.com/rental-manager/apply/synth-1/"; R("C9 with the listing's apply link", sc.render(al(l), C))
+l = copy.deepcopy(A[0]["l"]); l.update(source="Redfin", address="Example Villas, Los Angeles, CA 90001", url="https://www.redfin.com/CA/Los-Angeles/100-Example-St-90001/unit-4/home/99000001")
+l = sc._street_from_url(l); R("C11 building name in the email, street from the listing page (Redfin)", sc.render(al(l), C))
 l = copy.deepcopy(A[0]["l"]); l["flags"] = ["suspicious payment/deposit wording"]; R("C7 scam caution (one signal)", sc.render(al(l), C))
 l = copy.deepcopy(A[0]["l"]); l["flags"] = ["suspicious payment/deposit wording", "photo/address mismatch"]; R("C7b scam caution (two signals)", sc.render(al(l), C))
 R("C8 bundle of 3", sc.render([A[0], A[1], dict(A[2], reason="price_drop", was=(A[2]["l"].get("price") or 0) + 100)], C))

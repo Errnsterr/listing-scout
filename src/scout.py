@@ -81,7 +81,7 @@ LISTING_HREF = re.compile(r"homedetails|/home/|/rental|/listing|/apartments?/|/p
 AMT = r"(\d{1,3}(?:\.\d{1,2})?\s?[kK]\b|\d{1,3}(?:,\d{3})+|\d{3,6})"   # shared price amount: '$4,350', '$4350', '$30K', '$1.8K'
 PRICE = re.compile(r"\$\s?" + AMT + r"(?!\d)")
 WAS = re.compile(r"(?:was|from|previously|reduced from|orig(?:inally)?)\s*:?\s*\$\s?[\d,]{3,}|\$\s?[\d,]{3,}\s*(?:→|->|to)\s*(?=\$)|<s>.*?</s>|<del>.*?</del>", re.I)
-ADDR = re.compile(r"\b\d+[A-Za-z]? (?:[A-Z]|\d+(?:st|nd|rd|th)\b)[^,$|\n]{2,60}?,\s*[A-Za-z .]{3,40},\s*[A-Z]{2}(?:\s*\d{5})?")
+ADDR = re.compile(r"(?<![\w/.#-])\d+(?:-\d+)?[A-Za-z]?(?: \d/\d)? (?:[A-Z]|\d+(?:st|nd|rd|th)\b)[^,$|\n]{2,60}?,\s*[A-Za-z .]{3,40},\s*[A-Z]{2}(?:\s*\d{5})?")
 
 def email_files(d):
     return sorted(f for f in glob.glob(os.path.join(d, "*")) if os.path.isfile(f) and not os.path.basename(f).startswith("."))
@@ -181,6 +181,11 @@ IMG_PRICE = re.compile(r"^\s*\[image:[^\]]*\]\s*\(https?://[^)\s]*\)\s*(?=\$)")
 SIMILAR = re.compile(r"^\s*(?:related to your search|nearby similar homes|similar homes|recommended for you)\s*$", re.I)
 TRACKER = re.compile(r"redmail\d*\.|click\.mail\.|/u/click|/a/click|/f/a/|~~|[?&](?:_t|_e|_m|rtoken|zuid|token)=", re.I)
 
+def _name_prefix(pre):
+    """Text before a number that is part of a building name ('Eight 80 Newport Beach'): only Capitalized words, no lowercase prose."""
+    w = re.sub(r"\[[^\]]*\]|\([^)]*\)", " ", pre).split()
+    return bool(w) and all(re.fullmatch(r"[A-Z][A-Za-z'&.-]*", t) for t in w)
+
 def _parse_text_cards(body, portal, fname):
     """Plain-text alert (e.g. a text render of a Zillow 'New Rental Match'): one card per '$X/mo' line.
     Beds/baths/sqft/address are read from the lines after the price, up to the next price line or footer."""
@@ -198,7 +203,7 @@ def _parse_text_cards(body, portal, fname):
         bdr = re.search(r"(\d+)\s*[-\u2013]\s*(\d+)\s*(?:bd|bds|beds?|br)\b", t, re.I); bar = re.search(r"(\d+(?:\.\d)?)\s*[-\u2013]\s*(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
         bd = None if bdr else re.search(r"(\d+(?:\.\d)?)\s*(?:bd|bds|beds?|br)\b", t, re.I); ba = None if bar else re.search(r"(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
         sq = re.search(r"([\d,]{3,})\s*sq\.?\s*ft", t, re.I)
-        und = UNDISCLOSED.search(t); ad = None if und else next((m.group() for x in seg for m in [ADDR.search(x)] if m), None)
+        und = UNDISCLOSED.search(t); ad = None if und else next((m.group() for x in seg for m in [ADDR.search(x)] if m and not _name_prefix(x[:m.start()])), None)
         if not (ad or und):   # building name instead of a street number: 'Example Villas, Vista del Sol, CA 90001'
             ad = next((m.group().strip() for x in seg for m in [NAMED_PLACE.match(URL_RE.sub("", x))] if m), None)
         if not (bd or ba or bdr or bar or ad or und): continue
@@ -235,7 +240,7 @@ HP_ANCHOR = re.compile(r"^\s*\((https?://(?:www\.)?hotpads\.com/[^)\s]+)\)\s*Con
 HP_PRICE = re.compile(r"^\s*(?:from\s+)?\$\s?" + AMT + r"\+?\s*(?:/\s*mo\b|$)", re.I)   # '$4,350/mo', '$30K/mo', 'from $1.8K'
 HP_BEDS = re.compile(r"^\s*(studio|\d+)(?:\s+to\s+(\d+))?\s+beds?\b|^\s*studio\s*$", re.I)
 HP_CITY = re.compile(r"^\s*([A-Za-z .'-]{3,40}),\s*([A-Z]{2})\s+(\d{5})\s*$")
-HP_STREET = re.compile(r"^\s*\d[\d./]*[A-Za-z]?\s+\S.*$")
+HP_STREET = re.compile(r"^\s*\d[\d./]*(?:-\d+)?[A-Za-z]?(?:\s+\d/\d)?\s+\S.*$")   # 12, 12B, 218.5, 301-307, 417 1/2
 
 def hotpads_url(u):
     """Plain listing link: https://hotpads.com/<slug>/.../pad, no nid/utm query. None for non-listing pages."""
@@ -288,10 +293,103 @@ def _clean_link(lid, link):
     if link and re.search(r"//(?:www\.)?hotpads\.com/", link, re.I):   # only a /pad listing page, never /user/searches etc.
         return hotpads_url(link)
     if link and TRACKER.search(link):   # a tracker carries account tokens: unwrap to a plain public page if it's inside, else none
-        return clean_action_url(link)
+        return clean_action_url(link) or resolve_tracker(link)
     return link
 
+# Opaque Redfin/Zillow email trackers: follow the redirects (no cookies), keep only a clean public listing page.
+RESOLVE_LINKS = False          # switched on by main(); tests and imports never touch the network unless they mock it
+RESOLVE_CACHE = "out/link_cache.json"
+LISTING_PAGE = {"redfin": re.compile(r"^/[A-Z]{2}/[^?#]*/(?:home|apartment)/\d+/?$"),
+                "zillow": re.compile(r"^/(?:homedetails/[^?#]*\d+_zpid|apartments/[^?#]+/[A-Za-z0-9]{3,12})/?$")}
+OPAQUE = re.compile(r"^https://(?:redmail\d*\.redfin\.com|click\.mail\.zillow\.com)/", re.I)
+
+def listing_page(u):
+    """Clean https://www.redfin.com|zillow.com listing URL (no query/fragment), or None."""
+    p = urllib.parse.urlparse(u or "")
+    host = (p.netloc or "").lower()
+    site = {"www.redfin.com": "redfin", "www.zillow.com": "zillow"}.get(host)
+    if p.scheme != "https" or not site or not LISTING_PAGE[site].match(p.path or ""): return None
+    return f"https://{host}{p.path}"
+
+def _hop(url, method):
+    """One request without following redirects; returns (status, Location or None)."""
+    class _No(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *a, **k): return None
+    op = urllib.request.build_opener(_No())      # fresh opener, no cookie jar: nothing kept
+    req = urllib.request.Request(url, method=method, headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "Accept": "text/html,*/*"})
+    try:
+        r = op.open(req, timeout=6); return r.status, r.headers.get("Location")
+    except urllib.error.HTTPError as e:
+        return e.code, e.headers.get("Location") if e.headers else None
+
+def _follow(url, hops=6):
+    for _ in range(hops):
+        hit = listing_page(url)
+        if hit: return hit                       # stop at the listing page itself (no need to load it)
+        loc = None
+        for m in ("HEAD", "GET"):
+            try: code, loc = _hop(url, m)
+            except Exception: code, loc = None, None
+            if loc: break
+        if not loc: return None
+        url = urllib.parse.urljoin(url, loc)
+    return listing_page(url)
+
+def _cache():
+    try: return json.load(open(RESOLVE_CACHE))
+    except Exception: return {}
+
+def resolve_tracker(link):
+    """Opaque tracker -> clean listing page or None. Cached by a hash (the tracker itself is never stored or logged)."""
+    if not link or not OPAQUE.match(link) or not RESOLVE_LINKS: return None
+    import hashlib
+    k = hashlib.sha256(link.encode()).hexdigest()
+    c = _cache()
+    if isinstance(c.get(k), str): return c[k]          # older entry: a resolved clean page
+    if isinstance(c.get(k), dict) and (c[k].get("url") or time.time() - c[k].get("t", 0) < 6 * 3600): return c[k].get("url")
+    try: got = _follow(link)
+    except Exception: got = None
+    c[k] = {"url": got, "t": time.time()}   # a miss is retried after 6 hours
+    try:
+        os.makedirs(os.path.dirname(RESOLVE_CACHE) or ".", exist_ok=True)
+        tmp = RESOLVE_CACHE + ".tmp"; json.dump(c, open(tmp, "w")); os.replace(tmp, RESOLVE_CACHE)
+    except Exception: pass
+    return got
+
+def slug_street(url, city=None):
+    """Street (with unit) from a clean listing URL's slug, or None. Never guessed: the slug must start with a house number.
+    Redfin /CA/Newport-Beach/1544-Placentia-Ave-92663/[unit-209/]home/1 ; Zillow /homedetails/1-A-St-Costa-Mesa-CA-92627/1_zpid/"""
+    p = urllib.parse.urlparse(url or ""); host = (p.netloc or "").lower(); seg = [x for x in p.path.split("/") if x]
+    st = unit = None
+    if host == "www.redfin.com" and len(seg) >= 4 and seg[-2] in ("home", "apartment"):
+        m = re.fullmatch(r"(\d[\w-]*?)-(\d{5})", seg[2]); st = m.group(1) if m else None
+        u = re.fullmatch(r"unit-([\w-]+)", seg[3]) if len(seg) >= 5 else None; unit = u.group(1).upper() if u else None
+    elif host == "www.zillow.com" and len(seg) >= 3 and seg[0] == "homedetails":
+        m = re.fullmatch(r"(\d[\w-]*)-[A-Z]{2}-\d{5}", seg[1]); c = (city or "").replace(" ", "-").lower()
+        if m and c and m.group(1).lower().endswith("-" + c): st = m.group(1)[:-len(c) - 1]   # city must be known to cut it off
+    if not st or not re.match(r"\d", st): return None
+    st = re.sub(r"^(\d+)-1-2-", r"\1 1/2 ", st)            # 417-1-2-Heliotrope-Ave -> 417 1/2 Heliotrope Ave
+    st = st.replace("-", " ")
+    if not re.match(r"\d[\d/ ]*\s+[A-Za-z]", st): return None
+    return st + (f" #{unit}" if unit else "")
+
+def _street_from_url(l):
+    """A building/community name only ('Newport Seaside, Newport Beach, CA 92663'): use the street from the listing URL if it has one."""
+    a = l.get("address")
+    if not a or re.match(r"\s*\d", a) or not l.get("url"): return l
+    parts = [x.strip() for x in a.split(",")]
+    if len(parts) < 3: return l
+    st = slug_street(l["url"], parts[-2])
+    if not st: return l
+    new = ", ".join([st] + parts[-2:])
+    l = dict(l, address=new, building=parts[0])
+    if not re.match(r"email:Zillow:\d", l["id"]) and addr_key(new): l["id"] = f"email:addr:{addr_key(new).replace(' ', '-')}"
+    return l
+
 def parse_email_file(f):
+    return [_street_from_url(l) for l in _parse_email_file(f)]
+
+def _parse_email_file(f):
     """One alert email -> list of listing dicts. Reads cards (price, beds, baths, address); missing fields stay None."""
     sender, body = _email_body(f)
     portal = next((v for k, v in PORTALS.items() if k in sender.lower()), None) or \
@@ -326,7 +424,7 @@ def parse_email_file(f):
         bd = re.search(r"(\d+(?:\.\d)?)\s*(?:bd|bds|beds?|br)\b", t, re.I)
         beds = num(bd.group(1)) if bd else (0 if re.search(r"\bstudio\b", t, re.I) else None)
         ba = re.search(r"(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
-        ad = ADDR.search(blk.get_text("\n", strip=True))   # one line per element, so the street isn't glued to '2 bd'
+        ad = next((m for x in blk.get_text("\n", strip=True).split("\n") for m in [ADDR.search(x)] if m and not _name_prefix(x[:m.start()])), None)   # one line per element, so the street isn't glued to '2 bd'
         els = ([blk] if blk.name in ("a", "img") else []) + blk.find_all(["a", "img"])
         hrefs = [x.get("href") or "" for x in els if x.name == "a"]
         attrs = " ".join(str(v) for x in els for v in x.attrs.values())
@@ -921,6 +1019,7 @@ def main():
     ap.add_argument("--sample", action="store_true", help="also save current matches to out/sample.json (proof-of-life sample)")
     ap.add_argument("--matches-only", action="store_true", help="only MATCH listings")
     a = ap.parse_args()
+    global RESOLVE_LINKS; RESOLVE_LINKS = True
     for _d in ("out", "logs", "inbox"): os.makedirs(_d, exist_ok=True)   # exported copies ship without these
     C = yaml.safe_load(open(a.criteria))
     st = json.load(open(a.state)) if os.path.exists(a.state) else {"listings": {}}

@@ -2,7 +2,7 @@
 
 **Features:** calm alerts that fit your list · a "what's out there right now" snapshot on day one · **Decide together**: invite a partner, you both get each place, see each other's thoughts, and Listing Scout keeps a shared shortlist (no forwarding links or screenshots). Texts go through Photon; check its plans at photon.codes/pricing.
 
-Template version **1.2.2** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
+Template version **1.2.4** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
 
 Texts you new places that fit your list. Property-manager pages are checked about every 5 minutes; Zillow, Redfin and HotPads alerts arrive when the bot next reads its inbox (see docs/COSTS.md). **US only. Rentals (the default), and buying (experimental, new in v1.1.0).** No coding needed by you; your bot does the technical parts.
 
@@ -298,7 +298,7 @@ Short blocks separated by a blank line, short lines, no capitals for emphasis, n
    Never guessed.
 
 4. Optional plain-words context, only with 8+ similar listings seen: "A bit above nearby 2-beds." When something looks off: the reason (e.g. "It's far below similar places.") and always "See it before paying anything."
-5. The street address on its own line, directly above its link, so the address labels the link. The link sits alone on the next line (plus a showing link when the manager has one).
+5. The street address on its own line, directly above its link, so the address labels the link. If the email names only a building, the street comes from the listing page's address; the building name shows only when no street exists anywhere. The link sits alone on the next line (plus a showing link when the manager has one).
 6. "No rush. I'll keep watching."
 
 Several matches within the same hour arrive as one numbered text, each with its address and link. Examples: `docs/SAMPLE_MESSAGE.txt`.
@@ -436,7 +436,7 @@ Tone: calm, warm, plain. One ask at a time. Every step has a one-line *why*, a t
 
 Don't move on until the step is confirmed.
 
-Template 1.2.2. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
+Template 1.2.4. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
 
 Commands for each step are in `FOR_YOUR_BOT.md`.
 
