@@ -261,6 +261,7 @@ def _parse_hotpads_text(body, fname):
         if st is None or not url: continue
         seg = seg[st:]
         pm = HP_PRICE.match(seg[0]); price = num(pm.group(1)) if pm else None
+        price_from = bool(pm) and bool(re.match(r"\s*from\b|.*\+", seg[0], re.I))   # 'from $1.8K', '$1,797+/mo': the lowest unit, not one price
         bm = next((HP_BEDS.match(y) for y in seg if HP_BEDS.match(y)), None)
         beds = beds_max = None
         if bm:
@@ -281,7 +282,8 @@ def _parse_hotpads_text(body, fname):
         if lid in ids: continue
         ids.add(lid); t = " ".join(seg)
         out.append(dict(buy_facts(t), apply_url=None, agent_url=None, id=lid, source="HotPads", url=url, title=t[:120], address=addr, city=city,
-            zip=zp, state=state, price=price, beds=beds, beds_max=beds_max, baths=None, sqft=None,
+            zip=zp, state=state, price=price, price_from=price_from, beds=None if (beds_max or 0) > (beds or 0) else beds, beds_max=beds_max,
+            beds_range=[beds, beds_max] if beds is not None and (beds_max or 0) > beds else None, baths=None, sqft=None,
             available=None, pets_raw=None, text=t, photo=None, photo_alt=None, showing_url=None, listed_on=None,
             email_was_price=None, email_file=fname))
     return out
@@ -559,7 +561,8 @@ def classify(l, C):
     pr, T = l.get("price"), C["price_tiers"]
     l["tier"] = U if pr is None else ("TARGET" if pr <= T["target_max"] else "STRETCH" if pr <= T["stretch_max"] else "CURIOSITY")
     br_ = l.get("beds_range")
-    beds_ok = (br_[1] >= C["beds_min"]) if (l.get("beds") is None and br_) else (l.get("beds") is None or l["beds"] >= C["beds_min"])   # unknown beds: kept, shown as not listed yet
+    hi = max([x for x in [l.get("beds"), l.get("beds_max"), br_[1] if br_ else None] if x is not None], default=None)
+    beds_ok = hi is None or hi >= C["beds_min"]   # unknown beds: kept (not listed yet); a range or several units fit if any could   # unknown beds: kept, shown as not listed yet
     l["in_area"] = in_area
     l["eligible"] = in_area and beds_ok
     l["match"] = is_match_buy(l, C) if is_buy(C) else is_match(l, C)
@@ -794,6 +797,7 @@ GENTLE = {"suspicious payment/deposit wording": "The ad mentions paying or wirin
           "photo/address mismatch": "The photo and address don't quite line up. Worth double-checking."}
 
 def per(C): return "" if C.get("mode") == "buy" else "/mo"
+def price_text(l, C): return ("From " if l.get("price_from") else "") + f"{money(l['price'])}{per(C)}"
 
 def summary_block(a, C):
     l = a["l"]
@@ -803,8 +807,8 @@ def summary_block(a, C):
         lines.append(f"Now {money(l['price'])}{per(C)} (was {money(a['was'])})")
         if tw: lines.append(tw[0].upper() + tw[1:])
     elif l.get("price") is not None:
-        lines.append(f"{money(l['price'])}{per(C)}")
-        if tw: lines.append(tw[0].upper() + tw[1:])
+        lines.append(price_text(l, C))
+        if tw and not l.get("price_from"): lines.append(tw[0].upper() + tw[1:])   # a 'from' price: no tier claim for units we can't see
     elif price_range_text(l, C):
         lines.append(price_range_text(l, C))
     return lines   # unknown rent goes last, with the other unknowns (details)
@@ -868,7 +872,7 @@ def fact_lines(l, C, split=None):
     Same shape for every entry in one text: all on one line, or (split) the area on its own line."""
     beds = beds_text(l)
     if beds and baths_text(l): beds += ", " + baths_text(l)
-    pr = f"{money(l['price'])}{per(C)}" if l.get("price") is not None else price_range_text(l, C)
+    pr = price_text(l, C) if l.get("price") is not None else price_range_text(l, C)
     ar = area_name(l)
     one = ", ".join(x for x in [pr, beds, ar] if x)
     if split is None: split = len(one) > style.MAX
@@ -1093,6 +1097,7 @@ def main():
             rec["price_history"].append([today, l["price"]])
         rec.update(price=l.get("price"), last_seen=today, gone_since=None, eligible=l["eligible"], addr=ak)
         S[l["id"]] = rec
+        if rec.get("held_review") and not a.all: continue   # owner decides (out/pending_review.json); never auto-sent
         if not l["eligible"] or (reason is None and not a.all): continue
         a_ = {"l": l, "reason": reason or "current", "was": was_price}
         if C.get("market_context", True):

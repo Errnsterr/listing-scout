@@ -2,7 +2,7 @@
 
 **Features:** calm alerts that fit your list · a "what's out there right now" snapshot on day one · **Decide together**: invite a partner, you both get each place, see each other's thoughts, and Listing Scout keeps a shared shortlist (no forwarding links or screenshots). Texts go through Photon; check its plans at photon.codes/pricing.
 
-Template version **1.2.4** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
+Template version **1.2.5** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
 
 Texts you new places that fit your list. Property-manager pages are checked about every 5 minutes; Zillow, Redfin and HotPads alerts arrive when the bot next reads its inbox (see docs/COSTS.md). **US only. Rentals (the default), and buying (experimental, new in v1.1.0).** No coding needed by you; your bot does the technical parts.
 
@@ -290,7 +290,7 @@ All rendered examples are in `docs/SAMPLE_MESSAGE.txt`.
 Short blocks separated by a blank line, short lines, no capitals for emphasis, no stars or tags.
 
 1. Headline: "New place that fits" / "A price came down" / "Back on the market" / "Two new places today" (buying: "New home that fits" / "Two new homes today")
-2. Beds, baths, type · area + ZIP · "$3,895/mo" · "In your target range" (each on its own line) (the ranges come from your CRITERIA price tiers: target range, stretch range, top of your stretch range, above your usual range) Price drop: "Now $3,895/mo (was $4,095)".
+2. Beds, baths, type · area + ZIP · "$3,895/mo" · "In your target range" (each on its own line) (the ranges come from your CRITERIA price tiers: target range, stretch range, top of your stretch range, above your usual range) Price drop: "Now $3,895/mo (was $4,095)". A building priced from its lowest unit: "From $2,295/mo".
 3. Garage · available date · pets. Only rent, beds, baths and pets say "not listed yet" when missing (last in their block). Anything else shows only when the listing states it.
 
    The bot never guesses. Pets lines appear only if you have pets. Nice-to-haves (garage, layout) show only when the listing states them: "Has a garage", "No garage".
@@ -303,7 +303,7 @@ Short blocks separated by a blank line, short lines, no capitals for emphasis, n
 
 Several matches within the same hour arrive as one numbered text, each with its address and link. Examples: `docs/SAMPLE_MESSAGE.txt`.
 
-Only "fits" listings are texted. **Light filters (default):** in your area, beds_min+ and baths_min+ (unknown kept), price up to your stretch (unknown kept), and pets not explicitly disallowed. Garage and layout are nice-to-haves shown in the alert unless you make them must-haves.
+Only "fits" listings are texted. **Light filters (default):** in your area, beds_min+ and baths_min+ (unknown kept), price up to your stretch (unknown kept), and pets not explicitly disallowed. A place is left out only when something it states clearly misses. A building with several units fits if any unit could: "1 to 3 beds" passes a 2-bed search, and "from $2,295" passes when that lowest price is within your stretch. It shows as "From $2,295/mo" and "1-3 bed", with no target-range line, because other units may cost more. Garage and layout are nice-to-haves shown in the alert unless you make them must-haves.
 
 ## Extra features (all confirm-first, no AI)
 
@@ -436,7 +436,7 @@ Tone: calm, warm, plain. One ask at a time. Every step has a one-line *why*, a t
 
 Don't move on until the step is confirmed.
 
-Template 1.2.4. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
+Template 1.2.5. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
 
 Commands for each step are in `FOR_YOUR_BOT.md`.
 

@@ -32,7 +32,7 @@ def test_no_misattributed_address():
     assert b[4000]["address"] == "6820 Testwood9 Rd #A, Los Angeles, CA 90002" and "6820-testwood9-rd" in b[4000]["url"]
     nt = [l for l in P("3021702") if l["price"] is None][0]   # 'Call for price' is its own card, not glued to $4,000
     assert nt["address"].startswith("2238 Testwood10 Ave") and "sampleport-terrace" in nt["url"]
-    ei = b[1797]; assert (ei["beds"], ei["beds_max"]) == (0, 2) and ei["address"].startswith("1562 Testwood7 Ave")
+    ei = b[1797]; assert (ei["beds"], ei["beds_max"], ei["beds_range"], ei["price_from"]) == (None, 2, [0, 2], True) and ei["address"].startswith("1562 Testwood7 Ave")
 
 def test_no_street_number_stays_unknown():
     x = [l for l in P("3021702") if l["price"] == 4247][0]

@@ -2,6 +2,14 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.5 (October 27, 2026): no place left out for missing details
+
+- A place is skipped only when something it states clearly misses your search. If rent, beds, baths or pets is missing, the place is still texted, with that detail shown as "not listed yet".
+- Buildings with several units fit if any unit could. A HotPads card that says "1 to 3 beds" was read as "1 bed" and skipped; it now shows "1-3 bed" and fits a 2-bed search.
+- Prices written "from $2,295" or "$2,295+" show as "From $2,295/mo". They fit when that lowest price is within your budget. The "In your target range" line is left out for them, since other units may cost more.
+- Your bot can hold places for you to look at first. A held place is never texted by itself.
+- The text format is the same.
+
 ## v1.2.4 (October 27, 2026): real links and street addresses
 
 - Redfin places from alert emails now come with their listing link. Redfin emails only have tracked links, so these places used to go out with no link. Your bot now follows the tracked link once and texts only the plain listing page it leads to. Zillow emails with tracked links get the same fix.

@@ -4,7 +4,7 @@ Calm rental alerts by text, for you and anyone deciding with you. Home buying is
 
 Built by [@errnsterr](https://x.com/errnsterr).
 
-Listing Scout watches listings in your areas and texts you when a new place fits your beds, baths, budget and pets. Missing details show as "not listed yet". It never makes them up.
+Listing Scout watches listings in your areas and texts you when a new place fits your beds, baths, budget and pets. Missing details show as "not listed yet", and a place is never skipped just because a detail is missing. It never makes them up.
 
 When a place looks right, text "apply" and your bot fills in that listing's own application. Nothing goes out without your yes.
 
@@ -17,7 +17,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Or download the v1.2.4 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.4.tar.gz
+Or download the v1.2.5 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.5.tar.gz
 
 Then install dependencies (Node 20 or newer, and Python 3) and start a search file:
 

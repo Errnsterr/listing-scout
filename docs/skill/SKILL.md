@@ -6,10 +6,10 @@ description: >-
   (everyone gets every place, sees each other's thoughts, and shares a shortlist). Use
   from the owner's first message about finding a rental or copying the bot, and whenever
   they say "add my partner", "pause", "shortlist", or "change my search".
-version: 1.2.4
+version: 1.2.5
 ---
 
-# Listing Scout: setup and care (v1.2.4)
+# Listing Scout: setup and care (v1.2.5)
 
 Built by [@errnsterr](https://x.com/errnsterr).
 
@@ -28,7 +28,7 @@ Human-only steps (share this with the owner): `FOR_YOU.md`. Internals map: `FOR_
 - Never contact a landlord, agent or owner (no email, call or message). Never book a tour. A tour request only goes on the shortlist and to the owner.
 - Never apply without the member's yes for that listing. **Apply for me** (below) fills the listing's own apply page and stops at review; submit and pay only after an explicit yes for that one application. Never store SSN, date of birth, ID numbers, bank numbers or documents.
 - Never text anyone without the owner's okay for that kind of text. Never text a person before they have texted the line.
-- Never invent listing details. Unknowns say "not listed yet".
+- Never invent listing details. Unknowns say "not listed yet". Never drop a place for a missing fact, only for a stated one that misses. Buildings show only what the email states, like "From $2,295/mo" and "1-3 bed".
 - Phone numbers and the Photon Project secret only through a **secure form**. Never in chat, never in files (last 4 digits only), never printed.
 - Every text goes through `src/style.py` and must pass `style.check()`. Never write a text by hand.
 - Fair housing: never filter on or describe an area as "safe", by crime, schools, "family-friendly", "no kids" or who lives there. Offer neutral criteria instead (ZIPs, price, beds, commute). Never relay "no Section 8", "adults only" or similar listing wording (`scout.NO_RELAY`; replies use `style.steer_note()`).
@@ -38,7 +38,7 @@ Human-only steps (share this with the owner): `FOR_YOU.md`. Internals map: `FOR_
 
 ## Day one: what you create yourself (before step 1 is finished)
 
-1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.4.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
+1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.5.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
 2. **An alerts inbox.** Claim an email address for listing-site alerts (for example `{firstname}-homes@…`). Ask the owner to approve the name first; a claim is permanent. Put it in `alert_inbox`.
 3. **The Photon secret.** Ask for it with a secure form in step 3. Keep it as the `PHOTON_API_KEY` environment setting only.
 4. **The watcher.** After step 8's approval, run the install in `FOR_YOUR_BOT.md` (quiet first run, then `src/ensure_running.sh`). It keeps exactly one copy running. Add the one-line restart hook to `~/.bashrc` (in `FOR_YOUR_BOT.md`) so it comes back after a restart.

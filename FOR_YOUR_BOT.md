@@ -13,7 +13,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.4.tar.gz
+Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.5.tar.gz
 
 Then copy `CRITERIA.example.yaml` to `CRITERIA.yaml`. Install dependencies: Node 20 or newer, `npm install`, and Python 3 with pyyaml, bs4 and Pillow (`python3 -m pip install pyyaml beautifulsoup4 Pillow`). Commands are in this file, under "Commands and technical detail".
 
@@ -55,7 +55,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.4. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.5. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |
@@ -82,7 +82,7 @@ Not shipped (owner-only): `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/*`
 
 ---
 
-## Commands and technical detail (template 1.2.4)
+## Commands and technical detail (template 1.2.5)
 
 User-facing docs (`docs/SETUP.md`, `docs/PHOTON_FAQ.md`, `docs/COSTS.md`) stay plain. Every command and technical detail lives here.
 
@@ -155,7 +155,7 @@ Household welcome: `python3 src/notify.py welcome "Name" --send` (member wording
 
 ### Light filters + criteria hygiene
 
-- `scout.is_match()`: area + beds_min + match.baths_min + match.price_max (unknowns kept) + pets not explicitly disallowed (`exclude_no_pets`). `match.garage_min` / `match.layout_any` make those hard filters again; `match.nice_to_have` lists details shown in every alert.
+- `scout.is_match()`: area + beds_min + match.baths_min + match.price_max (unknowns kept) + pets not explicitly disallowed (`exclude_no_pets`). Beds pass if the top of any stated range (`beds_range`, HotPads `beds_max`) reaches beds_min. A HotPads "from $X" / "$X+" card sets `price_from` (rendered "From $X/mo", no tier line) and passes when $X is within price_max. A state record with `held_review: true` is never alerted (owner decides). `match.garage_min` / `match.layout_any` make those hard filters again; `match.nice_to_have` lists details shown in every alert.
 - `src/scout.py` writes `out/pool.json` (in-area listings with `misses`) each live run. `features.tradeoff()`, `near_misses()`, `suggest_change()`, `tighten_change()`, `hygiene_due()`; texts in `style.must_or_nice_q / tradeoff_text / near_miss_ask / loosen_ask / tighten_ask`.
 - `src/notify.py hygiene --send` runs each loop: weekly at most, nothing on day one, owner only; stores the proposal as a `change` pending (Fine-tune), so only a clear yes writes CRITERIA (backup first). `checkins: false` = off.
 - Channels: per-person line check (iMessage vs SMS/RCS); non-iMessage gets plain text via `notify.for_channel()`; unknown falls back to iMessage.

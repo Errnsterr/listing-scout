@@ -256,6 +256,25 @@ No rush.
 I'll keep watching.
 ```
 
+### C12 building with several units (from price, bed range)
+```
+New place that fits
+
+1-3 bed apartment
+Los Angeles, 90001
+From $2,295/mo
+
+Via HotPads
+Baths: not listed yet
+
+100 Example St Unit 4
+https://hotpads.com/example-terrace-los-angeles-ca-90001-x1/pad
+
+No rush.
+
+I'll keep watching.
+```
+
 ### C7 scam caution (one signal)
 ```
 New place that fits
