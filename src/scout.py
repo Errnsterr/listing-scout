@@ -23,6 +23,8 @@ def get(url):
 
 def num(s):
     if s is None: return None
+    k = re.fullmatch(r"\s*\$?\s?(\d{1,3}(?:\.\d{1,2})?)\s?[kK]\s*", str(s))   # '$30K', '1.8K', '$2.12K' = the number x 1000
+    if k: return round(float(k.group(1)) * 1000, 2)
     m = re.search(r"[\d,]+(?:\.\d+)?", str(s))
     return float(m.group().replace(",", "")) if m else None
 
@@ -76,7 +78,8 @@ PORTALS = {"zillow": "Zillow", "redfin": "Redfin", "hotpads": "HotPads", "craigs
 LISTING_HREF = re.compile(r"homedetails|/home/|/rental|/listing|/apartments?/|/pad\b|/b/|/property|"
                           r"click\.mail\.zillow\.com|redmail\d*\.redfin\.com|(?:email|click|links?)\.[\w.]*hotpads\.com|hotpads\.com/|"
                           r"realestateandhomes-detail|(?:click|links?|email|e|t)\.[\w.]*realtor\.com|realtor\.com/", re.I)
-PRICE = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+|\d{3,6})(?!\d)")
+AMT = r"(\d{1,3}(?:\.\d{1,2})?\s?[kK]\b|\d{1,3}(?:,\d{3})+|\d{3,6})"   # shared price amount: '$4,350', '$4350', '$30K', '$1.8K'
+PRICE = re.compile(r"\$\s?" + AMT + r"(?!\d)")
 WAS = re.compile(r"(?:was|from|previously|reduced from|orig(?:inally)?)\s*:?\s*\$\s?[\d,]{3,}|\$\s?[\d,]{3,}\s*(?:→|->|to)\s*(?=\$)|<s>.*?</s>|<del>.*?</del>", re.I)
 ADDR = re.compile(r"\b\d+[A-Za-z]? (?:[A-Z]|\d+(?:st|nd|rd|th)\b)[^,$|\n]{2,60}?,\s*[A-Za-z .]{3,40},\s*[A-Z]{2}(?:\s*\d{5})?")
 
@@ -135,7 +138,7 @@ UNDISCLOSED = re.compile(r"\(?\s*(?:undisclosed|address not (?:disclosed|listed)
 URL_RE = re.compile(r"https?://[^\s)<>\"']+")
 PRICE_RANGE = re.compile(r"^\s*\$\s?([\d,]{3,})\s*[-\u2013]\s*\$\s?([\d,]{3,})\s*/\s*mo\b", re.I)   # Redfin buildings: '$2,702-$3,953/mo'
 NAMED_PLACE = re.compile(r"^\s*([A-Za-z0-9][^,$|\n(]{1,60}),\s*([A-Za-z .]{3,40}),\s*([A-Z]{2})\s+(\d{5})\b")   # 'Example Villas, Vista del Sol, CA 90001'
-PRICE_LINE = re.compile(r"^\s*\$\s?(\d{1,3}(?:,\d{3})+|\d{3,6})(?:\s*/\s*mo\b|\+?\s*$)", re.I)
+PRICE_LINE = re.compile(r"^\s*(?:from\s+)?\$\s?" + AMT + r"(?:\s*/\s*mo\b|\+?\s*$)", re.I)
 
 # ---------- the listing's own apply / agent link (shown, never followed) ----------
 # Only a link whose own label says so, inside that listing's card. Trackers are unwrapped only when the real
@@ -229,7 +232,7 @@ def _parse_text_cards(body, portal, fname):
 # The card's link comes AFTER its text, so cards are split on that link line, never on price lines
 # ('$1,797+/mo' and 'Call for price' cards have no plain '$X/mo' line).
 HP_ANCHOR = re.compile(r"^\s*\((https?://(?:www\.)?hotpads\.com/[^)\s]+)\)\s*Contact\b", re.I)
-HP_PRICE = re.compile(r"^\s*\$\s?([\d,]{3,})\+?\s*/\s*mo\b", re.I)
+HP_PRICE = re.compile(r"^\s*(?:from\s+)?\$\s?" + AMT + r"\+?\s*(?:/\s*mo\b|$)", re.I)   # '$4,350/mo', '$30K/mo', 'from $1.8K'
 HP_BEDS = re.compile(r"^\s*(studio|\d+)(?:\s+to\s+(\d+))?\s+beds?\b|^\s*studio\s*$", re.I)
 HP_CITY = re.compile(r"^\s*([A-Za-z .'-]{3,40}),\s*([A-Z]{2})\s+(\d{5})\s*$")
 HP_STREET = re.compile(r"^\s*\d[\d./]*[A-Za-z]?\s+\S.*$")

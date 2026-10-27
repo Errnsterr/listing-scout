@@ -2,6 +2,11 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.1 (October 26, 2026): price fix
+
+- HotPads prices written like "$30K/mo", "from $1.8K", "$36.6K" or "$2.12K" are read as the full amount ($30,000, $1,800 and so on). Before, those emails read as no homes and the owner got a "couldn't read homes" note.
+- "Email sync stalled" waits for your inbox routine's own interval plus 3 hours when `inbox_routine_minutes` is set in `CRITERIA.yaml`.
+
 ## v1.2.0 (October 26, 2026): Apply for me
 
 - HotPads text alerts are read correctly: each place gets its own link, two-line addresses are kept, "Call for price" and "$X+" prices are their own places, and a home listed on HotPads and Zillow or Redfin shows up once.

@@ -2,7 +2,7 @@
 
 **Features:** calm alerts that fit your list · a "what's out there right now" snapshot on day one · **Decide together**: invite a partner, you both get each place, see each other's thoughts, and Listing Scout keeps a shared shortlist (no forwarding links or screenshots). Texts go through Photon; check its plans at photon.codes/pricing.
 
-Template version **1.2.0** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
+Template version **1.2.1** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
 
 Texts you new places that fit your list. Property-manager pages are checked every 5–15 minutes; Zillow, Redfin and HotPads alerts arrive when the bot next reads its inbox (see docs/COSTS.md). **US only. Rentals (the default), and buying (experimental, new in v1.1.0).** No coding needed by you; your bot does the technical parts.
 
@@ -436,7 +436,7 @@ Tone: calm, warm, plain. One ask at a time. Every step has a one-line *why*, a t
 
 Don't move on until the step is confirmed.
 
-Template 1.2.0. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
+Template 1.2.1. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
 
 Commands for each step are in `FOR_YOUR_BOT.md`.
 

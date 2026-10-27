@@ -13,7 +13,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.0.tar.gz
+Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.1.tar.gz
 
 Then copy `CRITERIA.example.yaml` to `CRITERIA.yaml`. Install dependencies: Node 20 or newer, `npm install`, and Python 3 with pyyaml, bs4 and Pillow (`python3 -m pip install pyyaml beautifulsoup4 Pillow`). Commands are in this file, under "Commands and technical detail".
 
@@ -55,7 +55,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.0. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.1. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |
@@ -82,7 +82,7 @@ Not shipped (owner-only): `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/*`
 
 ---
 
-## Commands and technical detail (template 1.2.0)
+## Commands and technical detail (template 1.2.1)
 
 User-facing docs (`docs/SETUP.md`, `docs/PHOTON_FAQ.md`, `docs/COSTS.md`) stay plain. Every command and technical detail lives here.
 

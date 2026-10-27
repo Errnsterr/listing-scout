@@ -1,0 +1,70 @@
+<!-- Made-up HotPads text alert with K prices ($30K/mo, from $1.8K, $36.6K, $2.12K). Places, streets, ZIPs and tokens are fake. -->
+
+Thread 00000000: 1 message.
+--- 1. received 2026-10-27T03:37:28Z · message_id 9000001
+From: HotPads <searches@alerts.hotpads.com>
+To: user@example.com
+Subject: 100 Testwood Ln + more new rentals just dropped in 90001 (from $1.8K)
+delivery: delivered
+
+New rentals that match your saved search (https://hotpads.com/user/searches?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch) are live now - fresh updates.
+
+Your saved search
+
+90001
+
+$30K/mo
+
+3 beds
+
+100 Testwood Ln
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/100-testwood-ln-shelbyville-ca-90001-aaaa01/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)Contact (https://hotpads.com/100-testwood-ln-shelbyville-ca-90001-aaaa01/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch) View listing (https://hotpads.com/100-testwood-ln-shelbyville-ca-90001-aaaa01/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)
+
+from $1.8K
+
+3 beds
+
+200 Testwood Ave
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/200-testwood-ave-shelbyville-ca-90001-aaaa02/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)Contact (https://hotpads.com/200-testwood-ave-shelbyville-ca-90001-aaaa02/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch) View listing (https://hotpads.com/200-testwood-ave-shelbyville-ca-90001-aaaa02/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)
+
+$36.6K
+
+3 beds
+
+300 Testwood Ct
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/300-testwood-ct-shelbyville-ca-90001-aaaa03/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)Contact (https://hotpads.com/300-testwood-ct-shelbyville-ca-90001-aaaa03/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch) View listing (https://hotpads.com/300-testwood-ct-shelbyville-ca-90001-aaaa03/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)
+
+$2.12K/mo
+
+3 beds
+
+400 Testwood Way
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/400-testwood-way-shelbyville-ca-90001-aaaa04/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)Contact (https://hotpads.com/400-testwood-way-shelbyville-ca-90001-aaaa04/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch) View listing (https://hotpads.com/400-testwood-way-shelbyville-ca-90001-aaaa04/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)
+
+$4,350/mo
+
+3 beds
+
+500 Testwood Pl
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/500-testwood-pl-shelbyville-ca-90001-aaaa05/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)Contact (https://hotpads.com/500-testwood-pl-shelbyville-ca-90001-aaaa05/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch) View listing (https://hotpads.com/500-testwood-pl-shelbyville-ca-90001-aaaa05/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)
+
+See all homes (https://hotpads.com/90001?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)
+
+This is an instant update email.
+
+Unsubscribe (https://hotpads.com/edit-search-frequency?frequency=never&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch)

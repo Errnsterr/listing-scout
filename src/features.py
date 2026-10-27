@@ -241,9 +241,13 @@ def local_str(C, fmt="%F %T %Z", ts=None): return local_now(C, ts).strftime(fmt)
 
 ROUTINE_HOURS = {"lean": 12, "standard": 2, "hands_on": 1}   # how often the inbox-reader routine runs per plan (docs/COSTS.md)
 def email_stale_limit(C):
-    """Seconds before 'email sync stalled' is worth a note: the plan's routine interval + 3h drift. api pull runs every loop."""
-    if (C or {}).get("inbox_pull") == "api": return 3 * 3600
-    return (ROUTINE_HOURS.get((C or {}).get("plan_mode") or "lean", 12) + 3) * 3600
+    """Seconds before 'email sync stalled' is worth a note: routine interval + 3h drift. api pull runs every loop.
+    inbox_routine_minutes (if set) overrides the plan's interval."""
+    C = C or {}
+    if C.get("inbox_pull") == "api": return 3 * 3600
+    m = C.get("inbox_routine_minutes")
+    iv = int(m) * 60 if m else ROUTINE_HOURS.get(C.get("plan_mode") or "lean", 12) * 3600
+    return iv + 3 * 3600
 
 def in_quiet(C, hour=None, ts=None):
     s, e = quiet_hours(C); h = local_hour(C, ts) if hour is None else hour

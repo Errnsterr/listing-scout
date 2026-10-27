@@ -17,7 +17,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Or download the v1.2.0 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.0.tar.gz
+Or download the v1.2.1 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.1.tar.gz
 
 Then install dependencies (Node 20 or newer, and Python 3) and start a search file:
 
