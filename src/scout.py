@@ -52,7 +52,8 @@ def parse_appfolio(src):
             available=facts.get("available"),
             pets_raw=pet.get_text(" ", strip=True).replace("Pet Policy:", "").strip() if pet else None,
             text=it.get_text(" ", strip=True), photo=img.get("data-original") if img else None,
-            photo_alt=img.get("alt") if img else None, showing_url=None, listed_on=None))
+            photo_alt=img.get("alt") if img else None, showing_url=None, listed_on=None,
+            apply_url=(base + ap["href"]) if (ap := it.select_one("a[href*='/listings/rental_applications/new']")) and ap.get("href", "").startswith("/") else None))
     return out
 
 def parse_tenantturner(src):
@@ -132,6 +133,8 @@ def buy_facts(t):
 
 UNDISCLOSED = re.compile(r"\(?\s*(?:undisclosed|address not (?:disclosed|listed))\s*address\)?\s*,\s*([A-Za-z .]{3,40}),\s*([A-Z]{2})\b(?:\s*(\d{5}))?", re.I)
 URL_RE = re.compile(r"https?://[^\s)<>\"']+")
+PRICE_RANGE = re.compile(r"^\s*\$\s?([\d,]{3,})\s*[-\u2013]\s*\$\s?([\d,]{3,})\s*/\s*mo\b", re.I)   # Redfin buildings: '$2,702-$3,953/mo'
+NAMED_PLACE = re.compile(r"^\s*([A-Za-z0-9][^,$|\n(]{1,60}),\s*([A-Za-z .]{3,40}),\s*([A-Z]{2})\s+(\d{5})\b")   # 'Example Villas, Vista del Sol, CA 90001'
 PRICE_LINE = re.compile(r"^\s*\$\s?(\d{1,3}(?:,\d{3})+|\d{3,6})(?:\s*/\s*mo\b|\+?\s*$)", re.I)
 
 # ---------- the listing's own apply / agent link (shown, never followed) ----------
@@ -183,22 +186,26 @@ def _parse_text_cards(body, portal, fname):
     cut = next((k for k, x in enumerate(L) if SIMILAR.match(x)), len(L))   # 'Nearby similar homes' aren't saved-search matches
     L = L[:cut]; out, ids = [], set()
     msgid = (re.search(r"message_id\s+(\w+)", body) or re.search(r"(\d{5,})", fname) or re.match("()", "")).group(1)
-    starts = [i for i, x in enumerate(L) if PRICE_LINE.match(x)]
+    starts = [i for i, x in enumerate(L) if PRICE_LINE.match(x) or PRICE_RANGE.match(x)]
     for n, i in enumerate(starts):
         end = starts[n + 1] if n + 1 < len(starts) else len(L)
         seg = L[i:end]
         stop = next((k for k, x in enumerate(seg) if re.search(r"see (latest|all|more) (search )?results|^\s*zillow, inc\.|unsubscribe|^\s*©", x, re.I)), len(seg))
         seg = seg[:stop]; t = " ".join(y for x in seg for y in [re.sub(r"\(\s*\)", "", URL_RE.sub("", x)).strip()] if y)
-        bd = re.search(r"(\d+(?:\.\d)?)\s*(?:bd|bds|beds?|br)\b", t, re.I); ba = re.search(r"(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
+        bdr = re.search(r"(\d+)\s*[-\u2013]\s*(\d+)\s*(?:bd|bds|beds?|br)\b", t, re.I); bar = re.search(r"(\d+(?:\.\d)?)\s*[-\u2013]\s*(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
+        bd = None if bdr else re.search(r"(\d+(?:\.\d)?)\s*(?:bd|bds|beds?|br)\b", t, re.I); ba = None if bar else re.search(r"(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
         sq = re.search(r"([\d,]{3,})\s*sq\.?\s*ft", t, re.I)
         und = UNDISCLOSED.search(t); ad = None if und else next((m.group() for x in seg for m in [ADDR.search(x)] if m), None)
-        if not (bd or ba or ad or und): continue
+        if not (ad or und):   # building name instead of a street number: 'Example Villas, Vista del Sol, CA 90001'
+            ad = next((m.group().strip() for x in seg for m in [NAMED_PLACE.match(URL_RE.sub("", x))] if m), None)
+        if not (bd or ba or bdr or bar or ad or und): continue
         pre = [u for x in L[max(0, i - 8):i] for u in URL_RE.findall(x)]   # tracked link nearest the card (just above the price)
         inside = [u for x in seg for u in URL_RE.findall(x)]
         res = next((URL_RE.findall(L[k - 1] if k else "") or URL_RE.findall(L[k - 2] if k > 1 else "") for k, x in enumerate(L)
                     if re.search(r"see latest search results", x, re.I)), [])
         link = (pre[-1:] or inside[:1] or res[:1] or [None])[0]
-        price = num(PRICE_LINE.match(L[i]).group(1)); beds = num(bd.group(1)) if bd else None
+        rg = PRICE_RANGE.match(L[i])
+        price = None if rg else num(PRICE_LINE.match(L[i]).group(1)); beds = num(bd.group(1)) if bd else None
         zr = _card_id(portal, " ".join(seg) + " " + body if len(starts) == 1 else " ".join(L[max(0, i - 8):end]), None)
         if zr: lid = zr
         elif ad and addr_key(ad): lid = f"email:addr:{addr_key(ad).replace(' ', '-')}"
@@ -211,13 +218,72 @@ def _parse_text_cards(body, portal, fname):
             zip=(und.group(3) if und and und.group(3) else None), state=(und.group(2) if und else None),
             price=price, beds=beds, baths=num(ba.group(1)) if ba else None, sqft=num(sq.group(1)) if sq else None,
             available=None, pets_raw=None, text=t, photo=None, photo_alt=None, showing_url=None, listed_on=None,
-            email_was_price=num(wp.group(1)) if wp else None, email_file=fname))
+            email_was_price=num(wp.group(1)) if wp else None, email_file=fname,
+            price_range=[num(rg.group(1)), num(rg.group(2))] if rg else None,   # a building's unit range: shown as a range, never one made-up price
+            beds_range=[num(bdr.group(1)), num(bdr.group(2))] if bdr else None, baths_range=[num(bar.group(1)), num(bar.group(2))] if bar else None))
+    return out
+
+# ---------- HotPads plain-text alerts ----------
+# Real HotPads alerts (2026-10-26): each card is price, [New!], beds, [building name], street, 'City, ST zip'
+# (or one 'street, City, ST zip' line), then '(https://hotpads.com/<slug>/pad?...)Contact (...) View listing (...)'.
+# The card's link comes AFTER its text, so cards are split on that link line, never on price lines
+# ('$1,797+/mo' and 'Call for price' cards have no plain '$X/mo' line).
+HP_ANCHOR = re.compile(r"^\s*\((https?://(?:www\.)?hotpads\.com/[^)\s]+)\)\s*Contact\b", re.I)
+HP_PRICE = re.compile(r"^\s*\$\s?([\d,]{3,})\+?\s*/\s*mo\b", re.I)
+HP_BEDS = re.compile(r"^\s*(studio|\d+)(?:\s+to\s+(\d+))?\s+beds?\b|^\s*studio\s*$", re.I)
+HP_CITY = re.compile(r"^\s*([A-Za-z .'-]{3,40}),\s*([A-Z]{2})\s+(\d{5})\s*$")
+HP_STREET = re.compile(r"^\s*\d[\d./]*[A-Za-z]?\s+\S.*$")
+
+def hotpads_url(u):
+    """Plain listing link: https://hotpads.com/<slug>/.../pad, no nid/utm query. None for non-listing pages."""
+    p = urllib.parse.urlparse(u or "")
+    if not re.fullmatch(r"(?:www\.)?hotpads\.com", p.netloc or "", re.I) or not re.search(r"/pad/?$", p.path or ""): return None
+    return f"https://hotpads.com{p.path}"
+
+def _parse_hotpads_text(body, fname):
+    L = html.unescape(body).split("\n")
+    cut = next((k for k, x in enumerate(L) if re.match(r"\s*see all homes\b", x, re.I)), len(L))
+    L = L[:cut]; out, ids, prev = [], set(), 0
+    for i, x in enumerate(L):
+        m = HP_ANCHOR.match(x)
+        if not m: continue
+        seg = [re.sub(r"^\[image[^\]]*\]\s*(?:total price)?\s*", "", y.strip(), flags=re.I) for y in L[prev:i] if y.strip()]; prev = i + 1
+        st = next((k for k, y in enumerate(seg) if HP_PRICE.match(y) or re.match(r"call for (?:price|pricing)$", y, re.I)), None)
+        url = hotpads_url(m.group(1))
+        if st is None or not url: continue
+        seg = seg[st:]
+        pm = HP_PRICE.match(seg[0]); price = num(pm.group(1)) if pm else None
+        bm = next((HP_BEDS.match(y) for y in seg if HP_BEDS.match(y)), None)
+        beds = beds_max = None
+        if bm:
+            lo = (bm.group(1) or "studio").lower(); beds = 0.0 if lo == "studio" else num(lo)
+            beds_max = num(bm.group(2)) if bm.group(2) else beds
+        addr = city = state = zp = None
+        for k, y in enumerate(seg):
+            one = ADDR.fullmatch(y)
+            cm = HP_CITY.match(y)
+            if one and HP_STREET.match(y):
+                addr = y; cm = HP_CITY.match(y.split(",", 1)[1])
+            elif cm and k and HP_STREET.match(seg[k - 1]) and not HP_BEDS.match(seg[k - 1]) and not HP_PRICE.match(seg[k - 1]):
+                addr = f"{seg[k - 1]}, {y}"
+            if cm:
+                city, state, zp = cm.group(1).strip(), cm.group(2), cm.group(3); break
+        ak = addr_key(addr)
+        lid = f"email:addr:{ak.replace(' ', '-')}" if ak else "email:HotPads:" + urllib.parse.urlparse(url).path.strip("/").replace("/", "-")
+        if lid in ids: continue
+        ids.add(lid); t = " ".join(seg)
+        out.append(dict(buy_facts(t), apply_url=None, agent_url=None, id=lid, source="HotPads", url=url, title=t[:120], address=addr, city=city,
+            zip=zp, state=state, price=price, beds=beds, beds_max=beds_max, baths=None, sqft=None,
+            available=None, pets_raw=None, text=t, photo=None, photo_alt=None, showing_url=None, listed_on=None,
+            email_was_price=None, email_file=fname))
     return out
 
 def _clean_link(lid, link):
     """Zillow zpid known -> plain homedetails link (no tracker, no account token like rtoken/zuid in what we text people)."""
     m = re.fullmatch(r"email:Zillow:(\d{6,})", lid or "")
     if m: return f"https://www.zillow.com/homedetails/{m.group(1)}_zpid/"
+    if link and re.search(r"//(?:www\.)?hotpads\.com/", link, re.I):   # only a /pad listing page, never /user/searches etc.
+        return hotpads_url(link)
     if link and TRACKER.search(link):   # a tracker carries account tokens: unwrap to a plain public page if it's inside, else none
         return clean_action_url(link)
     return link
@@ -229,6 +295,8 @@ def parse_email_file(f):
              next((v for k, v in PORTALS.items() if k in body[:5000].lower()), "Email alert")
     body = re.sub(r"</?cursor_untrusted_data\w*[^>]*>", "", body)   # wrapper tags from a tool's text render
     if not re.search(r"<(?:a|div|table|td|tr|p|html|body|span|img)\b", body, re.I):   # plain text / text render
+        if portal == "HotPads" and any(HP_ANCHOR.match(x) for x in body.split("\n")):
+            return _parse_hotpads_text(body, os.path.basename(f))
         return _parse_text_cards(body, portal, os.path.basename(f))
     soup = BeautifulSoup(body, "html.parser")
     for t in soup.find_all(["s", "del", "strike"]): t.insert_before(" was ")
@@ -328,6 +396,7 @@ def is_match(l, C):
     if b is not None and b < need.get("baths_min", (C.get("baths") or {}).get("ok", 0)): return False
     pmax = need.get("price_max", (C.get("price_tiers") or {}).get("stretch_max"))
     if pmax and l.get("price") is not None and l["price"] > pmax: return False
+    if pmax and l.get("price") is None and l.get("price_range") and l["price_range"][0] > pmax: return False   # even the lowest unit is over
     if pet_filter_on(C) and str(l.get("pets", "")).startswith("no dogs") and "disagree" not in str(l.get("pets")): return False
     lay = l.get("layout", U)
     if need.get("layout_any") and lay in (U, "upper unit"): return False
@@ -388,7 +457,8 @@ def classify(l, C):
     # tier
     pr, T = l.get("price"), C["price_tiers"]
     l["tier"] = U if pr is None else ("TARGET" if pr <= T["target_max"] else "STRETCH" if pr <= T["stretch_max"] else "CURIOSITY")
-    beds_ok = l.get("beds") is None or l["beds"] >= C["beds_min"]   # unknown beds: kept, shown as not listed yet
+    br_ = l.get("beds_range")
+    beds_ok = (br_[1] >= C["beds_min"]) if (l.get("beds") is None and br_) else (l.get("beds") is None or l["beds"] >= C["beds_min"])   # unknown beds: kept, shown as not listed yet
     l["in_area"] = in_area
     l["eligible"] = in_area and beds_ok
     l["match"] = is_match_buy(l, C) if is_buy(C) else is_match(l, C)
@@ -474,6 +544,17 @@ def ptype(l):
     return None
 
 def money(v): return f"${v:,.0f}"
+def rng(r, f=lambda v: f"{v:g}"): return f"{f(r[0])}-{f(r[1])}"
+def price_range_text(l, C):
+    r = l.get("price_range"); return f"${r[0]:,.0f}-${r[1]:,.0f}{per(C)}" if r and l.get("price") is None else None
+def beds_text(l):
+    b, r = l.get("beds"), l.get("beds_range")
+    if b is not None: return "Studio" if b == 0 else f"{int(b)} bed"
+    return f"{rng(r)} bed" if r else None
+def baths_text(l):
+    b, r = l.get("baths"), l.get("baths_range")
+    if b is not None: return f"{'%g' % b} bath"
+    return f"{rng(r)} bath" if r else None
 
 def tier_words(p, C):
     T = C["price_tiers"]
@@ -484,14 +565,21 @@ def tier_words(p, C):
     return "above your usual range"
 
 def bb(l):
-    b = l.get("beds"); ba = l.get("baths")
-    s = ", ".join(x for x in [f"{int(b)} bed" if b is not None else "", f"{'%g' % ba} bath" if ba is not None else ""] if x)
+    s = ", ".join(x for x in [beds_text(l), baths_text(l)] if x)
     t = ptype(l)
     return f"{s} {t}".strip() if t else s
+
+def own_spelling(name, C=None):
+    """A city as the user spelled it in their search (e.g. 'Vista del Sol'), never the source's casing."""
+    if not name: return name
+    for c in ((C or CFG).get("area") or {}).get("cities") or []:
+        if c.lower() == name.strip().lower(): return c
+    return name
 
 def area(l):
     city = re.search(r",\s*([A-Za-z .]+),\s*[A-Z]{2}\b", l.get("address") or "")
     name = l.get("neighborhood") or (city.group(1).strip() if city else l.get("city"))
+    name = own_spelling(name)
     return ", ".join(x for x in [name, l.get("zip")] if x) or None
 
 def avail(l):
@@ -531,8 +619,7 @@ def buy_details(l, C):
         oh = f"Open house {l['open_house']}"
         known.append(oh if len(oh) <= style.MAX else "Open house listed")
     h = l.get("hoa")
-    if h is None: unknown.append("HOA")
-    else: known.append("No HOA" if h == 0 else f"HOA ${h:,.0f}/mo")
+    if h is not None: known.append("No HOA" if h == 0 else f"HOA ${h:,.0f}/mo")
     if l.get("sqft_buy"): known.append(f"{l['sqft_buy']:,.0f} sq ft")
     if l.get("lot"): known.append("Lot " + l["lot"].replace(" sq ft lot", " sq ft"))
     if l.get("year_built"): known.append(f"Built {int(l['year_built'])}")
@@ -559,16 +646,14 @@ def details(l, C=None):
     want_layout = bool(M.get("layout_any")) or "layout" in nice
     known, unknown = [], []
     g = l.get("garage")   # style keeps "X: value" for unknowns only, so known values read as plain words
-    if want_garage: known.append("has a garage") if g == "yes" else known.append("no garage") if g == "no" else unknown.append("garage")
+    if want_garage: known.append("has a garage") if g == "yes" else known.append("no garage") if g == "no" else None   # shown only when stated
     if want_layout:   # first label only, so the line stays short; never guessed
         lay = (l.get("layout") or U).split(",")[0].strip()
-        if lay == U: unknown.append("layout")
-        else: known.append({"first floor": "ground floor", "townhome/2-story": "townhome"}.get(lay, lay))
-    a = avail(l); known.append(a) if a else unknown.append("move-in date")
-    if l.get("price") is None: unknown.insert(0, "rent")
-    if l.get("beds") is None: unknown.insert(0, "beds")
+        if lay != U: known.append({"first floor": "ground floor", "townhome/2-story": "townhome"}.get(lay, lay))
+    a = avail(l); known.append(a) if a else None   # shown only when stated
+    unknown += [k for k, f in (("rent", "price"), ("beds", "beds"), ("baths", "baths")) if l.get(f) is None and not l.get(f + "_range")]   # Ern's list: rent, beds, baths, pets
     for k, (src, p) in enumerate(l.get("alt_prices") or []):   # same home, another source, another price
-        known.append(f"Also {money(p)}{'/mo' if (C.get('mode') != 'buy') else ''} on {src}" if len(f"Also {money(p)}/mo on {src}") <= style.MAX else f"Also {money(p)} on another site")
+        known.append(f"Also {money(p)}{'/mo' if (C.get('mode') != 'buy') else ''} on {src}" if len(f"Also {money(p)}/mo on {src}") <= style.MAX else f"Also {money(p)}{'/mo' if (C.get('mode') != 'buy') else ''} elsewhere")
     p = l["pets"]
     esa_s = ["Assistance animals may be ok", "Worth asking"] if esa else ["Worth asking"]   # one fact line each (fits style.check in a fact group)
     if not has_pet: pass
@@ -619,6 +704,8 @@ def summary_block(a, C):
     elif l.get("price") is not None:
         lines.append(f"{money(l['price'])}{per(C)}")
         if tw: lines.append(tw[0].upper() + tw[1:])
+    elif price_range_text(l, C):
+        lines.append(price_range_text(l, C))
     return lines   # unknown rent goes last, with the other unknowns (details)
 
 CAUTION = {"price": "It's far below similar places.", "suspicious payment/deposit wording": "It wants money before a tour.",
@@ -630,11 +717,11 @@ def extras(a):
     fl = ["price" if "lower than similar" in f or "below similar" in f else f for f in l["flags"]]
     fl = [f for f in fl if f in CAUTION]
     if len(fl) == 1: out.append(CAUTION[fl[0]])
-    elif fl: out.append("See it before paying anything.")
+    if fl: out.append("See it before paying anything.")   # the one caution close, every time
     return out
 
 def links(l):
-    out = [l.get("url") or "Link: " + style.UNKNOWN]
+    out = [l["url"]] if l.get("url") else []   # no link, no line
     if l.get("showing_url") and l["showing_url"] != l.get("url"):
         out += ["Showing link from the listing:", l["showing_url"]]
     act = (l.get("agent_url"), "Agent link from the listing:") if is_buy(CFG) else (l.get("apply_url"), "Apply link from the listing:")
@@ -642,10 +729,11 @@ def links(l):
         out += [act[1], act[0]]   # shown for the person to tap; the bot never opens, applies or contacts
     return out
 
-HEAD_BUY = {"new": "New home that fits 🏡", "price_drop": "Price cut 📉", "relist": "Back on the market 🏡",
-            "relist_lower": "Back, and lower 📉", "current": "New home that fits 🏡"}
-HEAD = {"new": "New place that fits 🏡", "price_drop": "A price came down 📉", "relist": "Back on the market 🏡",
-        "relist_lower": "Back, and lower 📉", "current": "New place that fits 🏡"}
+HEAD_BUY = {"new": "New home that fits", "price_drop": "A price came down", "relist": "Back on the market",
+            "relist_lower": "Back, and lower", "current": "New home that fits"}
+HEAD = {"new": "New place that fits", "price_drop": "A price came down", "relist": "Back on the market",
+        "relist_lower": "Back, and lower", "current": "New place that fits"}
+LABEL = {"price_drop": "A price came down", "relist": "Back on the market", "relist_lower": "Back, and lower"}   # roundup item labels = the single-alert headers
 
 ABBR = {"avenue": "Ave", "drive": "Dr", "street": "St", "road": "Rd", "lane": "Ln", "boulevard": "Blvd", "place": "Pl",
         "court": "Ct", "circle": "Cir", "terrace": "Ter", "parkway": "Pkwy", "highway": "Hwy"}
@@ -660,38 +748,97 @@ def where_block(l):
     """One address/link layout everywhere: the street address on its own line, its link alone right under."""
     st = street_line(l)
     if not st and l.get("city"):   # street undisclosed (e.g. Zillow '(undisclosed Address), Los Angeles, CA 90001'): city, then the unknown
-        return style.Group([l["city"], "Address: " + style.UNKNOWN] + links(l))
-    return style.Group([st or "Address: " + style.UNKNOWN] + links(l))
+        return style.Group([l["city"], "Address not shown"] + links(l))
+    return style.Group([st or "Address not shown"] + links(l))
 CLOSE = style.CLOSE
 
-def render(alerts, C):
-    """one alert -> single text; several (same hour) -> one numbered text, links at end."""
+PART_MAX = 1500   # chars per text: under the common 1,600-char carrier cap for long SMS; iMessage itself has no smaller limit
+def shown(alerts, C):
+    """Every place a roundup shows, in shown order (reply numbers attach to exactly these). Nothing is left out."""
+    if len(alerts) <= 1: return list(alerts)
+    return rank(alerts, C)
+
+def area_name(l):
+    a = area(l)
+    return a.split(",")[0].strip() if a else None
+
+def fact_lines(l, C, split=None):
+    """Roundup facts: '$X/mo, N bed, B bath' (baths only when known), then the area.
+    Same shape for every entry in one text: all on one line, or (split) the area on its own line."""
+    beds = beds_text(l)
+    if beds and baths_text(l): beds += ", " + baths_text(l)
+    pr = f"{money(l['price'])}{per(C)}" if l.get("price") is not None else price_range_text(l, C)
+    ar = area_name(l)
+    one = ", ".join(x for x in [pr, beds, ar] if x)
+    if split is None: split = len(one) > style.MAX
+    if not split: return [one] if one else []
+    pb = ", ".join(x for x in [pr, beds] if x)
+    if len(pb) > style.MAX: return [x for x in [pr, beds, ar] if x]   # a price range: price, beds, area, one per line
+    return [x for x in [pb, ar] if x]
+
+def needs_split(alerts, C):
+    return any(len(", ".join(fact_lines(a["l"], C, split=False))) > style.MAX for a in alerts)
+
+def render_parts(alerts, C, head=None):
+    """one alert -> [single text]; several -> every place, numbered, split into 'Part i of n' texts
+    only when one text would pass PART_MAX. A place's entry is never split across texts."""
     if len(alerts) == 1:
         a = alerts[0]; l = a["l"]
         G = style.Group
         sb = summary_block(a, C)
-        blocks = [[(HEAD_BUY if is_buy(C) else HEAD)[a["reason"]]], G(sb), G(details(l, C))]
+        blocks = [[head or (HEAD_BUY if is_buy(C) else HEAD)[a["reason"]]], G(sb), G(details(l, C))]
         if extras(a): blocks.append(extras(a))
         blocks += [where_block(l), [CLOSE]]
-    else:
-        more = 0
-        if len(alerts) >= 10:   # a busy day: the best 5, then a count
-            more = len(alerts) - 5; alerts = rank(alerts, C)[:5]
-        n = len(alerts)
-        kinds = {a["reason"] for a in alerts}
-        noun = "homes" if is_buy(C) else "places"
-        head = f"{NUMW.get(n, n)} new {noun} today 🏡" if kinds <= {"new", "current"} else f"{NUMW.get(n, n)} updates today 🏡"
-        blocks = [[head]]
-        for i, a in enumerate(alerts, 1):
-            lab = {"price_drop": " (price came down)", "relist": " (back on the market)", "relist_lower": " (back, and lower)"}.get(a["reason"], "")
-            b = summary_block(a, C); b[0] = f"{i}. {b[0]}"
-            if lab: b.insert(1, lab.strip(" ()").capitalize())
-            blocks.append(style.Group(b + details(a["l"], C)))
-            if extras(a): blocks.append(extras(a))
-            blocks.append(where_block(a["l"]))
-        if more: blocks.append([f"And {more} more fit today.", "I can list them anytime."])
-        blocks += [[CLOSE]]
-    return style.text(blocks)   # the one shared formatter (style.py)
+        return [style.text(blocks)]   # the one shared formatter (style.py)
+    alerts = shown(alerts, C); total = len(alerts)
+    kinds = {a["reason"] for a in alerts}
+    noun = "homes" if is_buy(C) else "places"
+    head = head or (f"{NUMW.get(total, total)} new {noun} today" if kinds <= {"new", "current"} else f"{NUMW.get(total, total)} updates today")
+    entries = entries_for(alerts, C)
+    return pack([[head]], entries, [[CLOSE]])
+
+def entries_for(alerts, C):
+    """The one roundup entry: 'N. address' / facts line / its own link (+ a label or caution line if any)."""
+    out = []; sp = needs_split(alerts, C)
+    for i, a in enumerate(alerts, 1):
+        l = a["l"]
+        lab = LABEL.get(a["reason"])
+        st = street_line(l) or (area_name(l) or "Address not shown")
+        b = [f"{i}. {st}"] + ([lab] if lab else []) + fact_lines(l, C, sp)
+        e = [style.Group(b + [l["url"]] if l.get("url") else b)]
+        cau = [x for x in extras(a) if x not in (a.get("market"),)]
+        if cau: e.append(cau)
+        out.append(e)
+    return out
+
+def pack(lead, entries, tail):
+    """lead blocks, every entry, tail blocks; split into 'Part i of n' texts only past PART_MAX, never inside an entry."""
+    def build(groups, n):
+        out = []
+        for k, g in enumerate(groups, 1):
+            bl = ([[f"Part {k} of {n}"]] if n > 1 else []) + (list(lead) if k == 1 else [])
+            for e in g: bl += e
+            if k == n: bl += list(tail)
+            out.append(style.text(bl))
+        return out
+    def size(g, first, n):
+        bl = ([[f"Part {n} of {n}"]] if n > 1 else []) + (list(lead) if first else [])
+        for e in g: bl += e
+        return len(style.text(bl + list(tail)))
+    n = 1
+    while True:
+        groups, cur = [], []
+        for e in entries:
+            if cur and size(cur + [e], not groups, n) > PART_MAX: groups.append(cur); cur = []
+            cur.append(e)
+        groups.append(cur)
+        if len(groups) == n: break
+        n = len(groups)
+    return build(groups, n)
+
+def render(alerts, C, head=None):
+    """the whole message as one string (parts joined); senders use render_parts()."""
+    return "\n\n".join(render_parts(alerts, C, head))
 
 def _join(xs):
     xs = list(xs)
@@ -708,7 +855,7 @@ def reflect(C):
         out.append(_join(rest[:k]) if k == len(rest) else ", ".join(rest[:k]) + ","); rest = rest[k:]
     out.append(f"{C['beds_min']}+ bed" + ("s" if C["beds_min"] != 1 else ""))
     T = C["price_tiers"]; per_ = per(C)
-    out += [f"Up to ${T['target_max']:,}{per_}", f"Stretch to ${T['stretch_max']:,}"]
+    out += [f"Up to ${T['target_max']:,}{per_}", f"Stretch to ${T['stretch_max']:,}{per_}"]
     m = C.get("match") or {}
     lay = {"first_floor": "ground floor", "single_story": "single story", "two_story_townhome": "townhome"}
     L = [lay.get(x, x) for x in m.get("layout_any") or []]
@@ -741,8 +888,8 @@ def rank(matches, C):
     ideal = (C.get("baths") or {}).get("ideal", 2)
     return sorted(matches, key=lambda a: ((a["l"].get("baths") or 0) < ideal, a["l"].get("price") or 1e9))
 
-def snapshot(matches, n_checked, C, top=3, header="What's out there now 🏡"):
-    """End-of-setup snapshot from the quiet first run: real counts + top current matches."""
+def snapshot_parts(matches, n_checked, C, top=None, header="What's out there now"):
+    """End-of-setup snapshot from the quiet first run: real counts, then every current match as the roundup entry."""
     G = style.Group
     M = rank(matches, C)
     cnt = {}
@@ -750,20 +897,16 @@ def snapshot(matches, n_checked, C, top=3, header="What's out there now 🏡"):
         k = TIER_KEY.get(tier_words(a["l"].get("price"), C), "unknown"); cnt[k] = cnt.get(k, 0) + 1
     lab = {"target": "in your target range", "stretch": "in your stretch range",
            "above": "above your usual range", "unknown": "with rent not listed yet"}
-    blocks = [[header], [f"I checked {n_checked:,} places."]]
-    if not M:
-        blocks.append(["Nothing fits today."])
-    else:
-        blocks.append(G([f"{len(M)} fit your search right now:"] +
-                        [f"{cnt[k]} {lab[k]}" for k in ("target", "stretch", "above", "unknown") if k in cnt]))
-        sh = M[:top]
-        blocks.append([f"Here are the top {len(sh)}:" if len(sh) > 1 else "Here's the best one:"])
-        for i, a in enumerate(sh, 1):
-            b = summary_block(a, C); b[0] = f"{i}. {b[0]}"
-            blocks.append(G(b + details(a["l"], C)))
-            blocks.append(where_block(a["l"]))
-    blocks.append(["From here, I'll stay quiet.", "I'll text when a new one fits."])
-    return style.text(blocks)
+    lead = [[header], [f"I checked {n_checked:,} places."]]
+    tail = [["From here, I'll stay quiet.", "I'll text when a new one fits."]]
+    if not M: return [style.text(lead + [["Nothing fits today."]] + tail)]
+    lead.append(G([f"{len(M)} fit your search right now:"] +
+                  [f"{cnt[k]} {lab[k]}" for k in ("target", "stretch", "above", "unknown") if k in cnt]))
+    lead.append([f"Here they all are:" if len(M) > 1 else "Here it is:"])
+    return pack(lead, entries_for(M, C), tail)
+
+def snapshot(matches, n_checked, C, top=None, header="What's out there now"):
+    return "\n\n".join(snapshot_parts(matches, n_checked, C, top, header))
 
 def main():
     ap = argparse.ArgumentParser()

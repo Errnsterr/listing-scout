@@ -1,4 +1,4 @@
-# Listing Scout: every text, rendered from code (/workspace/listing-scout-template)
+# Listing Scout: every text, rendered from code (template)
 
 ## Flow A: owner setup
 
@@ -14,11 +14,15 @@ I'm watching 620 places.
 
 Quiet days mean nothing fit.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+Text apply on one you like.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
 
@@ -29,7 +33,7 @@ Did this come through okay?
 
 ### A2 snapshot
 ```
-What's out there now 🏡
+What's out there now
 
 I checked 620 places.
 
@@ -37,45 +41,26 @@ I checked 620 places.
 
 3 in your target range
 
-Here are the top 3:
+Here they all are:
 
-1. 1 bed, 1 bath apartment
-Los Angeles, 90001
-$1,695/mo
-In your target range
-Available 12/1/26
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
-
-100 Example St Unit 4
+1. 100 Example St Unit 4
+$1,695/mo, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/1
 
-2. 1 bed, 1 bath
-Los Angeles, 90002
-$1,950/mo
-In your target range
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
-Move-in date: not listed yet
-
-200 Sample Ave Apt 210
+2. 200 Sample Ave Apt 210
+$1,950/mo, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/2
-Showing link from the listing:
-https://example.com/showing/2
 
-3. 2 bed, 1 bath duplex
-Los Angeles, 90003
-$2,400/mo
-In your target range
-Available now
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
-
-4500 Demo St
+3. 4500 Demo St
+$2,400/mo, 2 bed, 1 bath
+Los Angeles
 https://example.com/listing/3
+
+It wants money before a tour.
+
+See it before paying anything.
 
 From here, I'll stay quiet.
 
@@ -84,7 +69,7 @@ I'll text when a new one fits.
 
 ### A2b snapshot, nothing fits
 ```
-What's out there now 🏡
+What's out there now
 
 I checked 620 places.
 
@@ -112,7 +97,7 @@ I'll keep watching.
 
 ### C1 single new (approved)
 ```
-New place that fits 🏡
+New place that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -121,8 +106,6 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -134,7 +117,7 @@ I'll keep watching.
 
 ### C2 price drop
 ```
-A price came down 📉
+A price came down
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -143,8 +126,6 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -156,7 +137,7 @@ I'll keep watching.
 
 ### C3 relist
 ```
-Back on the market 🏡
+Back on the market
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -165,8 +146,6 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -178,7 +157,7 @@ I'll keep watching.
 
 ### C4 back, and lower
 ```
-Back, and lower 📉
+Back, and lower
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -187,8 +166,6 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -200,7 +177,7 @@ I'll keep watching.
 
 ### C5 two sites, two prices
 ```
-New place that fits 🏡
+New place that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -210,8 +187,6 @@ In your target range
 Available 12/1/26
 Also $1,750/mo on Zillow
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -223,20 +198,16 @@ I'll keep watching.
 
 ### C6 missing fields
 ```
-New place that fits 🏡
+New place that fits
 
 1 bath apartment
 90001
 
 Via Demo PM
-Beds: not listed yet
 Rent: not listed yet
-Garage: not listed yet
-Layout: not listed yet
-Move-in date: not listed yet
+Beds: not listed yet
 
-Address: not listed yet
-Link: not listed yet
+Address not shown
 
 No rush.
 
@@ -245,7 +216,7 @@ I'll keep watching.
 
 ### C9 with the listing's apply link
 ```
-New place that fits 🏡
+New place that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -254,8 +225,6 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -269,7 +238,7 @@ I'll keep watching.
 
 ### C7 scam caution (one signal)
 ```
-New place that fits 🏡
+New place that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -278,10 +247,10 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 It wants money before a tour.
+
+See it before paying anything.
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -293,7 +262,7 @@ I'll keep watching.
 
 ### C7b scam caution (two signals)
 ```
-New place that fits 🏡
+New place that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -302,8 +271,6 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 See it before paying anything.
 
@@ -317,48 +284,27 @@ I'll keep watching.
 
 ### C8 bundle of 3
 ```
-Three updates today 🏡
+Three updates today
 
-1. 1 bed, 1 bath apartment
-Los Angeles, 90001
-$1,695/mo
-In your target range
-Available 12/1/26
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
-
-100 Example St Unit 4
+1. 100 Example St Unit 4
+$1,695/mo, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/1
 
-2. 1 bed, 1 bath
-Los Angeles, 90002
-$1,950/mo
-In your target range
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
-Move-in date: not listed yet
-
-200 Sample Ave Apt 210
+2. 200 Sample Ave Apt 210
+$1,950/mo, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/2
-Showing link from the listing:
-https://example.com/showing/2
 
-3. 2 bed, 1 bath duplex
-Price came down
-Los Angeles, 90003
-Now $2,400/mo (was $2,500)
-In your target range
-Available now
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
+3. 4500 Demo St
+A price came down
+$2,400/mo, 2 bed, 1 bath
+Los Angeles
+https://example.com/listing/3
 
 It wants money before a tour.
 
-4500 Demo St
-https://example.com/listing/3
+See it before paying anything.
 
 No rush.
 
@@ -415,7 +361,7 @@ Here's what we're looking for:
 Your City
 2+ beds
 Up to $3,000/mo
-Stretch to $3,500
+Stretch to $3,500/mo
 
 You get Alex's alerts too.
 
@@ -425,15 +371,15 @@ Tell me what you think of one.
 
 I'll share it with Alex.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
-
-Spot a bug, just let me know.
 
 Did this come through okay?
 ```
@@ -451,21 +397,21 @@ Here's what we're looking for:
 Your City
 2+ beds
 Up to $3,000/mo
-Stretch to $3,500
+Stretch to $3,500/mo
 
 You get Alex's alerts too.
 
 I'll pass your thoughts on.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
-
-Spot a bug, just let me know.
 
 Did this come through okay?
 ```
@@ -483,19 +429,57 @@ Here's what we're looking for:
 Your City
 2+ beds
 Up to $3,000/mo
-Stretch to $3,500
+Stretch to $3,500/mo
 
 You get Alex's alerts too.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
 
-Spot a bug, just let me know.
+Did this come through okay?
+```
+
+### B2d member welcome (iPhone, with contact card)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Alex said you'd stop by.
+
+Tap the card to save me.
+
+Here's what we're looking for:
+
+Your City
+2+ beds
+Up to $3,000/mo
+Stretch to $3,500/mo
+
+You get Alex's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Alex.
+
+See it before paying anything.
+
+Not listed yet is normal.
+
+Each home shows up once.
+
+By staying in, you're 18+.
+
+Text STOP anytime to stop.
 
 Did this come through okay?
 ```
@@ -504,7 +488,7 @@ Did this come through okay?
 ```
 Sarah is in.
 
-Their line is working.
+Sarah's texts are set up.
 
 Sarah gets your alerts too.
 
@@ -527,12 +511,12 @@ Just ask if you'd like:
 
 2. Alerts without replies.
 
-If it gets busy, pause works.
+Text pause if it gets busy.
 ```
 
 ### B5 owner nudge (no OK)
 ```
-Sarah hasn't texted yet.
+Sarah hasn't texted me yet.
 
 No rush.
 
@@ -567,19 +551,23 @@ To add someone, remove one.
 
 ### B8 help
 ```
-Thoughts on a place help.
-
 I'll pass your words to Alex.
 
 Naming the street helps.
 
-Shortlist shows shared picks.
+Text me your thoughts.
 
-Pause and resume work anytime.
+Text shortlist for picks.
 
-Leave takes you off.
+Text apply to start one.
 
-STOP turns texts off.
+Text a change to the search.
+
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 ```
@@ -599,7 +587,7 @@ Here's what we're looking for:
 Your City
 2+ beds
 Up to $3,000/mo
-Stretch to $3,500
+Stretch to $3,500/mo
 
 You get Alex's alerts too.
 
@@ -609,15 +597,15 @@ Tell me what you think of one.
 
 I'll share it with Alex.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
-
-Spot a bug, just let me know.
 
 Did this come through okay?
 ```
@@ -626,7 +614,7 @@ Did this come through okay?
 ```
 Sarah is in.
 
-Their line is working.
+Sarah's texts are set up.
 
 Sarah gets your alerts too.
 
@@ -667,14 +655,14 @@ Alex on Example:
 
 ### Alex says "yes, close to work" -> Alex
 ```
-You both like Example 🏡
+You both like Example.
 
 It's on your shortlist.
 ```
 
 ### Alex says "yes, close to work" -> Sarah
 ```
-You both like Example 🏡
+You both like Example.
 
 It's on your shortlist.
 ```
@@ -731,7 +719,7 @@ _[sim] would forward the media as is to ['Alex']_
 ```
 Got it, texts are paused.
 
-Resume works anytime.
+Text resume anytime.
 ```
 
 ### Sarah says "pause" -> Alex
@@ -743,7 +731,7 @@ Sarah paused their texts.
 ```
 Welcome back.
 
-Pause works anytime.
+Text pause anytime.
 ```
 
 ### Sarah says "resume" -> Alex
@@ -753,19 +741,25 @@ Sarah resumed their texts.
 
 ### Alex says "help" -> Alex
 ```
-Thoughts on a place help.
-
 I'll pass your words to Sarah.
 
 Naming the street helps.
 
-Shortlist shows shared picks.
+Text me your thoughts.
 
-Pause and resume work anytime.
+Text shortlist for picks.
 
-Leave takes you off.
+Text apply to start one.
 
-STOP turns texts off.
+Text a change to the search.
+
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text end my search to end.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 ```
@@ -867,7 +861,7 @@ Want me to?
 ```
 Okay, I'll keep it for now.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 _LISTENER_STOP_
@@ -921,6 +915,42 @@ Their texts have stopped.
 
 ```
 
+## Flow D: Apply for me
+
+### D1 apply ack
+```
+Applying to Maple St.
+
+I'll start the application.
+
+Open the Grok Bot app next.
+
+Nothing goes out before a yes.
+```
+
+### D2 apply needs a profile
+```
+Apply needs your own profile.
+
+Set it up in the Grok Bot app.
+```
+
+### D3 apply, which place
+```
+Which place do you mean?
+
+Try apply 1 or apply 2.
+```
+
+### D4 apply request timed out
+```
+I didn't apply to Maple St.
+
+That request timed out.
+
+Text apply again anytime.
+```
+
 ### B9 media unsupported
 ```
 I can't pass a photo on yet.
@@ -930,7 +960,7 @@ Words come through fine.
 
 ### B10 found ask
 ```
-That's wonderful news 🏡
+That's wonderful news!
 
 Want me to wrap up the search?
 ```
@@ -964,7 +994,7 @@ Sarah turned off texts.
 
 I'll stay quiet for them.
 
-Start turns them back on.
+They can text START anytime.
 ```
 
 ### B15 which one
@@ -1010,21 +1040,25 @@ Links open the listing itself.
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Ask me to change the search.
+Text apply to start one.
 
-Pause and resume work anytime.
+Text a change to the search.
 
-STOP turns texts off.
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text end my search to end.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
-Sites working so far:
-
-Zillow.
+Working so far: Zillow.
 
 The next step is always yours.
 
@@ -1035,13 +1069,17 @@ Built by @errnsterr
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Pause and resume work anytime.
+Text apply to start one.
 
-STOP turns texts off.
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -1054,19 +1092,23 @@ Built by @errnsterr
 
 ### H4 help (Android)
 ```
-Thoughts on a place help.
-
 I'll pass your words to Sarah.
 
 Naming the street helps.
 
-Shortlist shows shared picks.
+Text me your thoughts.
 
-Pause and resume work anytime.
+Text shortlist for picks.
 
-Leave takes you off.
+Text apply to start one.
 
-STOP turns texts off.
+Text a change to the search.
+
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -1183,7 +1225,7 @@ Everyone gets one goodbye.
 
 Then no more texts.
 
-Reply yes to end it.
+Text yes to end it.
 ```
 
 ### F7b end my search: goodbye (everyone)
@@ -1192,7 +1234,7 @@ This search has ended.
 
 No more listing texts from me.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 ### F7c Photon Users reminder (owner)
@@ -1208,14 +1250,14 @@ Remove each person there.
 ```
 Done, it's all cleared.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 ### F6d final (kept)
 ```
 Okay, I'll keep it for now.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 ### F7 What I keep
@@ -1275,7 +1317,7 @@ Thanks for telling me.
 
 ### H1 reaction sent as text (to an iPhone)
 ```
-Sarah ❤️ Maple St
+Sarah loved Maple St
 ```
 
 ### H1b reaction sent as text (to Android)
@@ -1294,8 +1336,6 @@ In your target range
 
 Available 12/1/26
 Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1320,7 +1360,7 @@ Here's what we're looking for:
 Your City
 2+ beds
 Up to $3,000/mo
-Stretch to $3,500
+Stretch to $3,500/mo
 
 You get Alex's alerts too.
 
@@ -1330,15 +1370,15 @@ Tell me what you think of one.
 
 I'll share it with Alex.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
-
-Spot a bug, just let me know.
 
 Did this come through okay?
 ```
@@ -1425,7 +1465,7 @@ Want me to make that change?
 
 ### P1 alert with Via + Posted (source gave a time)
 ```
-New place that fits 🏡
+New place that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1435,8 +1475,6 @@ In your target range
 Posted about 20 min ago
 Available 12/1/26
 Via Redfin
-Garage: not listed yet
-Layout: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1454,7 +1492,7 @@ I checked 620 places.
 
 Nothing new fit yet.
 
-Say no check-ins to skip.
+Text no check-ins to skip.
 ```
 
 ### P2b quiet-week pulse (no count)
@@ -1463,7 +1501,7 @@ Quiet week, still watching.
 
 Nothing new fit yet.
 
-Say no check-ins to skip.
+Text no check-ins to skip.
 ```
 
 ### P3 daily cap ask
@@ -1479,45 +1517,24 @@ Want me to make that change?
 ```
 Today's other 3 finds:
 
-1. 1 bed, 1 bath apartment
-Los Angeles, 90001
-$1,695/mo
-In your target range
-Available 12/1/26
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
-
-100 Example St Unit 4
+1. 100 Example St Unit 4
+$1,695/mo, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/1
 
-2. 1 bed, 1 bath
-Los Angeles, 90002
-$1,950/mo
-In your target range
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
-Move-in date: not listed yet
-
-200 Sample Ave Apt 210
+2. 200 Sample Ave Apt 210
+$1,950/mo, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/2
-Showing link from the listing:
-https://example.com/showing/2
 
-3. 2 bed, 1 bath duplex
-Los Angeles, 90003
-$2,400/mo
-In your target range
-Available now
-Via Demo PM
-Garage: not listed yet
-Layout: not listed yet
+3. 4500 Demo St
+$2,400/mo, 2 bed, 1 bath
+Los Angeles
+https://example.com/listing/3
 
 It wants money before a tour.
 
-4500 Demo St
-https://example.com/listing/3
+See it before paying anything.
 
 No rush.
 
@@ -1528,15 +1545,21 @@ I'll keep watching.
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Ask me to change the search.
+Text apply to start one.
 
-Pause and resume work anytime.
+Text a change to the search.
 
-STOP turns texts off.
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text end my search to end.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -1551,13 +1574,17 @@ Built by @errnsterr
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Pause and resume work anytime.
+Text apply to start one.
 
-STOP turns texts off.
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -1586,7 +1613,7 @@ A few days in.
 
 Anything bugging you so far?
 
-Say no check-ins to skip.
+Text no check-ins to skip.
 ```
 
 ### P4b all good
@@ -1601,9 +1628,7 @@ Replies paused for a moment.
 They're working again now.
 ```
 
-
 # Buying (experimental): every text in buy mode
-
 
 ## Flow A: owner setup
 
@@ -1619,11 +1644,17 @@ I'm watching 620 places.
 
 Quiet days mean nothing fit.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+Buying is still new.
+
+Not an agent or advice.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
 
@@ -1634,7 +1665,7 @@ Did this come through okay?
 
 ### A2 snapshot
 ```
-What's out there now 🏡
+What's out there now
 
 I checked 620 places.
 
@@ -1642,39 +1673,26 @@ I checked 620 places.
 
 3 in your target range
 
-Here are the top 3:
+Here they all are:
 
-1. 1 bed, 1 bath apartment
-Los Angeles, 90001
-$1,695
-In your target range
-Via Demo PM
-HOA: not listed yet
-
-100 Example St Unit 4
+1. 100 Example St Unit 4
+$1,695, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/1
 
-2. 1 bed, 1 bath
-Los Angeles, 90002
-$1,950
-In your target range
-Via Demo PM
-HOA: not listed yet
-
-200 Sample Ave Apt 210
+2. 200 Sample Ave Apt 210
+$1,950, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/2
-Showing link from the listing:
-https://example.com/showing/2
 
-3. 2 bed, 1 bath duplex
-Los Angeles, 90003
-$2,400
-In your target range
-Via Demo PM
-HOA: not listed yet
-
-4500 Demo St
+3. 4500 Demo St
+$2,400, 2 bed, 1 bath
+Los Angeles
 https://example.com/listing/3
+
+It wants money before a tour.
+
+See it before paying anything.
 
 From here, I'll stay quiet.
 
@@ -1683,7 +1701,7 @@ I'll text when a new one fits.
 
 ### A2b snapshot, nothing fits
 ```
-What's out there now 🏡
+What's out there now
 
 I checked 620 places.
 
@@ -1711,7 +1729,7 @@ I'll keep watching.
 
 ### C1 single new (approved)
 ```
-New home that fits 🏡
+New home that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1719,7 +1737,6 @@ $1,695
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1731,7 +1748,7 @@ I'll keep watching.
 
 ### C2 price drop
 ```
-Price cut 📉
+A price came down
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1739,7 +1756,6 @@ Now $1,695 (was $1,895)
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1751,7 +1767,7 @@ I'll keep watching.
 
 ### C3 relist
 ```
-Back on the market 🏡
+Back on the market
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1759,7 +1775,6 @@ $1,695
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1771,7 +1786,7 @@ I'll keep watching.
 
 ### C4 back, and lower
 ```
-Back, and lower 📉
+Back, and lower
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1779,7 +1794,6 @@ Now $1,695 (was $1,895)
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1791,7 +1805,7 @@ I'll keep watching.
 
 ### C5 two sites, two prices
 ```
-New home that fits 🏡
+New home that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1800,7 +1814,6 @@ In your target range
 
 Also $1,750 on Zillow
 Via Demo PM
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1812,7 +1825,7 @@ I'll keep watching.
 
 ### C6 missing fields
 ```
-New home that fits 🏡
+New home that fits
 
 1 bath apartment
 90001
@@ -1820,10 +1833,8 @@ New home that fits 🏡
 Via Demo PM
 Beds: not listed yet
 Price: not listed yet
-HOA: not listed yet
 
-Address: not listed yet
-Link: not listed yet
+Address not shown
 
 No rush.
 
@@ -1832,7 +1843,7 @@ I'll keep watching.
 
 ### C9 with the listing's apply link
 ```
-New home that fits 🏡
+New home that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1840,7 +1851,6 @@ $1,695
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1852,7 +1862,7 @@ I'll keep watching.
 
 ### C7 scam caution (one signal)
 ```
-New home that fits 🏡
+New home that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1860,9 +1870,10 @@ $1,695
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 It wants money before a tour.
+
+See it before paying anything.
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -1874,7 +1885,7 @@ I'll keep watching.
 
 ### C7b scam caution (two signals)
 ```
-New home that fits 🏡
+New home that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -1882,7 +1893,6 @@ $1,695
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 See it before paying anything.
 
@@ -1896,42 +1906,27 @@ I'll keep watching.
 
 ### C8 bundle of 3
 ```
-Three updates today 🏡
+Three updates today
 
-1. 1 bed, 1 bath apartment
-Los Angeles, 90001
-$1,695
-In your target range
-Via Demo PM
-HOA: not listed yet
-
-100 Example St Unit 4
+1. 100 Example St Unit 4
+$1,695, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/1
 
-2. 1 bed, 1 bath
-Los Angeles, 90002
-$1,950
-In your target range
-Via Demo PM
-HOA: not listed yet
-
-200 Sample Ave Apt 210
+2. 200 Sample Ave Apt 210
+$1,950, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/2
-Showing link from the listing:
-https://example.com/showing/2
 
-3. 2 bed, 1 bath duplex
-Price came down
-Los Angeles, 90003
-Now $2,400 (was $2,500)
-In your target range
-Via Demo PM
-HOA: not listed yet
+3. 4500 Demo St
+A price came down
+$2,400, 2 bed, 1 bath
+Los Angeles
+https://example.com/listing/3
 
 It wants money before a tour.
 
-4500 Demo St
-https://example.com/listing/3
+See it before paying anything.
 
 No rush.
 
@@ -1999,15 +1994,15 @@ Tell me what you think of one.
 
 I'll share it with Jordan.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
-
-Spot a bug, just let me know.
 
 Did this come through okay?
 ```
@@ -2032,15 +2027,15 @@ You get Jordan's alerts too.
 
 I'll pass your thoughts on.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
-
-Spot a bug, just let me know.
 
 Did this come through okay?
 ```
@@ -2063,15 +2058,58 @@ HOA up to $400/mo
 
 You get Jordan's alerts too.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
 
-Spot a bug, just let me know.
+Did this come through okay?
+```
+
+### B2d member welcome (iPhone, with contact card)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Jordan said you'd stop by.
+
+Tap the card to save me.
+
+Here's what we're looking for:
+
+Exampleville
+3+ beds
+Up to $800,000
+Stretch to $900,000
+HOA up to $400/mo
+
+You get Jordan's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Jordan.
+
+See it before paying anything.
+
+Not listed yet is normal.
+
+Each home shows up once.
+
+Buying is still new.
+
+Not an agent or advice.
+
+By staying in, you're 18+.
+
+Text STOP anytime to stop.
 
 Did this come through okay?
 ```
@@ -2080,7 +2118,7 @@ Did this come through okay?
 ```
 Sarah is in.
 
-Their line is working.
+Sarah's texts are set up.
 
 Sarah gets your alerts too.
 
@@ -2103,12 +2141,12 @@ Just ask if you'd like:
 
 2. Alerts without replies.
 
-If it gets busy, pause works.
+Text pause if it gets busy.
 ```
 
 ### B5 owner nudge (no OK)
 ```
-Sarah hasn't texted yet.
+Sarah hasn't texted me yet.
 
 No rush.
 
@@ -2143,19 +2181,21 @@ To add someone, remove one.
 
 ### B8 help
 ```
-Thoughts on a place help.
-
 I'll pass your words along.
 
 Naming the street helps.
 
-Shortlist shows shared picks.
+Text me your thoughts.
 
-Pause and resume work anytime.
+Text shortlist for picks.
 
-Leave takes you off.
+Text a change to the search.
 
-STOP turns texts off.
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 ```
@@ -2186,17 +2226,19 @@ Tell me what you think of one.
 
 I'll share it with Jordan.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+Buying is still new.
 
 Not an agent or advice.
 
-Text STOP anytime to stop.
+By staying in, you're 18+.
 
-Spot a bug, just let me know.
+Text STOP anytime to stop.
 
 Did this come through okay?
 ```
@@ -2205,7 +2247,7 @@ Did this come through okay?
 ```
 Sarah is in.
 
-Their line is working.
+Sarah's texts are set up.
 
 Sarah gets your alerts too.
 
@@ -2246,14 +2288,14 @@ Jordan on Example:
 
 ### Jordan says "yes, close to work" -> Jordan
 ```
-You both like Example 🏡
+You both like Example.
 
 It's on your shortlist.
 ```
 
 ### Jordan says "yes, close to work" -> Sarah
 ```
-You both like Example 🏡
+You both like Example.
 
 It's on your shortlist.
 ```
@@ -2310,7 +2352,7 @@ _[sim] would forward the media as is to ['Jordan']_
 ```
 Got it, texts are paused.
 
-Resume works anytime.
+Text resume anytime.
 ```
 
 ### Sarah says "pause" -> Jordan
@@ -2322,7 +2364,7 @@ Sarah paused their texts.
 ```
 Welcome back.
 
-Pause works anytime.
+Text pause anytime.
 ```
 
 ### Sarah says "resume" -> Jordan
@@ -2332,19 +2374,23 @@ Sarah resumed their texts.
 
 ### Jordan says "help" -> Jordan
 ```
-Thoughts on a place help.
-
 I'll pass your words to Sarah.
 
 Naming the street helps.
 
-Shortlist shows shared picks.
+Text me your thoughts.
 
-Pause and resume work anytime.
+Text shortlist for picks.
 
-Leave takes you off.
+Text a change to the search.
 
-STOP turns texts off.
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text end my search to end.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 ```
@@ -2446,7 +2492,7 @@ Want me to?
 ```
 Okay, I'll keep it for now.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 _LISTENER_STOP_
@@ -2509,7 +2555,7 @@ Words come through fine.
 
 ### B10 found ask
 ```
-That's wonderful news 🏡
+That's wonderful news!
 
 Want me to wrap up the search?
 ```
@@ -2543,7 +2589,7 @@ Sarah turned off texts.
 
 I'll stay quiet for them.
 
-Start turns them back on.
+They can text START anytime.
 ```
 
 ### B15 which one
@@ -2589,21 +2635,23 @@ Links open the listing itself.
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Ask me to change the search.
+Text a change to the search.
 
-Pause and resume work anytime.
+Text pause or resume anytime.
 
-STOP turns texts off.
+Text leave to get off.
+
+Text end my search to end.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
-Sites working so far:
-
-Zillow.
+Working so far: Zillow.
 
 The next step is always yours.
 
@@ -2614,13 +2662,15 @@ Built by @errnsterr
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Pause and resume work anytime.
+Text pause or resume anytime.
 
-STOP turns texts off.
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -2633,19 +2683,21 @@ Built by @errnsterr
 
 ### H4 help (Android)
 ```
-Thoughts on a place help.
-
 I'll pass your words to Sarah.
 
 Naming the street helps.
 
-Shortlist shows shared picks.
+Text me your thoughts.
 
-Pause and resume work anytime.
+Text shortlist for picks.
 
-Leave takes you off.
+Text a change to the search.
 
-STOP turns texts off.
+Text pause or resume anytime.
+
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -2762,7 +2814,7 @@ Everyone gets one goodbye.
 
 Then no more texts.
 
-Reply yes to end it.
+Text yes to end it.
 ```
 
 ### F7b end my search: goodbye (everyone)
@@ -2771,7 +2823,7 @@ This search has ended.
 
 No more listing texts from me.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 ### F7c Photon Users reminder (owner)
@@ -2787,14 +2839,14 @@ Remove each person there.
 ```
 Done, it's all cleared.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 ### F6d final (kept)
 ```
 Okay, I'll keep it for now.
 
-Thanks for searching with me 🏡
+Thanks for searching with me.
 ```
 
 ### F7 What I keep
@@ -2854,7 +2906,7 @@ Thanks for telling me.
 
 ### H1 reaction sent as text (to an iPhone)
 ```
-Sarah ❤️ Maple St
+Sarah loved Maple St
 ```
 
 ### H1b reaction sent as text (to Android)
@@ -2872,7 +2924,6 @@ $1,695
 In your target range
 
 Via Demo PM
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -2908,15 +2959,15 @@ Tell me what you think of one.
 
 I'll share it with Jordan.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
-
-Spot a bug, just let me know.
 
 Did this come through okay?
 ```
@@ -3003,7 +3054,7 @@ Want me to make that change?
 
 ### P1 alert with Via + Posted (source gave a time)
 ```
-New home that fits 🏡
+New home that fits
 
 1 bed, 1 bath apartment
 Los Angeles, 90001
@@ -3011,7 +3062,6 @@ $1,695
 In your target range
 
 Via Redfin
-HOA: not listed yet
 
 100 Example St Unit 4
 https://example.com/listing/1
@@ -3029,7 +3079,7 @@ I checked 620 places.
 
 Nothing new fit yet.
 
-Say no check-ins to skip.
+Text no check-ins to skip.
 ```
 
 ### P2b quiet-week pulse (no count)
@@ -3038,7 +3088,7 @@ Quiet week, still watching.
 
 Nothing new fit yet.
 
-Say no check-ins to skip.
+Text no check-ins to skip.
 ```
 
 ### P3 daily cap ask
@@ -3054,39 +3104,24 @@ Want me to make that change?
 ```
 Today's other 3 finds:
 
-1. 1 bed, 1 bath apartment
-Los Angeles, 90001
-$1,695
-In your target range
-Via Demo PM
-HOA: not listed yet
-
-100 Example St Unit 4
+1. 100 Example St Unit 4
+$1,695, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/1
 
-2. 1 bed, 1 bath
-Los Angeles, 90002
-$1,950
-In your target range
-Via Demo PM
-HOA: not listed yet
-
-200 Sample Ave Apt 210
+2. 200 Sample Ave Apt 210
+$1,950, 1 bed, 1 bath
+Los Angeles
 https://example.com/listing/2
-Showing link from the listing:
-https://example.com/showing/2
 
-3. 2 bed, 1 bath duplex
-Los Angeles, 90003
-$2,400
-In your target range
-Via Demo PM
-HOA: not listed yet
+3. 4500 Demo St
+$2,400, 2 bed, 1 bath
+Los Angeles
+https://example.com/listing/3
 
 It wants money before a tour.
 
-4500 Demo St
-https://example.com/listing/3
+See it before paying anything.
 
 No rush.
 
@@ -3097,15 +3132,19 @@ I'll keep watching.
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Ask me to change the search.
+Text a change to the search.
 
-Pause and resume work anytime.
+Text pause or resume anytime.
 
-STOP turns texts off.
+Text leave to get off.
+
+Text end my search to end.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -3120,13 +3159,15 @@ Built by @errnsterr
 ```
 I text new places that fit.
 
-Reply with your thoughts.
+Text me your thoughts.
 
-Shortlist shows shared picks.
+Text shortlist for picks.
 
-Pause and resume work anytime.
+Text pause or resume anytime.
 
-STOP turns texts off.
+Text leave to get off.
+
+Text STOP anytime to stop.
 
 I never contact landlords.
 
@@ -3155,7 +3196,7 @@ A few days in.
 
 Anything bugging you so far?
 
-Say no check-ins to skip.
+Text no check-ins to skip.
 ```
 
 ### P4b all good
@@ -3174,7 +3215,7 @@ They're working again now.
 
 ### Y1 new home (HOA not listed)
 ```
-New home that fits 🏡
+New home that fits
 
 3 bed, 2 bath house
 Exampleville, 90001
@@ -3186,7 +3227,6 @@ Lot 5,000 sq ft
 Built 1978
 2 days on market
 Via Zillow
-HOA: not listed yet
 
 123 Maple Test Dr
 https://www.zillow.com/homedetails/11111111_zpid/
@@ -3198,7 +3238,7 @@ I'll keep watching.
 
 ### Y2 new home (HOA, lot, open house)
 ```
-New home that fits 🏡
+New home that fits
 
 3 bed, 2 bath house
 Exampleville, 90001
@@ -3222,7 +3262,7 @@ I'll keep watching.
 
 ### Y3 price cut
 ```
-Price cut 📉
+A price came down
 
 4 bed, 3 bath house
 Exampleville, 90001
@@ -3230,7 +3270,6 @@ Now $725,000 (was $749,000)
 In your target range
 
 Via Realtor.com
-HOA: not listed yet
 
 5 Willow Test Pl
 https://www.realtor.com/realestateandhomes-detail/5-Willow-Test-Pl_Exampleville_CA_90001_M00000-00002
@@ -3242,7 +3281,7 @@ I'll keep watching.
 
 ### Y4 back on market
 ```
-Back on the market 🏡
+Back on the market
 
 3 bed, 2.5 bath house
 Exampleville, 90001
@@ -3251,7 +3290,6 @@ In your target range
 
 Open house Sat 1 - 4 PM
 Via Redfin
-HOA: not listed yet
 
 300 Pine Demo Ave
 https://www.redfin.com/CA/Exampleville/300-Pine-Demo-Ave-90001/home/7777777
@@ -3263,7 +3301,7 @@ I'll keep watching.
 
 ### Y5 coming soon
 ```
-New home that fits 🏡
+New home that fits
 
 3 bed, 2 bath townhome
 Exampleville, 90001
@@ -3284,50 +3322,35 @@ I'll keep watching.
 
 ### Y6 pending (to shortlisters only)
 ```
-Update on 9 Birch Fake Ct:
+Heads up on 9 Birch Fake Ct:
 
 It's now pending.
 
-I'll keep watching for you.
+I'll keep watching.
 ```
 
 ### Y6b sold
 ```
-Update on 77 Cedar Mock Way:
+Heads up on 77 Cedar Mock Way:
 
 It sold.
 
-I'll keep watching for you.
+I'll keep watching.
 ```
 
 ### Y7 evening roundup
 ```
 Today's roundup, 2 homes:
 
-1. 3 bed, 2 bath house
-Exampleville, 90001
-$850,000
-In your stretch range
-1,600 sq ft
-Lot 5,000 sq ft
-Built 1978
-2 days on market
-Via Zillow
-HOA: not listed yet
-
-123 Maple Test Dr
-https://www.zillow.com/homedetails/11111111_zpid/
-
-2. 3 bed, 2 bath townhome
-Exampleville, 90001
-$780,000
-In your target range
-Coming soon
-HOA $200/mo
-Via Zillow
-
-12 Elm Pretend St
+1. 12 Elm Pretend St
+$780,000, 3 bed, 2 bath
+Exampleville
 https://www.zillow.com/homedetails/66666666_zpid/
+
+2. 123 Maple Test Dr
+$850,000, 3 bed, 2 bath
+Exampleville
+https://www.zillow.com/homedetails/11111111_zpid/
 
 No rush.
 
@@ -3336,7 +3359,7 @@ I'll keep watching.
 
 ### Y10 with the listing's agent link
 ```
-New home that fits 🏡
+New home that fits
 
 3 bed, 2 bath house
 Exampleville, 90001
@@ -3348,7 +3371,6 @@ Lot 5,000 sq ft
 Built 1978
 2 days on market
 Via Zillow
-HOA: not listed yet
 
 123 Maple Test Dr
 https://www.zillow.com/homedetails/11111111_zpid/
@@ -3372,13 +3394,17 @@ I'm watching 120 places.
 
 Quiet days mean nothing fit.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+Buying is still new.
 
 Not an agent or advice.
+
+By staying in, you're 18+.
 
 Text STOP anytime to stop.
 
@@ -3413,17 +3439,19 @@ Tell me what you think of one.
 
 I'll share it with Jordan.
 
-Always see a place first.
+See it before paying anything.
 
 Not listed yet is normal.
 
-A home may show up twice.
+Each home shows up once.
+
+Buying is still new.
 
 Not an agent or advice.
 
-Text STOP anytime to stop.
+By staying in, you're 18+.
 
-Spot a bug, just let me know.
+Text STOP anytime to stop.
 
 Did this come through okay?
 ```

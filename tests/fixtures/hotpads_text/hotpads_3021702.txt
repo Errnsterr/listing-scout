@@ -1,0 +1,117 @@
+<!-- Shape of a real HotPads text alert (2026-10-26). Places, streets, ZIPs and tokens replaced with made-up ones. -->
+
+Thread 00000000: 1 message.
+--- 1. received 2026-10-27T01:48:30Z · message_id 3021702
+From: HotPads <searches@alerts.hotpads.com>
+To: user@example.com
+Subject: 19 Testwood6 Ct + more new rentals just dropped in 90002 (from $1.8K)
+delivery: delivered
+
+[image: Brand logo] (https://hotpads.com/?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+New rentals that match your saved search (https://hotpads.com/user/searches?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) are live now - fresh updates.
+
+Your saved search
+
+90002
+
+$6,000/mo
+
+New!
+
+4 beds
+
+19 Testwood6 Ct
+
+Los Angeles, CA 90002
+
+(https://hotpads.com/19-testwood6-ct-los-angeles-ca-90002-rryr66/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/19-testwood6-ct-los-angeles-ca-90002-rryr66/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/19-testwood6-ct-los-angeles-ca-90002-rryr66/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$1,797+/mo
+
+New!
+
+Studio to 2 beds
+
+Lumen 12 Los Angeles
+
+1562 Testwood7 Ave, Los Angeles, CA 90002
+
+(https://hotpads.com/lumen-12-los-angeles-los-angeles-ca-90002-wdu9o8/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/lumen-12-los-angeles-los-angeles-ca-90002-wdu9o8/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/lumen-12-los-angeles-los-angeles-ca-90002-wdu9o8/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$2,875/mo
+
+1 bed
+
+951 Testwood8 Ln #111
+
+Los Angeles, CA 90002
+
+(https://hotpads.com/951-testwood8-ln-los-angeles-ca-90002-pvv7sj/111/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/951-testwood8-ln-los-angeles-ca-90002-pvv7sj/111/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/951-testwood8-ln-los-angeles-ca-90002-pvv7sj/111/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$4,000/mo
+
+3 beds
+
+6820 Testwood9 Rd #A
+
+Los Angeles, CA 90002
+
+(https://hotpads.com/6820-testwood9-rd-los-angeles-ca-90002-9favpg/a/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/6820-testwood9-rd-los-angeles-ca-90002-9favpg/a/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/6820-testwood9-rd-los-angeles-ca-90002-9favpg/a/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+Call for price
+
+1 to 3 beds
+
+Sampleport Terrace Apartments
+
+2238 Testwood10 Ave, Los Angeles, CA 90002
+
+(https://hotpads.com/sampleport-terrace-apartments-los-angeles-ca-90002-pi0dj3f/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/sampleport-terrace-apartments-los-angeles-ca-90002-pi0dj3f/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/sampleport-terrace-apartments-los-angeles-ca-90002-pi0dj3f/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$4,999/mo
+
+New!
+
+2 beds
+
+947 Testwood8 Ln #209
+
+Los Angeles, CA 90002
+
+(https://hotpads.com/947-testwood8-ln-los-angeles-ca-90002-3bgmj8/209/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/947-testwood8-ln-los-angeles-ca-90002-3bgmj8/209/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/947-testwood8-ln-los-angeles-ca-90002-3bgmj8/209/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$4,247/mo
+
+1 bed
+
+31st St
+
+Los Angeles, CA 90002
+
+(https://hotpads.com/los-angeles-ca-90002-xvo4n7/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/los-angeles-ca-90002-xvo4n7/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/los-angeles-ca-90002-xvo4n7/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$2,495/mo
+
+New!
+
+1 bed
+
+7415 Testwood11 St #STUDIO
+
+Los Angeles, CA 90002
+
+(https://hotpads.com/7415-testwood11-st-los-angeles-ca-90002-9jwlzb0/studio/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/7415-testwood11-st-los-angeles-ca-90002-9jwlzb0/studio/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/7415-testwood11-st-los-angeles-ca-90002-9jwlzb0/studio/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+See all homes (https://hotpads.com/90002?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+This is an instant update email.
+
+Switch to daily summary (https://hotpads.com/edit-search-frequency?email=user%40example.com&frequency=daily&hash=REDACTED&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+[image: HotPads Android App] (https://hotpads.com/mobile-apps/android?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)[image: HotPads Apple App] (https://hotpads.com/mobile-apps/ios?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+Download the HotPads App on Android (https://hotpads.com/mobile-apps/android?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) or iPhone/iPad (https://hotpads.com/mobile-apps/ios?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch).
+
+Privacy policy (https://hotpads.com/r/REDACTED) | Unsubscribe (https://hotpads.com/edit-search-frequency?email=user%40example.com&frequency=never&hash=REDACTED&nid=00000000-0000-0000-0000-000000000000&originalFrequency=hourly&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+

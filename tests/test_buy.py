@@ -36,9 +36,9 @@ def test_buy_filters():
     c["buy"]["home_types"] = ["condo"]; assert not sc.classify(copy.deepcopy(by["123 Maple Test Dr"]), c)["match"]
 def test_buy_texts():
     t = sc.render(al(by["123 Maple Test Dr"]), C)
-    assert t.startswith("New home that fits") and "/mo" not in t.split("HOA")[0] and "HOA: not listed yet" in t and ok(t), t
+    assert t.startswith("New home that fits") and "/mo" not in t.split("HOA")[0] and "HOA" not in t and ok(t), t
     t = sc.render(al(by["88 Spruce Sample Rd"]), C); assert "HOA $150/mo" in t and "Open house Sun 12 PM - 3 PM" in t and "Lot 0.25 acres" in t and ok(t), t
-    t = sc.render(al(by["5 Willow Test Pl"], "price_drop", 749000), C); assert "Price cut" in t and "Now $725,000 (was $749,000)" in t and ok(t), t
+    t = sc.render(al(by["5 Willow Test Pl"], "price_drop", 749000), C); assert "A price came down" in t and "Now $725,000 (was $749,000)" in t and ok(t), t
     t = sc.render(al(by["300 Pine Demo Ave"], "relist"), C); assert "Back on the market" in t and ok(t), t
     assert "Pets" not in sc.render(al(by["123 Maple Test Dr"]), C)
     for m in (style.off_market("9 Birch Fake Ct", "pending"), style.off_market("77 Cedar Mock Way", "sold"),

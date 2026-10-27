@@ -16,14 +16,37 @@ def test_back_and_lower():
     t = sc.render(al(A[0]["l"], "relist_lower", A[0]["l"]["price"] + 200), C); assert t.startswith("Back, and lower") and "(was " in t and ok(t)
 def test_missing_never_guessed():
     l = copy.deepcopy(A[0]["l"]); l.update(price=None, beds=None, address=None); t = sc.render(al(l), C)
-    for k in ("Beds", "Rent", "Address"): assert f"{k}: not listed yet" in t
+    for k in ("Beds", "Rent"): assert f"{k}: not listed yet" in t
+    assert "Address not shown" in t and "Move-in date" not in t and "Garage:" not in t
     assert ok(t)
 def test_one_caution_line():
     l = copy.deepcopy(A[0]["l"]); l["flags"] = ["suspicious payment/deposit wording", "photo/address mismatch"]
     t = sc.render(al(l), C); assert t.count("See it before paying anything.") == 1 and "money before" not in t and ok(t)
-def test_busy_day_top5():
-    if len(A) < 10: return
-    t = sc.render([dict(x, reason="new") for x in A[:12]], C); assert "And 7 more fit today." in t and "5. " in t and "6. " not in t and ok(t)
+def _day(n):
+    out = []
+    for i in range(n):
+        l = copy.deepcopy(A[i % len(A)]["l"])
+        l.update(id=f"test:{i}", address=f"{100 + i} Sample Test St, Shelbyville, CA 90001", price=2500 + 37 * i, beds=2, url=f"https://example.com/listing/{i}")
+        out.append({"reason": "price_drop" if i == 3 else "new", "was": (2500 + 37 * i + 100) if i == 3 else None, "market": None, "l": l})
+    return out
+def test_busy_day_shows_every_place():
+    day = _day(25); parts = sc.render_parts(day, C); whole = "\n\n".join(parts)
+    assert "more fit" not in whole and "best" not in whole and "not listed yet" not in whole
+    sh = sc.shown(day, C); assert len(sh) == 25 and {a["l"]["id"] for a in sh} == {a["l"]["id"] for a in day}
+    for i, a in enumerate(sh, 1):   # each entry whole, in one text, number -> the right place
+        st = sc.street_line(a["l"]); hits = [p for p in parts if f"{i}. {st}" in p]
+        assert len(hits) == 1, (i, st)
+        blk = hits[0].split(f"{i}. {st}", 1)[1].split("\n\n", 1)[0]
+        assert a["l"]["url"] in blk, (i, blk)
+    assert whole.count(". ") >= 25 and all(f"\n{i}. " in "\n" + whole or whole.startswith(f"{i}. ") for i in range(1, 26))
+    n = len(parts); assert n > 1
+    for k, p in enumerate(parts, 1):
+        assert p.startswith(f"Part {k} of {n}") and len(p) <= sc.PART_MAX and ok(p), (k, len(p), style.check(p))
+    assert "Twenty-five new places today" in parts[0] or "25 new places today" in parts[0] or "updates today" in parts[0]
+    assert parts[-1].rstrip().endswith("watching.") and all(not p.rstrip().endswith("watching.") for p in parts[:-1])
+    assert "A price came down" in whole
+def test_nine_place_day_one_text():
+    parts = sc.render_parts(_day(9), C); assert len(parts) == 1 and "Part " not in parts[0] and "9. " in parts[0] and ok(parts[0])
 def test_templates_clean():
     for m in (style.stopped_owner("Sarah"), style.left_owner("Sarah"), style.left_member(), style.found_ask(), style.wrapped_up(),
               style.media_relay("Sarah", "Maple St"), style.media_unsupported(), style.outage_note("Example PM", "Mon 1:05 PM"), style.full_household()):

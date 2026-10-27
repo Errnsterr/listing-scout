@@ -129,7 +129,7 @@ def test_undisclosed_address_render():
     l = sc.classify(sc.parse_email_file(REAL)[0], {**C, "area": {**C["area"], "cities": [EXP["city"]], "zips": ["00000"]}})
     assert l["in_area"] and l["eligible"]
     t = sc.render([{"reason": "new", "was": None, "market": None, "l": l}], C)
-    assert f"{EXP['city']}\nAddress: not listed yet\nhttps://www.zillow.com/homedetails/" in t and not style.check(t), t
+    assert f"{EXP['city']}\nAddress not shown\nhttps://www.zillow.com/homedetails/" in t and not style.check(t), t
 def test_wrapper_tags_and_header_ignored():
     d = tempfile.mkdtemp(); b = open(REAL).read()
     open(f"{d}/w.txt", "w").write("<cursor_untrusted_data_x source=\"r\">\n" + b + "\n</cursor_untrusted_data_x>")

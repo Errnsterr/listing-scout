@@ -30,13 +30,13 @@ def test_every_new_line_passes_check():
         assert style.check(t) == [], (style.check(t), t)
 def test_welcome_lines_and_trims():
     for t in (style.owner_welcome("Sam", 10), style.member_welcome("Kim", "Sam", ["2+ beds"], replies=True, card=True)):
-        assert "Not listed yet is normal." in t and "A home may show up twice." in t and "Soon I'll send" not in t
+        assert "Not listed yet is normal." in t and "Each home shows up once." in t and "Soon I'll send" not in t
     assert "I'll text when a new one fits." not in style.owner_welcome("Sam", 10)
     if "kind" in style.owner_welcome.__code__.co_varnames:   # template welcome budget (live install has 2 extra shared-search lines)
         assert len(style.member_welcome("Kim", "Sam", ["2+ beds"], replies=True, card=True).split("\n\n")) <= 16
 def test_proven_sites_config_driven():
     assert "Sites are still warming up." in style.capabilities(sites=[])
-    assert "Sites working so far:\n\nFoo." in style.capabilities(sites=["Foo"])
+    assert "Working so far: Foo." in style.capabilities(sites=["Foo"])
     assert "Foo, Bar and Baz." in style.capabilities(sites=["Foo", "Bar", "Baz"])
     d = tempfile.mkdtemp(); os.makedirs(f"{d}/out")
     json.dump({"Bar": {"first": "2026-01-02"}, "Foo": {"first": "2026-01-01"}}, open(f"{d}/out/sources_proven.json", "w"))

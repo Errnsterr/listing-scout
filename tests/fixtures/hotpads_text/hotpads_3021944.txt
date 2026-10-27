@@ -1,0 +1,113 @@
+<!-- Shape of a real HotPads text alert (2026-10-26). Places, streets, ZIPs and tokens replaced with made-up ones. -->
+
+Thread 00000000: 1 message.
+--- 1. received 2026-10-27T01:49:58Z · message_id 3021944
+From: HotPads <searches@alerts.hotpads.com>
+To: user@example.com
+Subject: 914 Ottergrove Ave + more new rentals just dropped in 90003 (from $4K)
+delivery: delivered
+
+[image: Brand logo] (https://hotpads.com/?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+New rentals that match your saved search (https://hotpads.com/user/searches?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) are live now - fresh updates.
+
+Your saved search
+
+90003
+
+$12.5K/mo
+
+4 beds
+
+914 Ottergrove Ave
+
+Springfield, CA 90003
+
+(https://hotpads.com/914-ottergrove-ave-springfield-ca-90003-6pm3fu/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/914-ottergrove-ave-springfield-ca-90003-6pm3fu/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/914-ottergrove-ave-springfield-ca-90003-6pm3fu/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$12K/mo
+
+New!
+
+2 beds
+
+653 Wrenfield Ave
+
+Springfield, CA 90003
+
+(https://hotpads.com/653-wrenfield-ave-springfield-ca-90003-noquxk/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/653-wrenfield-ave-springfield-ca-90003-noquxk/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/653-wrenfield-ave-springfield-ca-90003-noquxk/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$8,600/mo
+
+3 beds
+
+582.5 Testwood12
+
+Springfield, CA 90003
+
+(https://hotpads.com/4385-testwood12-springfield-ca-90003-gutisss/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/4385-testwood12-springfield-ca-90003-gutisss/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/4385-testwood12-springfield-ca-90003-gutisss/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$10,000/mo
+
+3 beds
+
+3381 Testwood13 Ave
+
+Springfield, CA 90003
+
+(https://hotpads.com/3381-testwood13-ave-springfield-ca-90003-nm66h1/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/3381-testwood13-ave-springfield-ca-90003-nm66h1/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/3381-testwood13-ave-springfield-ca-90003-nm66h1/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$12.5K/mo
+
+3 beds
+
+291 Ottergrove Ave
+
+Springfield, CA 90003
+
+(https://hotpads.com/291-ottergrove-ave-springfield-ca-90003-nmbga2y/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/291-ottergrove-ave-springfield-ca-90003-nmbga2y/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/291-ottergrove-ave-springfield-ca-90003-nmbga2y/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$11K/mo
+
+3 beds
+
+9126 Testwood15 Pl
+
+Springfield, CA 90003
+
+(https://hotpads.com/9126-testwood15-pl-springfield-ca-90003-z1y8yfa/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/9126-testwood15-pl-springfield-ca-90003-z1y8yfa/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/9126-testwood15-pl-springfield-ca-90003-z1y8yfa/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$3,995/mo
+
+2 beds
+
+7254 Testwood14 Ln
+
+Springfield, CA 90003
+
+(https://hotpads.com/7254-testwood14-ln-springfield-ca-90003-bzwsni/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/7254-testwood14-ln-springfield-ca-90003-bzwsni/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/7254-testwood14-ln-springfield-ca-90003-bzwsni/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$7,500/mo
+
+New!
+
+[image]Total price2 beds
+
+9158 Testwood15 Pl
+
+Springfield, CA 90003
+
+(https://hotpads.com/9158-testwood15-pl-springfield-ca-90003-y0u4qw1/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/9158-testwood15-pl-springfield-ca-90003-y0u4qw1/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/9158-testwood15-pl-springfield-ca-90003-y0u4qw1/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+See all homes (https://hotpads.com/90003?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+This is an instant update email.
+
+Switch to daily summary (https://hotpads.com/edit-search-frequency?email=user%40example.com&frequency=daily&hash=REDACTED&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+[image: HotPads Android App] (https://hotpads.com/mobile-apps/android?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)[image: HotPads Apple App] (https://hotpads.com/mobile-apps/ios?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+Download the HotPads App on Android (https://hotpads.com/mobile-apps/android?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) or iPhone/iPad (https://hotpads.com/mobile-apps/ios?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch).
+
+Privacy policy (https://hotpads.com/r/REDACTED) | Unsubscribe (https://hotpads.com/edit-search-frequency?email=user%40example.com&frequency=never&hash=REDACTED&nid=00000000-0000-0000-0000-000000000000&originalFrequency=hourly&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+

@@ -4,7 +4,7 @@ Rules (calm style):
 - one sentence per line; blocks separated by one blank line
 - a sentence must fit on ONE line (<= 30 chars, an iPhone screen). Never wrap. Write shorter instead.
 - links always alone on their own line
-- headlines: "New place that fits 🏡" etc.; close: "No rush. I'll keep watching."
+- headlines: "New place that fits" etc. (no emoji in any text); close: "No rush. I'll keep watching."
 Use: style.text([block, block, ...]) where each block is a str or list of str.
 """
 import math, re
@@ -69,7 +69,7 @@ def quote(words):
     No wrapping, no line breaks added, no length limit, no style rules (check() exempts it)."""
     return Quote('"' + (words or "").strip() + '"')
 
-FACT_LABEL = re.compile(r"^(Pets|Garage|Layout|HOA|Price|Move-in date|Rent|Beds|Baths|Address|Link|Sq ft):\s")   # stay on one line
+FACT_LABEL = re.compile(r"^(Working so far|Pets|Garage|Layout|HOA|Price|Move-in date|Rent|Beds|Baths|Address|Link|Sq ft):\s")   # stay on one line
 
 def _colon_break(s_):
     """'2. Text it: Hi Listing Scout, I'm in.' -> '2. Text it:\nHi Listing Scout, I'm in.'"""
@@ -200,15 +200,19 @@ UNKNOWN = "not listed yet"
 FIRST_TEXT = '"Hi Listing Scout, I\'m in."'
 UNKNOWN = "not listed yet"
 
+BUYING_NEW_LINE = "Buying is still new."   # buy mode is experimental: both welcomes say so
 BUY_LINE = "Not an agent or advice."        # buy mode only: not a real estate agent, not financial advice (DISCLAIMER.md)
-SAFETY_LINE = "Always see a place first."     # disclaimer, one line, in the welcome (see DISCLAIMER.md)
+SAFETY_LINE = "See it before paying anything."     # disclaimer, one line, in the welcome (see DISCLAIMER.md)
 FEEDBACK_LINE = "Spot a bug, just let me know."   # Make it better: mentioned once, in the welcome
 RECEIPT = "Did this come through okay?"
+APPLY_LINE = "Text apply on one you like."
+APPLY_YES_LINE = "Nothing goes out before a yes."   # "Nothing goes out without your yes." is 34 chars, over the 30-char line rule   # Apply for me (rentals): the bot fills it, nothing goes without a yes
+AGE_LINE = "By staying in, you're 18+."   # both welcomes, right before STOP (text-first opt-in)
 STOP_LINE = "Text STOP anytime to stop."   # members are told once, in their welcome (SMS consent norm)
-CHECKINS_LINE = "Say no check-ins to skip."   # opt-out for quiet-week / first-week / near-miss check-ins   # the soft receipt, re-split to fit 30 characters
+CHECKINS_LINE = "Text no check-ins to skip."   # opt-out for quiet-week / first-week / near-miss check-ins   # the soft receipt, re-split to fit 30 characters
 UNKNOWN_NORMAL_LINE = "Not listed yet is normal."   # heads-up in both welcomes: listings often skip details
 CREDIT_LINE = "Built by @errnsterr"   # public credit, last line of "what can you do"
-DUPES_LINE = "A home may show up twice."             # heads-up in both welcomes: the same home can come from two sites
+DUPES_LINE = "Each home shows up once."             # heads-up in both welcomes: the same home can come from two sites
 ANDROID_LINES = ["Emoji may show as words.", "Reactions may too.", "That's just Android."]   # help only, SMS/RCS people
 
 def proven_sites(here=None):
@@ -226,7 +230,8 @@ def proven_sites(here=None):
 def proven_lines(sites):
     if not sites: return [["Sites are still warming up."]]
     names = sites[0] if len(sites) == 1 else ", ".join(sites[:-1]) + " and " + sites[-1]
-    return [Group(["Sites working so far:", names + "."])]
+    t = f"Working so far: {names}."
+    return [[t]] if len(t) <= MAX else [Group(["Working so far:", names + "."])]
 
 def first_alert_note():
     """One-time note, sent once per person right after their first real alert (flag: first_alert_note_sent)."""
@@ -242,7 +247,7 @@ def owner_welcome(first, n, card=False, kind="rental"):
     b = [fit(f"Hi {first}!", "Hi!"), "It's Listing Scout."]   # trimmed "You're all set." to make room for STOP
     if card: b.append("Tap the card to save me.")
     b += [fit(f"I'm watching {n:,} places.", "I'm watching for you."), "Quiet days mean nothing fit.",
-          SAFETY_LINE, UNKNOWN_NORMAL_LINE, DUPES_LINE] + ([BUY_LINE] if kind == "home" else []) + [STOP_LINE, FEEDBACK_LINE, RECEIPT]
+          SAFETY_LINE, UNKNOWN_NORMAL_LINE, DUPES_LINE] + ([BUYING_NEW_LINE, BUY_LINE] if kind == "home" else [APPLY_LINE]) + [AGE_LINE, STOP_LINE, FEEDBACK_LINE, RECEIPT]
     return text(b)
 
 
@@ -299,7 +304,7 @@ def hint_target_not_allowed(name, line4):
                  [f"It's the number ending {line4}."], ["Any text works, like \"hi\"."],
                  ["Then I'll try again."]])
 
-VCARD_NOTE = "Rental alerts for your search"
+VCARD_NOTE = "Your quiet home hunter"   # the card subheader, rent or buy
 
 # ---------- case B: sharing your search with a co-decider or someone "in the know" ----------
 def _offer(other):
@@ -319,23 +324,28 @@ def member_welcome(first, owner, search_lines, kind="rental", role="co_decider",
                                                [fit(f"I'll share it with {owner}.", "I'll share it with them.")]]
     elif replies:
         b.append([fit(f"I'll pass your thoughts to {owner}.", "I'll pass your thoughts on.")])
-    b += [[SAFETY_LINE], [UNKNOWN_NORMAL_LINE], [DUPES_LINE]] + ([[BUY_LINE]] if kind == "home" else []) + [[STOP_LINE], [FEEDBACK_LINE], [RECEIPT]]
+    b += [[SAFETY_LINE], [UNKNOWN_NORMAL_LINE], [DUPES_LINE]] + ([[BUYING_NEW_LINE], [BUY_LINE]] if kind == "home" else []) + [[AGE_LINE], [STOP_LINE], [RECEIPT]]   # trimmed FEEDBACK_LINE (owner welcome keeps it) to fit the 18+ line
     return text(b)
 
-def how_replies_work(other=None, android=False):
+def _commands(apply_=True, change_=True, owner=False):
+    """The one command list (help and 'what can you do', owner and member alike). Only what replies.py handles."""
+    b = [["Text me your thoughts."], ["Text shortlist for picks."]]
+    if apply_: b.append(["Text apply to start one."])   # rentals, owner/co-decider only
+    if change_: b.append(["Text a change to the search."])   # owner decides; a co-decider's idea goes to the owner
+    b += [["Text pause or resume anytime."], ["Text leave to get off."]]
+    if owner: b.append(["Text end my search to end."])
+    b += [[STOP_LINE], ["I never contact landlords."]]   # the one STOP wording, same as the welcomes
+    return b
+
+def how_replies_work(other=None, android=False, apply_=True, change_=True, owner=False):
     """Only on 'help' (never advertised)."""
     p = fit(f"I'll pass your words to {other}.", "I'll pass your words along.") if other else "I'll pass your words along."
-    return text([["Thoughts on a place help."], [p],
-                 ["Naming the street helps."], ["Shortlist shows shared picks."],
-                 ["Pause and resume work anytime."], ["Leave takes you off."],
-                 ["STOP turns texts off."], ["I never contact landlords."]] + ([[x] for x in ANDROID_LINES] if android else []))
+    return text([[p], ["Naming the street helps."]] + _commands(apply_, change_, owner) + ([[x] for x in ANDROID_LINES] if android else []))
 
-def capabilities(owner=False, sites=None):
+def capabilities(owner=False, sites=None, apply_=True, change_=False):
     """Reply to 'what can you do' (anyone). Plain, honest, nothing unbuilt."""
-    b = [["I text new places that fit."], ["Reply with your thoughts."], ["Shortlist shows shared picks."]]
-    if owner: b.append(["Ask me to change the search."])
-    b += [["Pause and resume work anytime."], ["STOP turns texts off."],
-          ["I never contact landlords."]] + proven_lines(proven_sites() if sites is None else sites) + [["The next step is always yours."], [CREDIT_LINE]]
+    b = [["I text new places that fit."]] + _commands(apply_, change_ or owner, owner)
+    b += proven_lines(proven_sites() if sites is None else sites) + [["The next step is always yours."], [CREDIT_LINE]]
     return text(b)
 
 def checkins_set(on):
@@ -347,17 +357,17 @@ def member_prefs(owner):
                  Group([fit(f"{owner} can set it up if you like:", "Just ask if you'd like:"),
                         "1. Only target-range places.",
                         "2. Alerts without replies."]),
-                 ["If it gets busy, pause works."]])
+                 ["Text pause if it gets busy."]])
 
 def owner_member_in(name, role="co_decider", replies=False):
-    b = [[fit(f"{name} is in.", "They're in.")], ["Their line is working."],
+    b = [[fit(f"{name} is in.", "They're in.")], [fit(f"{name}'s texts are set up.", "Their texts are set up.")],
          [fit(f"{name} gets your alerts too.", "They get your alerts too.")]]
     if replies and role == "co_decider": b += _offer(name)
     return text(b)
 
 def owner_nudge(name):
     """One time, if a member hasn't texted within about a day."""
-    return text([[fit(f"{name} hasn't texted yet.", "They haven't texted yet.")], ["No rush."], ["Want me to resend the invite?"]])
+    return text([[fit(f"{name} hasn't texted me yet.", "They haven't texted me yet.")], ["No rush."], ["Want me to resend the invite?"]])
 
 def shorten(where, room):
     """The street as people say it (no house number, no 'Avenue'), or None if it can't fit whole.
@@ -376,8 +386,8 @@ def relay(name, where, words):
     return text([[f"{name} on {w}:" if w else fit(f"{name} replied:", "A reply came in:")], quote(words)])
 
 def mutual(where):
-    w = shorten(where, MAX - len("You both like  🏡"))
-    return text([[f"You both like {w} 🏡" if w else "You both like this one 🏡"], ["It's on your shortlist."]])
+    w = shorten(where, MAX - len("You both like ."))
+    return text([[f"You both like {w}." if w else "You both like this one."], ["It's on your shortlist."]])
 
 def tour_note(name, where, to_owner):
     w = shorten(where, MAX - len(f"{name} wants to tour ."))
@@ -405,13 +415,13 @@ def which_one():
     return text([["Which place do you mean?"], ["Naming the street helps."]])
 
 def paused_text(on):
-    return text([["Welcome back."], ["Pause works anytime."]] if on else
-                [["Got it, texts are paused."], ["Resume works anytime."]])
+    return text([["Welcome back."], ["Text pause anytime."]] if on else
+                [["Got it, texts are paused."], ["Text resume anytime."]])
 
 # ---------- edge cases ----------
 def stopped_owner(name):
     return text([[fit(f"{name} turned off texts.", "Someone turned off texts.")], ["I'll stay quiet for them."],
-                 ["Start turns them back on."]])
+                 ["They can text START anytime."]])
 
 def left_owner(name):
     return text([[fit(f"{name} left the search.", "Someone left the search.")], ["Their texts have stopped."]])
@@ -421,7 +431,7 @@ def left_member():
 
 def found_ask():
     """Owner only: only the owner's yes ends the search."""
-    return text([["That's wonderful news 🏡"], ["Want me to wrap up the search?"]])
+    return text([["That's wonderful news!"], ["Want me to wrap up the search?"]])
 
 def found_relay(name, words):
     """A co-decider said they found it: their words verbatim, then the owner decides."""
@@ -490,9 +500,9 @@ def evening_bundle_intro(n, kind="rental"):
 
 def off_market(where, status):
     """A shortlisted home went pending or sold: one calm note, only to the people who shortlisted it."""
-    w = shorten(where, MAX - len("Update on :"))
+    w = shorten(where, MAX - len("Heads up on :"))
     word = "It sold." if status == "sold" else "It's now pending."
-    return text([[f"Update on {w}:" if w else "Update on a saved home:"], [word], ["I'll keep watching for you."]])
+    return text([[f"Heads up on {w}:" if w else "Heads up on a saved home:"], [word], ["I'll keep watching."]])
 
 def first_week_ask():
     return text([["A few days in."], ["Anything bugging you so far?"], [CHECKINS_LINE]])
@@ -540,10 +550,10 @@ def purge_done():
     return text([["Done, it's all deleted."]])
 
 def end_ask():
-    return text([["End your search for good?"], ["Everyone gets one goodbye."], ["Then no more texts."], ["Reply yes to end it."]])
+    return text([["End your search for good?"], ["Everyone gets one goodbye."], ["Then no more texts."], ["Text yes to end it."]])
 
 def search_ended_note():
-    return text([["This search has ended."], ["No more listing texts from me."], ["Thanks for searching with me 🏡"]])
+    return text([["This search has ended."], ["No more listing texts from me."], ["Thanks for searching with me."]])
 
 def photon_users_note():
     return text([["One last step is yours."], ["Open Photon's Users page."], ["Remove each person there."]])
@@ -552,14 +562,15 @@ def wrapup_data_offer():
     return text([["I can clear our search data."], ["And close the saved searches."], ["Want me to?"]])
 
 def wrapup_final(cleared):
-    return text([["Done, it's all cleared."] if cleared else ["Okay, I'll keep it for now."], ["Thanks for searching with me 🏡"]])
+    return text([["Done, it's all cleared."] if cleared else ["Okay, I'll keep it for now."], ["Thanks for searching with me."]])
 
 def media_relay(name, where, kind="photo"):
     w = shorten(where, MAX - len(f"{name} sent a {kind} of ."))
     return text([[f"{name} sent a {kind} of {w}." if w else fit(f"{name} sent a {kind}.", f"A {kind} came in.")]])
 
 def media_unsupported(kind="photo"):
-    return text([[f"I can't pass a {kind} on yet."], ["Words come through fine."]])
+    s_ = f"I can't pass a {kind} on yet."
+    return text([[s_ if len(s_) <= MAX else "I can't pass that on yet."], ["Words come through fine."]])
 
 def outage_note(source, since):
     return text([[fit(f"{source} is quiet today.", "One site is quiet today.")], ["I'll keep checking it."],
@@ -613,7 +624,7 @@ def parse_reaction(t):
 
 def reaction(name, emoji, word, where, plain_=False):
     """One short line: 'Sarah \u2764\ufe0f Maple St' (iMessage) or 'Sarah loved Maple St' (SMS/RCS)."""
-    mid = word if plain_ else emoji
+    mid = word   # 'Sarah loved Maple St' on every platform (no emoji in any text)
     w = shorten(where, MAX - len(f"{name} {mid} ")) if where else None
     return text([[f"{name} {mid} {w}" if w else fit(f"{name} {mid} a listing", f"{name} {mid} one")]])
 
@@ -646,3 +657,23 @@ def routine_stale_note(mins):
 def site_quiet_note(site):
     return text([[fit(f"No {site} emails in 2 days.", "One site went quiet for 2 days.")],
                  ["Its alert may be switched off."], [fit(f"Worth a look in {site}.", "Worth a look in that app.")]])
+
+# Apply for me (src/apply.py). The bot does the filling in the Grok Bot app; texts stay short and calm.
+def apply_ack(where):
+    w = shorten(where, 17)
+    return text([[f"Applying to {w}." if w else "Got it, let's apply."], ["I'll start the application."], ["Open the Grok Bot app next."],
+                 [APPLY_YES_LINE]])
+
+def apply_need_profile():
+    return text([["Apply needs your own profile."], ["Set it up in the Grok Bot app."]])
+
+def apply_no_place():
+    return text([["Which place do you mean?"], ["Try apply 1 or apply 2."]])
+
+def apply_expired(where):
+    w = shorten(where, 11)
+    return text([[f"I didn't apply to {w}." if w else "I didn't apply that time."], ["That request timed out."],
+                 ["Text apply again anytime."]])
+
+def member_paused(name, on):
+    return text([[f"{name} {'resumed' if on else 'paused'} their texts."]])

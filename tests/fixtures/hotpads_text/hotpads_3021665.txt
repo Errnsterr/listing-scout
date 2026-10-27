@@ -1,0 +1,113 @@
+<!-- Shape of a real HotPads text alert (2026-10-26). Places, streets, ZIPs and tokens replaced with made-up ones. -->
+
+Thread 00000000: 1 message.
+--- 1. received 2026-10-27T01:48:29Z · message_id 3021665
+From: HotPads <searches@alerts.hotpads.com>
+To: user@example.com
+Subject: 418 Larkspur Pl #C + more new rentals just dropped in 90001 (from $3K)
+delivery: delivered
+
+[image: Brand logo] (https://hotpads.com/?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+New rentals that match your saved search (https://hotpads.com/user/searches?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) are live now - fresh updates.
+
+Your saved search
+
+90001
+
+$3,600/mo
+
+2 beds
+
+418 Larkspur Pl #C
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/418-larkspur-pl-shelbyville-ca-90001-l4ku2t/c/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/418-larkspur-pl-shelbyville-ca-90001-l4ku2t/c/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/418-larkspur-pl-shelbyville-ca-90001-l4ku2t/c/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$2,995/mo
+
+2 beds
+
+742 E Testwood1 St
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/fernby-742-e-testwood1-street-shelbyville-ca-90001-a33zovb/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/fernby-742-e-testwood1-street-shelbyville-ca-90001-a33zovb/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/fernby-742-e-testwood1-street-shelbyville-ca-90001-a33zovb/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$3,650/mo
+
+2 beds
+
+388 Testwood2 Dr
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/388-testwood2-dr-shelbyville-ca-90001-a6tfyt3/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/388-testwood2-dr-shelbyville-ca-90001-a6tfyt3/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/388-testwood2-dr-shelbyville-ca-90001-a6tfyt3/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$3,450/mo
+
+1 bed
+
+507 Quillfeather St
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/507-quillfeather-st-shelbyville-ca-90001-j6s9igk/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/507-quillfeather-st-shelbyville-ca-90001-j6s9igk/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/507-quillfeather-st-shelbyville-ca-90001-j6s9igk/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$3,395/mo
+
+2 beds
+
+836 E Brambleton St
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/halden-shelbyville-ca-90001-dkpai88/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/halden-shelbyville-ca-90001-dkpai88/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/halden-shelbyville-ca-90001-dkpai88/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$6,000/mo
+
+3 beds
+
+8043 Testwood3 Way
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/8043-testwood3-way-shelbyville-ca-90001-a6vohwy/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/8043-testwood3-way-shelbyville-ca-90001-a6vohwy/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/8043-testwood3-way-shelbyville-ca-90001-a6vohwy/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$6,750/mo
+
+New!
+
+3 beds
+
+6127 Testwood4 Ave #2
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/6127-testwood4-ave-shelbyville-ca-90001-ffjryq2/2/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/6127-testwood4-ave-shelbyville-ca-90001-ffjryq2/2/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/6127-testwood4-ave-shelbyville-ca-90001-ffjryq2/2/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+$3,150/mo
+
+New!
+
+2 beds
+
+5316 Testwood5 St #F102
+
+Shelbyville, CA 90001
+
+(https://hotpads.com/5316-testwood5-st-shelbyville-ca-90001-56rszt/f102/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)Contact (https://hotpads.com/5316-testwood5-st-shelbyville-ca-90001-56rszt/f102/pad?contactModal=true&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) View listing (https://hotpads.com/5316-testwood5-st-shelbyville-ca-90001-56rszt/f102/pad?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+See all homes (https://hotpads.com/90001?nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+This is an instant update email.
+
+Switch to daily summary (https://hotpads.com/edit-search-frequency?email=user%40example.com&frequency=daily&hash=REDACTED&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+[image: HotPads Android App] (https://hotpads.com/mobile-apps/android?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)[image: HotPads Apple App] (https://hotpads.com/mobile-apps/ios?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+
+Download the HotPads App on Android (https://hotpads.com/mobile-apps/android?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch) or iPhone/iPad (https://hotpads.com/mobile-apps/ios?adgroup=HpSavedSearch&nid=00000000-0000-0000-0000-000000000000&ref=savedSearch&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch).
+
+Privacy policy (https://hotpads.com/r/REDACTED) | Unsubscribe (https://hotpads.com/edit-search-frequency?email=user%40example.com&frequency=never&hash=REDACTED&nid=00000000-0000-0000-0000-000000000000&originalFrequency=hourly&ref=savedSearch&searchId=0&utm_campaign=savedsearch&utm_medium=email&utm_source=savedsearch)
+

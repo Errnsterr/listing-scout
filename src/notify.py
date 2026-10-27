@@ -95,7 +95,15 @@ def log_send(r, ch, ok, really, card, n):
                                 "dry_run": not really, "card": bool(card), "chars": n}) + "\n")
     except OSError: pass
 
+def send_parts(r, parts, really):
+    """a roundup's texts, in order; stops at the first failure so nobody gets Part 2 without Part 1."""
+    if isinstance(parts, str): parts = [parts]
+    for t in parts:
+        if not send(r, t, really): return False
+    return True
+
 def send(r, text, really, card=None):
+    if style.check(text): _warn(f"style problems in a text to {r['name']}: {style.check(text)[:2]}")   # every text should come from style.py
     if C.get("shadow"):   # proof run: log the would-be text, send nothing (names only, never numbers)
         os.makedirs(os.path.join(HERE, "out"), exist_ok=True)
         with open(os.path.join(HERE, "out", "shadow_texts.jsonl"), "a") as f:
@@ -155,13 +163,14 @@ def sample_text():
     A = json.load(open(f)) if os.path.exists(f) else []
     if not A: return None
     for a in A: a["l"].setdefault("flags", [])
-    return sc.snapshot(A, n_places(), C)
+    return sc.snapshot_parts(A, n_places(), C)   # list of texts (Part i of n only if long)
 
 SUFFIX = r"\s+(Avenue|Ave|Drive|Dr|Street|St|Road|Rd|Lane|Ln|Boulevard|Blvd|Way|Place|Pl|Court|Ct|Circle|Cir|Terrace|Ter)\.?$"
 def short_where(l):
     import re
     st = (l.get("address") or "").split(",")[0].strip()
     st = re.sub(r"^\s*[\d\-A-Za-z]*\d[\w\-]*\s+", "", st)            # drop house number like 308-A2
+    st = re.sub(r"\s+-\s*.*$", "", st)                              # AppFolio "Example Street - Unit C" / "Sample Ave - C"
     st = re.sub(r"\s+(Unit|Apt|#)\s*\S+$", "", st, flags=re.I)
     st = re.sub(SUFFIX, "", st, flags=re.I).strip()
     return st or (l.get("zip") or "that one")
@@ -179,7 +188,8 @@ def record_numbered(alerts):
     prev = json.load(open(lf)) if os.path.exists(lf) else []
     json.dump({"ts": time.time(), "prev": prev}, open(os.path.join(HERE, "out", "last_sent.json"), "w"))
     json.dump([{"id": a["l"]["id"], "where": short_where(a["l"]),
-                "price": (f"${a['l']['price']:,.0f}" + ("" if C.get("mode") == "buy" else "/mo")) if a["l"].get("price") else "rent not listed"}
+                "price": (f"${a['l']['price']:,.0f}" + ("" if C.get("mode") == "buy" else "/mo")) if a["l"].get("price") else "rent not listed",
+                **{k: a["l"].get(k) for k in ("url", "apply_url", "source", "flags") if a["l"].get(k)}, "sent_ts": time.time()}   # apply.py gate reads these
                for a in alerts], open(os.path.join(HERE, "out", "last_numbered.json"), "w"), indent=1)
 def household_other(r):
     """Name of the other decider for a shared search, or None (solo owner / in the know)."""
@@ -265,8 +275,8 @@ def main():
         if not t: print("no seed data yet (run scout.py --seed); nothing sent"); return
         who = a[1] if len(a) > 1 and not a[1].startswith("--") else None   # notify.py snapshot "Name" for a new member
         r = next((r for r in recipients() if (r["name"].lower() == who.lower() if who else is_owner(r))), None)
-        if r and send(r, t, really) and really:
-            A = json.load(open(os.path.join(HERE, "out", "sample.json"))); record_numbered(_sc().rank(A, C)[:3])
+        if r and send_parts(r, t, really) and really:
+            A = json.load(open(os.path.join(HERE, "out", "sample.json"))); record_numbered(_sc().rank(A, C))   # every match shown, every number maps
             L["snapshot_sent"] = time.strftime("%F %T %Z"); save_life(L)
     elif a[0] == "firstday":  # one-time, capped: only if seeded, nothing sent since, after 6 PM local, never twice
         L = life(); ob = json.load(open(os.path.join(HERE, "outbox.json"))) if os.path.exists(os.path.join(HERE, "outbox.json")) else {}
@@ -356,7 +366,7 @@ def main():
                     ob.setdefault("held", {}).setdefault(r["name"], []).extend(q); print(f"holding {len(q)} for {r['name']} (sleep mode)")
                     if really: dl.setdefault(r["name"], []).extend(akey(x) for x in q)
                     continue
-                ok1 = send(r, sc.render(q, C), really); oks.append(ok1)
+                ok1 = send_parts(r, sc.render_parts(q, C), really); oks.append(ok1)
                 if ok1 and (really or C.get("shadow")) and not m.get("first_alert_note_sent"):   # one-time heads-up, once per person
                     set_member(r["name"], first_alert_note_sent=time.strftime("%F %T %Z"))   # flag saved BEFORE sending: never twice
                     send(r, style.first_alert_note(), really)   # shadow mode: send() only logs it
@@ -365,7 +375,7 @@ def main():
                     set_member(r["name"], late_at=features.local_str(C, "%-I:%M %p"))   # Sleep mode is offered once, in the morning
             ok = all(oks) if oks else True
             if really and ok:
-                record_numbered(ob["queue"])
+                record_numbered(sc.shown(ob["queue"], C))
                 ob = {"queue": [], "last_sent": time.time(), "held": ob.get("held", {}), "evening": ob.get("evening", []),
                       "day": ob.get("day"), "texts_today": ob.get("texts_today", 0) + 1, "delivered": {}}
             elif really:
@@ -380,7 +390,8 @@ def main():
         obf = os.path.join(HERE, "outbox.json"); ob = json.load(open(obf)) if os.path.exists(obf) else {"queue": [], "last_sent": 0}
         for r in recipients():
             held = ob.get("held", {}).get(r["name"]) or []
-            if held and not paused(r) and send(r, sc.render(held, C), really) and really:
+            if held and not paused(r) and send_parts(r, sc.render_parts(held, C), really) and really:
+                record_numbered(sc.shown(held, C))   # replies by number attach to this bundle, like every other send
                 ob["held"].pop(r["name"], None); json.dump(ob, open(obf, "w"), indent=1)
             m = member(r)
             if m.get("late_at") and not m.get("sleep_offered") and not paused(r):
@@ -390,8 +401,8 @@ def main():
         obf = os.path.join(HERE, "outbox.json"); ob = json.load(open(obf)) if os.path.exists(obf) else {}
         ev = ob.get("evening") or []
         if not ev or ((features.local_hour(C) < 18 or features.in_quiet(C)) and "--now" not in a): print("evening: nothing to send yet"); return
-        sc = _sc(); oks = [send(r, style.evening_bundle_intro(len(ev), KIND) + "\n\n" + sc.render(ev, C).split("\n\n", 1)[1], really) for r in recipients() if not paused(r) and r.get("mode") != "digest"]
-        if really and oks and all(oks): record_numbered(ev); ob["evening"] = []; json.dump(ob, open(obf, "w"), indent=1)
+        sc = _sc(); oks = [send_parts(r, sc.render_parts(ev, C, head=style.evening_bundle_intro(len(ev), KIND)), really) for r in recipients() if not paused(r) and r.get("mode") != "digest"]
+        if really and oks and all(oks): record_numbered(sc.shown(ev, C)); ob["evening"] = []; json.dump(ob, open(obf, "w"), indent=1)
     elif a[0] == "offmarket":   # buy: a shortlisted home went pending/sold -> one calm note, only to the people who shortlisted it
         of = os.path.join(HERE, "out", "offmarket.json"); slf = os.path.join(HERE, "out", "shortlist.json")
         ev = json.load(open(of)) if os.path.exists(of) else []; SL = json.load(open(slf)) if os.path.exists(slf) else {}

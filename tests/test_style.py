@@ -46,8 +46,8 @@ def test_never_wraps():
 def test_welcome_exact():
     assert style.owner_welcome("Sam", 10, True) == ("Hi Sam!\n\nIt's Listing Scout.\n\n"
         "Tap the card to save me.\n\nI'm watching 10 places.\n\n"
-        "Quiet days mean nothing fit.\n\nAlways see a place first.\n\nNot listed yet is normal.\n\nA home may show up twice.\n\n"
-        "Text STOP anytime to stop.\n\nSpot a bug, just let me know.\n\nDid this come through okay?")
+        "Quiet days mean nothing fit.\n\nSee it before paying anything.\n\nNot listed yet is normal.\n\nEach home shows up once.\n\nText apply on one you like.\n\n"
+        "By staying in, you're 18+.\n\nText STOP anytime to stop.\n\nSpot a bug, just let me know.\n\nDid this come through okay?")
     assert not hasattr(style, "welcome") and not hasattr(style, "test_text")   # legacy templates removed
 
 def test_checker_catches_problems():
@@ -190,10 +190,10 @@ def test_public_copy_fixes():
         w = style.member_welcome("Alex", "Jordan", ["Los Angeles"], kind=kind, replies=True)
         assert style.STOP_LINE in w and style.SAFETY_LINE in w and not style.check(w)
         assert (style.BUY_LINE in w) == (kind == "home")
-    h = style.how_replies_work("Jordan"); assert "STOP turns texts off." in h and "Leave takes you off." in h
+    h = style.how_replies_work("Jordan"); assert "Text STOP anytime to stop." in h and "Text leave to get off." in h
     for o in (True, False):
         c = style.capabilities(o); assert not style.check(c) and "STOP" in c and "landlords" in c
-        assert ("change the search" in c) == o
+        assert ("change to the search" in c) == o
     assert "Only Photon sees the texts." in style.data_note() and "Nothing leaves" not in style.data_note()
     out = style.outage_note("Example PM", "Mon 1:05 PM"); assert "isn't loading" not in out and not style.check(out)
     assert "A few days in." in style.first_week_ask() and style.CHECKINS_LINE in style.first_week_ask()

@@ -45,7 +45,21 @@ def test_quotes_stay_exempt():
     assert ok(t) and "well past thirty characters\"" in t
 
 def test_address_labels_link():
-    for t in (sc.render(A[:1], C), sc.render(A[:3], C), sc.snapshot([a for a in A if a["l"]["match"]], 10, C)):
+    import re
+    t3 = sc.render(A[:3], C); L3 = t3.split("\n")   # roundup: "N. street", short facts, then its own link
+    for i, ln in enumerate(L3):
+        if ln.startswith("http"):
+            l_ = next(a["l"] for a in A if a["l"].get("url") == ln)
+            h = next(x for x in reversed(L3[:i]) if re.fullmatch(r"\d\. .+", x))
+            assert h.split(". ", 1)[1] == sc.street_line(l_) and L3.index(h) >= i - 3, (h, ln)
+    assert "not listed yet" not in t3 and ok(t3)
+    snap = sc.snapshot([a for a in A if a["l"]["match"]], 10, C)   # snapshot = every match, in the roundup entry
+    M = sc.rank([a for a in A if a["l"]["match"]], C)
+    for i, a in enumerate(M, 1):
+        blk = snap.split(f"\n{i}. ", 1)[1].split("\n\n", 1)[0]
+        assert blk.startswith(sc.street_line(a["l"]) or "") and (not a["l"].get("url") or a["l"]["url"] in blk), (i, blk)
+    assert "not listed yet" not in snap.split("right now:", 1)[-1].split("\n\n", 2)[-1] and ok(snap)
+    for t in (sc.render(A[:1], C),):
         L = t.split("\n")
         for i, ln in enumerate(L):
             if ln.startswith("http") and (i == 0 or not L[i - 1].endswith(":")):
@@ -210,9 +224,9 @@ def test_reaction_text_is_parsed_not_relayed():
     for t in ["I liked it", "loved the kitchen", "liked Maple St", "yes"]: assert style.parse_reaction(t) is None, t
     d, run = sandbox()
     o = run("Sarah", 'Loved “Maple St 2 bed townhome”')
-    assert "Sarah ❤️ Maple St" in o and '"Loved' not in o and "Passed that" not in o
+    assert "Sarah loved Maple St" in o and '"Loved' not in o and "Passed that" not in o
     sl = f"{d}/out/shortlist.json"; assert not os.path.exists(sl) or "Sarah" not in open(sl).read()   # not a like/pass decision
-    o = run("Sarah", 'Disliked “Oak Ave”'); assert "Sarah 👎 Oak Ave" in o and not os.path.exists(sl)
+    o = run("Sarah", 'Disliked “Oak Ave”'); assert "Sarah disliked Oak Ave" in o and not os.path.exists(sl)
     assert run("Sarah", "Removed a heart from “Maple St”").strip() == "reaction removed; dropped silently"
 
 def test_reaction_never_a_command():
@@ -310,8 +324,10 @@ def test_review_gate_and_fixed_draft():
     finally: features.FEEDBACK = old
 
 def test_welcome_mentions_feedback_once_receipt_last():
-    for m in (style.owner_welcome("Alex", 620, True), style.member_welcome("Sarah", "Alex", sc.reflect(C), replies=True, card=True)):
-        assert m.count(style.FEEDBACK_LINE) == 1 and m.rstrip().endswith(style.RECEIPT) and ok(m)
+    m = style.owner_welcome("Alex", 620, True)
+    assert m.count(style.FEEDBACK_LINE) == 1 and m.rstrip().endswith(style.RECEIPT) and ok(m)
+    m = style.member_welcome("Sarah", "Alex", sc.reflect(C), replies=True, card=True)   # member: feedback line trimmed for the 18+ line
+    assert style.FEEDBACK_LINE not in m and style.AGE_LINE in m and m.rstrip().endswith(style.RECEIPT) and ok(m)
     for m in (style.feedback_ask("bug, x"), style.feedback_sent(), style.feedback_dropped()): assert ok(m)
 
 
@@ -332,7 +348,7 @@ def test_light_filters():
 def test_nice_to_have_lines():
     c = _LC(); sc.CFG.clear(); sc.CFG.update(c)
     t = sc.render([{"l": sc.classify(_l(), c), "reason": "new", "was": None}], c)
-    assert "Garage: not listed yet" in t and "Layout: not listed yet" in t and ok(t), t
+    assert "Garage" not in t and "Layout" not in t and ok(t), t   # shown only when the listing states them
     t = sc.render([{"l": sc.classify(_l(title="townhouse attached garage"), c), "reason": "new", "was": None}], c)
     assert "Has a garage" in t and "Townhome" in t and ok(t), t
     sc.CFG.clear(); sc.CFG.update(C)
@@ -458,8 +474,8 @@ def test_first_week_ask():
 
 def test_what_can_you_do_and_checkin_optout():
     d, run = sandbox(); o = run("Sarah", "what can you do")
-    assert "STOP turns texts off." in o and "change the search" not in o
-    assert "change the search" in run("Alex", "What can you do?")
+    assert "Text STOP anytime to stop." in o and "end my search" not in o   # same list for everyone; owner-only lines only for the owner
+    oa = run("Alex", "What can you do?"); assert "change to the search" in oa and "Text end my search to end." in oa
     o = run("Alex", "no check-ins"); M = json.load(open(f"{d}/out/members.json"))
     assert M["Alex"].get("no_checkins") and not M["Alex"].get("stopped") and "no more check-ins" in o
     o = run("Alex", "stop check-ins"); M = json.load(open(f"{d}/out/members.json"))

@@ -1,8 +1,38 @@
-# Changelog
+# Listing Scout: changelog
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
-## v1.1.1 (October 27, 2026): File layout
+## v1.2.0 (October 26, 2026): Apply for me
+
+- HotPads text alerts are read correctly: each place gets its own link, two-line addresses are kept, "Call for price" and "$X+" prices are their own places, and a home listed on HotPads and Zillow or Redfin shows up once.
+- Buying is experimental.
+- Text "apply" (or "apply 2") on a place. Your bot opens that listing's own application, fills it from your application profile and vault, and stops for your yes before it submits or pays.
+- You give your SSN and date of birth each time through a private form, attach ID or pay stubs, and do ID selfie checks, credit-check consent, signatures and phone codes. None of these are ever saved.
+- A scam, fair-housing, link and freshness check runs first. If anything looks off, the bot stops and asks.
+- Roundups show every place that fits, nothing left out, each as "N. address" / one facts line / its own link. Long ones go as "Part 1 of 2" texts; a place is never split and every number works for replies. The setup snapshot shows every current match the same way.
+- One voice in every text: no emoji; "Sarah loved Maple St" on every phone; "Each home shows up once."; "See it before paying anything." on any scam signal; "A price came down" for rentals and buying; "N new places today" (buying: "N new homes today"); "Heads up on X:" openers; commands always "Text ___", with one command list in help, "what can you do" and the docs; "Text START" turns texts back on.
+- Every price says "/mo" (rentals), in every roundup entry and alert. When a facts line would pass 30 characters, the area moves to its own line for every entry in that text.
+- Single alerts show baths when known and "Baths: not listed yet" when not. Roundup entries add baths when known.
+- Areas use your own spelling (for example "Vista del Sol"), never the site's.
+- Redfin alerts: building names ("Example Villas, City, ST 90001") are read as the address, and price ranges ("$2,702-$3,953/mo", "1-2 beds") are shown as ranges, never as one made-up price.
+- One wording each: "See it before paying anything." in both welcomes, "Text STOP anytime to stop." everywhere, and "Nothing goes out before a yes." in Apply for me texts.
+- "Not listed yet" only for rent, beds, baths and pets. Garage, layout, move-in date and HOA show only when the listing states them; a missing address reads "Address not shown".
+- Buying welcomes add "Buying is still new."
+- The rule "never applies" is now "never applies without your yes for that listing; never contacts landlords".
+- Requests move new → waiting → in_progress → handled or declined. New or waiting requests time out after 24 hours with one short text to that person. A new routine, "Listing Scout: apply requests" (every 5 minutes, `docs/routines/apply-watch.md`), is offered at go-live.
+- The welcome text now says "Text apply on one you like." Help and "what can you do" say "Text apply to start one."
+- Docs: Apply for me is in the README, FOR_YOU, privacy, disclaimer, costs and Photon FAQ pages. Fees are set by the landlord and are often not refundable.
+- Consistency: setup time is "about an hour" everywhere, version 1.2.0 everywhere, and heading levels are fixed. Every text builder is checked by `tests/test_all_texts.py`. A paused-texts note now comes from `style.py`, and every send warns if a text fails the style check.
+- Fix: AppFolio "Apply Now" links are now picked up, so Apply can start on AppFolio listings. Fees are read from each listing's own page, else "not listed yet".
+- Fix: street names in texts drop a trailing unit tag ("Main Street - Unit C" shows as "Main").
+- New first conversation: renting or buying, then 4 questions (where, beds and baths, comfortable and stretch budget, move date) with a fixed read-back. Every current match, shown exactly like a text, scam-checked, in about 10 minutes. Then texts and listing-site alerts, "texts anytime or hold late ones till morning" (Sleep mode still off by default), finer details one at a time, and chat-only reminders that stop after two skips.
+
+  Setup is still about an hour.
+
+- Welcomes: every person's welcome now says "By staying in, you're 18+." before the STOP line. Opt-in stays text-first. To fit, the member welcome drops "Spot a bug, just let me know." (the owner welcome keeps it).
+- New: `src/apply.py`, `tests/test_apply.py`, `tests/test_all_texts.py`, `docs/routines/apply-watch.md`.
+
+## v1.1.1 (October 26, 2026): File layout
 
 - Code is in `src/`. Longer docs are in `docs/`. `README.md`, `FOR_YOU.md`, and `FOR_YOUR_BOT.md` stay at the top.
 - Commands and technical detail from `FOR_YOUR_BOT.md` are in `FOR_YOUR_BOT.md`. The setup conversation script from `docs/SETUP.md` is in `docs/SETUP.md`. The file list from `FOR_YOUR_BOT.md` is in `FOR_YOUR_BOT.md`.
@@ -51,21 +81,24 @@ All notable changes to the Listing Scout template. The current version is in `VE
 
 US rentals only. Buying is coming later.
 
-**What it does**
+### What it does
+
 - Texts you new rentals that fit your list: beds, baths, budget and pets.
 - Checks property-manager pages every 5–15 minutes, and reads Zillow, Redfin and HotPads alert emails on the schedule you pick.
 - One calm text per new place, price drop or relist. Quiet days mean nothing fit.
 - Decide together: invite a partner or roommate. You both get every place and share a shortlist.
 - Missing details show as "not listed yet". Nothing is made up.
 
-**Added today**
+### Added today
+
 - A README, this changelog, and clear notes on support (best effort), 18+, and US only.
 - "What can you do" reply, and a "no check-ins" switch for the occasional check-in texts.
 - Member welcomes now say "Text STOP anytime to stop." Help explains STOP and leave.
 - The listing's own apply link, when an alert email includes one.
 - Redfin alert emails sent as plain text are now read correctly.
 
-**Fixed today**
+### Fixed today
+
 - Alerts never include tracked links (they carry account tokens). They use a plain public link, or no link.
 - Calmer wording: a quiet site now reads "{Site} is quiet today." instead of "isn't loading".
 - The privacy reply is honest: "Only Photon sees the texts."
@@ -73,4 +106,4 @@ US rentals only. Buying is coming later.
 - Unproven features are labeled best-effort ("Posted about N min ago", Hands-on notes).
 - Sample addresses are obviously made up.
 
-**Not in this release**
+### Not in this release

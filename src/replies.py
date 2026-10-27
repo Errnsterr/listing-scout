@@ -148,6 +148,28 @@ def react(rx, me, first, others, M):
     got = [o for o in others if deliver(o, style.reaction(first, emoji, word, where, chan(o) != "imessage"))]
     if not got: print(f"reaction from {me['name']} reached no one")
 
+def can_apply(me):
+    """Apply for me: rentals only, owner or co-decider only."""
+    return C.get("mode") != "buy" and me.get("role") in ("owner", "co_decider")
+
+def apply_request(me, idx, N, M):
+    """Only the person who texted gets their own profile used. Records out/apply_requests.json; sends one short ack."""
+    import apply as ap
+    if not ap.has_profile(me["name"]): deliver(me, style.apply_need_profile()); return
+    L = None
+    if idx: L = N[int(idx) - 1] if 1 <= int(idx) <= len(N) else None
+    elif len(N) == 1: L = N[0]
+    elif N:
+        ctx = M.get(me["name"], {}).get("context")
+        L = next((x for x in N if x["id"] == ctx), None) or None
+    if not L: deliver(me, style.apply_no_place()); return
+    os.makedirs(os.path.join(HERE, "out"), exist_ok=True)
+    R = load(ap.REQ, [])
+    req = {"id": f"ap{int(time.time())}{len(R)}", "member": me["name"], "listing": L, "asked": time.strftime("%F %T %Z"), "ts": time.time(), "status": "new"}
+    R.append(req); json.dump(R, open(ap.REQ, "w"), indent=1)
+    print("APPLY_REQUEST " + json.dumps({"id": req["id"], "member": me["name"], "where": L["where"]}))   # the bot runs src/apply.py plan <id>
+    deliver(me, style.apply_ack(L["where"]))
+
 def main():
     if "--media-failed" in A:   # Photon couldn't forward a photo/voice note: say so, once, to the person who'd have got it
         import notify; ph = A[A.index("--media-failed") + 1]
@@ -215,6 +237,9 @@ def main():
             return
         if pend["type"] == "wrapup_data": deliver(me, style.wrapup_final(False)); stop_listener(); return
         # anything else: the question lapses quietly and this text is handled as usual
+    m_ap = re.fullmatch(r"(?:please )?apply(?: (?:for|to))?(?: (?:it|this|that|this one|that one))?(?: #?(\d))?(?: please)?", norm(text))
+    if m_ap and can_apply(me):   # Apply for me: record only; the bot fills in its own browser, never submits without a yes
+        return apply_request(me, m_ap.group(1), N, M)
     if features.is_feedback(text):   # Make it better: confirm first; only a clear yes sends it on
         last = "alert" if load(os.path.join(HERE, "out", "last_sent.json"), {}).get("ts") else "welcome"
         M.setdefault(me["name"], {})["pending"] = {"type": "feedback", "payload": features.feedback_payload(text.strip(), last)}; save_m()
@@ -254,14 +279,14 @@ def main():
             deliver(me, style.member_prefs(owner["name"].split()[0]))
         return
     if t.rstrip("?") in ("what can you do", "what do you do", "commands", "menu", "what can i say"):
-        deliver(me, style.capabilities(me["role"] == "owner")); return
+        deliver(me, style.capabilities(me["role"] == "owner", apply_=can_apply(me), change_=me["role"] in ("owner", "co_decider"))); return
     if re.fullmatch(r"(no|stop|skip|turn off)( the)? check.?ins?( off)?|check.?ins? off", t):
         M.setdefault(me["name"], {})["no_checkins"] = True; save_m(); deliver(me, style.checkins_set(False)); return
     if re.fullmatch(r"(turn on |resume )?check.?ins?( on| back on)?", t):
         M.setdefault(me["name"], {}).pop("no_checkins", None); save_m(); deliver(me, style.checkins_set(True)); return
     if t in ("help", "?", "how"):
         o = others[0]["name"].split()[0] if len(others) == 1 else None
-        deliver(me, style.how_replies_work(o, android=chan(me) in ("sms", "rcs"))); return
+        deliver(me, style.how_replies_work(o, android=chan(me) in ("sms", "rcs"), apply_=can_apply(me), change_=me["role"] in ("owner", "co_decider"), owner=me["role"] == "owner")); return
     if t in ("leave", "leave the search", "remove me"):
         deliver(me, style.left_member())   # say goodbye before marking them as left (deliver skips people who left)
         M.setdefault(me["name"], {}).update(left=time.strftime("%F %T %Z"), paused=True); save_m()
@@ -278,7 +303,7 @@ def main():
         if on: M[me["name"]].pop("stopped", None)
         save_m()
         deliver(me, style.paused_text(on))
-        if me["role"] != "owner": deliver(owner, style.text([[f"{first} {'resumed' if on else 'paused'} their texts."]]))
+        if me["role"] != "owner": deliver(owner, style.member_paused(first, on))
         return
     if me["role"] == "in_the_know":
         o = owner["name"].split()[0]
