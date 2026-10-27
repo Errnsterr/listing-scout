@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+drafts/
+node_modules/
+CRITERIA.yaml
+state.json
+outbox.json
+logs/*
+out/*
+inbox/*

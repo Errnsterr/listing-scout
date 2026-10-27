@@ -1,0 +1,91 @@
+[
+ {
+  "reason": "new",
+  "was": null,
+  "market": null,
+  "l": {
+   "id": "demo:1",
+   "source": "Demo PM",
+   "url": "https://example.com/listing/1",
+   "title": "1 bed 1 bath apartment",
+   "address": "100 Example St Unit 4, Los Angeles, CA 90001",
+   "price": 1695,
+   "beds": 1,
+   "baths": 1,
+   "available": "2026-12-01",
+   "pets_raw": null,
+   "photo_alt": null,
+   "showing_url": null,
+   "zip": "90001",
+   "neighborhood": null,
+   "garage": "unknown",
+   "layout": "unknown",
+   "pets": "unknown",
+   "tier": "TARGET",
+   "eligible": true,
+   "match": true,
+   "ideal": true,
+   "flags": []
+  }
+ },
+ {
+  "reason": "new",
+  "was": null,
+  "market": null,
+  "l": {
+   "id": "demo:2",
+   "source": "Demo PM",
+   "url": "https://example.com/listing/2",
+   "title": "1 bed loft",
+   "address": "200 Sample Ave Apt 210, Los Angeles, CA 90002",
+   "price": 1950,
+   "beds": 1,
+   "baths": 1,
+   "available": null,
+   "pets_raw": "No pets",
+   "photo_alt": null,
+   "showing_url": "https://example.com/showing/2",
+   "zip": "90002",
+   "neighborhood": null,
+   "garage": "unknown",
+   "layout": "unknown",
+   "pets": "no dogs",
+   "tier": "STRETCH",
+   "eligible": true,
+   "match": true,
+   "ideal": true,
+   "flags": []
+  }
+ },
+ {
+  "reason": "new",
+  "was": null,
+  "market": null,
+  "l": {
+   "id": "demo:3",
+   "source": "Demo PM",
+   "url": "https://example.com/listing/3",
+   "title": "2 bed duplex",
+   "address": "4500 Demo St, Los Angeles, CA 90003",
+   "price": 2400,
+   "beds": 2,
+   "baths": 1,
+   "available": "now",
+   "pets_raw": "Dogs allowed",
+   "photo_alt": null,
+   "showing_url": null,
+   "zip": "90003",
+   "neighborhood": null,
+   "garage": "unknown",
+   "layout": "unknown",
+   "pets": "dogs ok",
+   "tier": "CURIOSITY",
+   "eligible": true,
+   "match": true,
+   "ideal": true,
+   "flags": [
+    "suspicious payment/deposit wording"
+   ]
+  }
+ }
+]

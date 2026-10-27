@@ -1,0 +1,151 @@
+profile: Test household (made-up)
+plan_mode: lean
+mode: lease
+move_in: '2027-01-15'
+recipients:
+- name: Jordan
+  channel: imessage
+  phone_last4: ''
+- name: Alex
+  channel: imessage
+  phone_last4: ''
+  role: co_decider
+photon:
+  project_id: ''
+  plan: free
+alert_inbox: ''
+area:
+  cities:
+  - Los Angeles
+  zips:
+  - '90001'
+  - '90002'
+  - '90003'
+  neighborhoods: []
+beds_min: 1
+baths:
+  ideal: 1
+  ok: 1
+match:
+  layout_any: []
+  garage_min: 0
+keywords:
+  garage:
+  - garage
+  garage_negative:
+  - no garage
+  first_floor:
+  - downstairs
+  - ground floor
+  single_story:
+  - single story
+  townhome:
+  - townhome
+  - townhouse
+  upper_negative:
+  - upper
+  - upstairs
+price_tiers:
+  target_max: 1800
+  stretch_max: 2100
+pets:
+  dog: null
+  esa_letter: false
+  exclude_no_pets: false
+prefer_landlord_types:
+- property_manager
+- private_owner
+sources:
+- name: Example PM
+  type: appfolio
+  url: https://SUBDOMAIN.appfolio.com/listings
+  verified: false
+- name: Example TenantTurner
+  type: tenantturner
+  url: https://app.tenantturner.com/listings-json/CUSTOMER_ID
+  verified: false
+- name: Portal alerts
+  type: email
+  dir: ./inbox
+  verified: false
+- name: Craigslist
+  type: email
+  dir: ./inbox
+  note: saved search alerts; frequency not guaranteed instant
+- name: Realtor.com
+  type: email
+  dir: ./inbox
+- name: Zumper
+  type: email
+  dir: ./inbox
+- name: Rent.com
+  type: email
+  dir: ./inbox
+- name: Agent MLS alert
+  type: email
+  dir: ./inbox
+  note: ask a local agent to set an MLS auto-email to alert_inbox; biggest early source,
+    esp. for-sale
+manual_tips:
+- 'Facebook Marketplace / local FB groups: login-only, check by hand (bot does not
+  log in).'
+scam_flags:
+  below_comps_pct: 30
+  phrases:
+  - wire
+  - western union
+  - zelle before
+  - deposit before viewing
+  - deposit to hold
+  - out of the country
+  - overseas for work
+  - keys will be mailed
+  - gift card
+  check_address_photo_mismatch: true
+market_context: true
+realert_on:
+- new
+- price_drop
+- relist
+relist_after_days: 3
+buyer:
+  show:
+  - open_houses
+  - price_history
+  - hoa
+  - coming_soon
+  hoa_max: null
+text_style:
+  one_sentence_per_line: true
+  blank_line_after_each_sentence: true
+  blank_line_between_blocks: true
+  max_line_chars: 45
+  never_wrap: true
+  break_after_colon: true
+  links_on_own_line: true
+message_style:
+  blocks:
+  - headline
+  - summary
+  - details
+  - context
+  - address_and_link
+  - close
+  max_line_chars: 45
+  no_caps_stars_or_tags: true
+  headlines:
+    new: "New place that fits \U0001F3E1"
+    price_drop: "A price came down \U0001F4C9"
+    relist: Back on the market
+    bundle: "{N} new places today \U0001F3E1"
+  tier_words:
+    target: in your target range
+    stretch: in your stretch range
+    stretch_top: top of your stretch range
+    above: above your usual range
+  price_drop_line: Now $A/mo (was $B)
+  unknown_phrase: not listed yet, worth asking
+  market_min_comps: 8
+  bundle_window_minutes: 60
+  close: No rush. I'll keep watching.
+replies: true

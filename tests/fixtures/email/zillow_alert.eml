@@ -1,0 +1,25 @@
+From: Zillow <instant-updates@mail.zillow.com>
+To: alerts@example.com
+Subject: 2 new results for "Los Angeles, CA rentals"
+Date: Mon, 26 Oct 2026 19:02:00 +0000
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1"
+
+--b1
+Content-Type: text/plain; charset=utf-8
+
+SYNTHETIC TEST FIXTURE (made-up listings, shaped like a Zillow instant alert).
+
+--b1
+Content-Type: text/html; charset=utf-8
+
+<html><body><table>
+<tr><td><a href="https://www.zillow.com/homedetails/100-Example-Ln-Los-Angeles-CA-90001/99000001_zpid/?utm_source=email"><img src="x.jpg"></a>
+<div>$3,750/mo</div><div>2 bds | 2 ba | 1,050 sqft - Townhouse for rent</div>
+<div>100 Example Ln, Los Angeles, CA 90001</div>
+<a href="https://www.zillow.com/homedetails/100-Example-Ln-Los-Angeles-CA-90001/99000001_zpid/?utm_source=email">View</a></td></tr>
+<tr><td><a href="https://www.zillow.com/homedetails/200-Sample-Ave-APT-3-Los-Angeles-CA-90002/99000002_zpid/">
+$4,400/mo 2 bds 1 ba 900 sqft Apartment for rent 200 Sample Ave APT 3, Los Angeles, CA 90002</a></td></tr>
+<tr><td><a href="https://www.zillow.com/myzillow/savedsearches">Manage saved searches</a></td></tr>
+</table></body></html>
+--b1--

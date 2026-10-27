@@ -1,0 +1,16 @@
+From: Zillow <rental-instant-updates@mail.zillow.com>
+Subject: New Rental Match at $2,950/mo (SYNTHETIC TEST FIXTURE: made-up listing, links and tokens)
+
+$2,950/mo
+
+1 bd
+|
+1 ba
+
+55 Demo Pl #4, Los Angeles, CA 90001
+
+Apply now
+
+(https://click.mail.zillow.com/f/a/Tx1~~/AAAAARA~/q?target=https%3A%2F%2Fwww.zillow.com%2Frental-manager%2Fapply%2Fsynth-55demo%2F%3Frtoken%3DSYNTH)
+
+See latest search results

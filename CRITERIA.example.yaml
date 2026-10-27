@@ -1,0 +1,104 @@
+# Generic template — copy to CRITERIA.yaml and edit. US rentals (default) or buying (experimental).
+profile: someone
+plan_mode: lean                  # lean | standard | hands_on  (see COSTS.md)
+mode: lease                      # lease (default) | buy (experimental; price_tiers are purchase prices)
+move_in: "2026-12-01"            # or ASAP
+timezone: America/Los_Angeles    # the search's own clock (asked at setup step 1): quiet hours, Sleep mode, the 6 PM roundup, the day-4 check-in. US zones, e.g. America/New_York, America/Chicago, America/Denver
+recipients:
+  - {name: Person A, channel: imessage, phone_last4: ""}   # the owner (first in the list). imessage | sms
+  # - {name: Person B, channel: imessage, phone_last4: "", role: co_decider}   # added later via "add my partner"; role: co_decider | in_the_know
+photon: {project_id: "", user_limit: null}   # secret goes in env PHOTON_API_KEY, never here. user_limit: people your Photon plan allows (see photon.codes/pricing); null = no check
+replies: false                   # true = co-deciders reply naturally ("yes", "no, too far", "love the kitchen"), relayed verbatim (needs the reply listener)
+feedback_email: ""                 # Make it better: a bug or idea someone confirms with a clear yes is emailed here by YOUR bot (words + version + last text kind only). "" = off (default; the owner sets their own).
+inbox_pull: routine              # routine = a 10-minute bot routine copies alert emails into ./inbox (no key); api = AGENTMAIL_API_KEY via the secure flow
+daily_cap: 0                     # 0 = off (instant); N = at most N alert texts a day, extras in one evening text (owner says yes first)
+show_source: true                # "Via Redfin" / "Via <manager>" line on each alert
+alert_inbox: ""                  # the bot claims its own inbox on day one and fills this in
+area:
+  cities: [Your City]
+  zips: ["00000"]
+  neighborhoods: []
+beds_min: 2
+baths: {ideal: 2, ok: 1}
+checkins: true                  # weekly near-miss / volume check-in (owner only, confirm-first); false = off
+# Light filters: MATCH = in area + beds_min (unknown kept) + baths_min (unknown kept)
+#   + price <= price_max (unknown kept) + pets not explicitly disallowed.
+match:
+  baths_min: 1
+  price_max: 3500                # same as price_tiers.stretch_max
+  exclude_no_pets: true          # drop only listings that say no pets/dogs
+  nice_to_have: [garage, layout] # shown in every alert as "Has a garage" / "No garage" / "Garage: not listed yet"; never filters
+  layout_any: []                 # [first_floor, single_story, two_story_townhome] = make layout a hard filter again
+  garage_min: 0                  # 1 = make garage a hard filter again
+keywords:   # copy the keyword block from CRITERIA.yaml or customize
+  garage: ["garage"]
+  garage_negative: ["no garage"]
+  first_floor: ["downstairs", "ground floor"]
+  single_story: ["single story"]
+  townhome: ["townhome", "townhouse"]
+  upper_negative: ["upper", "upstairs"]
+price_tiers: {target_max: 3000, stretch_max: 3500}
+pets: {dog: null, cat: null, service_animal: false, esa_letter: false}   # service_animal/esa_letter true = never filter on pet rules (match.exclude_no_pets is the only pet filter)
+prefer_landlord_types: [property_manager, private_owner]
+sources:
+  - {name: Alert emails, type: email, dir: "./inbox"}   # ONE email source reads every site's alerts in ./inbox
+  # Sites that can email alerts to alert_inbox (no extra source line needed):
+  #   Zillow, Redfin, Realtor.com, Zumper, Rent.com, Craigslist,
+  #   and an MLS auto-email from a local agent.
+  # Optional property-manager pages (replace the placeholder, then uncomment):
+  # - {name: My PM, type: appfolio, url: "https://SUBDOMAIN.appfolio.com/listings", verified: false}
+  # - {name: My TenantTurner, type: tenantturner, url: "https://app.tenantturner.com/listings-json/CUSTOMER_ID", verified: false}
+manual_tips:
+  - "Facebook Marketplace / local FB groups: login-only, check by hand (bot does not log in)."
+
+scam_flags:
+  below_comps_pct: 30            # flag if rent/price is this % below median of similar listings seen
+  phrases: ["wire", "western union", "zelle before", "deposit before viewing", "deposit to hold", "out of the country", "overseas for work", "keys will be mailed", "gift card"]
+  check_address_photo_mismatch: true   # flag when photo alt/address text disagree with listing address
+
+market_context: true             # days listed, price drops, vs similar listings seen — only when data exists
+realert_on: [new, price_drop, relist]
+relist_after_days: 3             # gone from feed >= N days then back = RELIST
+
+# ---------- Buy mode (mode: buy) — EXPERIMENTAL; used only when mode: buy ----------
+# Onboarding asks only: price range, beds/baths, areas, HOA max, home type. Everything else is a detail in the alert.
+# Sources: Zillow, Redfin and Realtor.com for-sale alert emails only (site searches = for sale + area, nothing else).
+# No property-manager pages in buy mode. Pending/sold: one calm note, only to people who shortlisted that home.
+buy:
+  price_min: null                # optional floor
+  price_max: 900000              # usually price_tiers.stretch_max
+  baths_min: 2
+  hoa_max: 400                   # $/mo; null = any. Unknown HOA is kept and shown as "HOA: not listed yet"
+  home_types: [house, condo, townhome]   # any subset; unknown type is kept
+pace: standouts                  # buy: standouts (strong match within target: text now; the rest: one evening roundup) | evening | instant
+shadow: false                    # true = proof run: parse and log would-be texts to out/shadow_texts.jsonl, send nothing
+# Example buy setup:
+#   mode: buy
+#   beds_min: 3
+#   price_tiers: {target_max: 800000, stretch_max: 900000}
+#   sources:
+#     - {name: Zillow / Redfin / Realtor.com alerts, type: email, dir: "./inbox"}
+
+text_style:                      # enforced by style.py for EVERY end-user text
+  one_sentence_per_line: true
+  blank_line_after_each_sentence: true   # except alert fact groups, numbered steps, address+link
+  blank_line_between_blocks: true
+  max_line_chars: 30
+  never_wrap: true               # a sentence must fit on one line; rewrite shorter instead
+  break_after_colon: true        # fact labels (Pets:, Garage:) exempt for now
+  links_on_own_line: true
+message_style:                   # calm style; rendered by scout.render()
+  blocks: [headline, summary, details, context, address_and_link, close]
+  max_line_chars: 30             # links may run longer
+  no_caps_stars_or_tags: true
+  headlines: {new: "New place that fits 🏡", price_drop: "A price came down 📉", relist: "Back on the market", bundle: "{N} new places today 🏡"}
+  tier_words: {target: "in your target range", stretch: "in your stretch range", stretch_top: "top of your stretch range", above: "above your usual range"}
+  price_drop_line: "Now $A/mo (was $B)"
+  unknown_phrase: "not listed yet, worth asking"   # unknowns always listed last
+  market_min_comps: 8            # plain words only, e.g. "a bit above similar 2-beds"
+  bundle_window_minutes: 60      # several matches within the hour -> one numbered text, links at end
+  close: "No rush. I'll keep watching."
+
+# Sleep mode (off by default; each person turns it on for themselves, stored in out/members.json).
+# For people who turn it on, finds between start and end wait and arrive as one bundle at the end hour (24h clock, local time).
+quiet_hours: {start: 22, end: 7}

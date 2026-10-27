@@ -1,0 +1,3429 @@
+# Listing Scout: every text, rendered from code (/workspace/listing-scout-template)
+
+## Flow A: owner setup
+
+### A1 owner welcome (with card)
+```
+Hi Alex!
+
+It's Listing Scout.
+
+Tap the card to save me.
+
+I'm watching 620 places.
+
+Quiet days mean nothing fit.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### A2 snapshot
+```
+What's out there now 🏡
+
+I checked 620 places.
+
+3 fit your search right now:
+
+3 in your target range
+
+Here are the top 3:
+
+1. 1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+2. 1 bed, 1 bath
+Los Angeles, 90002
+$1,950/mo
+In your target range
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+Move-in date: not listed yet
+
+200 Sample Ave Apt 210
+https://example.com/listing/2
+Showing link from the listing:
+https://example.com/showing/2
+
+3. 2 bed, 1 bath duplex
+Los Angeles, 90003
+$2,400/mo
+In your target range
+Available now
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+4500 Demo St
+https://example.com/listing/3
+
+From here, I'll stay quiet.
+
+I'll text when a new one fits.
+```
+
+### A2b snapshot, nothing fits
+```
+What's out there now 🏡
+
+I checked 620 places.
+
+Nothing fits today.
+
+From here, I'll stay quiet.
+
+I'll text when a new one fits.
+```
+
+### A3 first-day note
+```
+I checked 620 places today.
+
+Nothing new fit yet.
+
+That's normal on day one.
+
+No rush.
+
+I'll keep watching.
+```
+
+## Flow C: alerts
+
+### C1 single new (approved)
+```
+New place that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C2 price drop
+```
+A price came down 📉
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+Now $1,695/mo (was $1,895)
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C3 relist
+```
+Back on the market 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C4 back, and lower
+```
+Back, and lower 📉
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+Now $1,695/mo (was $1,895)
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C5 two sites, two prices
+```
+New place that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Also $1,750/mo on Zillow
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C6 missing fields
+```
+New place that fits 🏡
+
+1 bath apartment
+90001
+
+Via Demo PM
+Beds: not listed yet
+Rent: not listed yet
+Garage: not listed yet
+Layout: not listed yet
+Move-in date: not listed yet
+
+Address: not listed yet
+Link: not listed yet
+
+No rush.
+
+I'll keep watching.
+```
+
+### C9 with the listing's apply link
+```
+New place that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+Apply link from the listing:
+https://www.zillow.com/rental-manager/apply/synth-1/
+
+No rush.
+
+I'll keep watching.
+```
+
+### C7 scam caution (one signal)
+```
+New place that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+It wants money before a tour.
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C7b scam caution (two signals)
+```
+New place that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+See it before paying anything.
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C8 bundle of 3
+```
+Three updates today 🏡
+
+1. 1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+2. 1 bed, 1 bath
+Los Angeles, 90002
+$1,950/mo
+In your target range
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+Move-in date: not listed yet
+
+200 Sample Ave Apt 210
+https://example.com/listing/2
+Showing link from the listing:
+https://example.com/showing/2
+
+3. 2 bed, 1 bath duplex
+Price came down
+Los Angeles, 90003
+Now $2,400/mo (was $2,500)
+In your target range
+Available now
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+It wants money before a tour.
+
+4500 Demo St
+https://example.com/listing/3
+
+No rush.
+
+I'll keep watching.
+```
+
+### C10 outage notice
+```
+Example PM is quiet today.
+
+I'll keep checking it.
+
+Your other sites are fine.
+```
+
+## Flow B: sharing the search
+
+### B1a invite intro (to owner)
+```
+Here's Sarah's invite.
+
+Forward the next text.
+
+Press and hold it.
+
+Tap More, then the arrow.
+
+Pick Sarah and press Send.
+```
+
+### B1 invite note
+```
+Hi Sarah!
+
+I set up Listing Scout for us.
+
+It texts us homes that fit.
+
+Tap the number to say hi:
+
+(555) 000-1234
+```
+
+### B2 member welcome (co-decider, replies on)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Alex said you'd stop by.
+
+Here's what we're looking for:
+
+Your City
+2+ beds
+Up to $3,000/mo
+Stretch to $3,500
+
+You get Alex's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Alex.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### B2b member welcome (in the know)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Alex said you'd stop by.
+
+Here's what we're looking for:
+
+Your City
+2+ beds
+Up to $3,000/mo
+Stretch to $3,500
+
+You get Alex's alerts too.
+
+I'll pass your thoughts on.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### B2c member welcome (replies off)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Alex said you'd stop by.
+
+Here's what we're looking for:
+
+Your City
+2+ beds
+Up to $3,000/mo
+Stretch to $3,500
+
+You get Alex's alerts too.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### B3 owner: member is in
+```
+Sarah is in.
+
+Their line is working.
+
+Sarah gets your alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Sarah.
+
+I'll keep a shared shortlist.
+```
+
+### B4 member prefs
+```
+This can fit you, too.
+
+Just ask if you'd like:
+
+1. Only target-range places.
+
+2. Alerts without replies.
+
+If it gets busy, pause works.
+```
+
+### B5 owner nudge (no OK)
+```
+Sarah hasn't texted yet.
+
+No rush.
+
+Want me to resend the invite?
+```
+
+### B6 hint: target not allowed
+```
+My text to Sarah didn't go.
+
+Nothing is wrong on their end.
+
+Their line isn't open yet.
+
+Please ask Sarah to text it.
+
+It's the number ending XXXX.
+
+Any text works, like "hi".
+
+Then I'll try again.
+```
+
+### B7 full household (plan limit)
+```
+Your search has 10 people.
+
+That's your plan's limit.
+
+To add someone, remove one.
+```
+
+### B8 help
+```
+Thoughts on a place help.
+
+I'll pass your words to Alex.
+
+Naming the street helps.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+Leave takes you off.
+
+STOP turns texts off.
+
+I never contact landlords.
+```
+
+## Flow B: replies (replies.py --as, sandbox state)
+
+### Sarah says "OK" -> Sarah
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Alex said you'd stop by.
+
+Here's what we're looking for:
+
+Your City
+2+ beds
+Up to $3,000/mo
+Stretch to $3,500
+
+You get Alex's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Alex.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### Sarah says "OK" -> Alex
+```
+Sarah is in.
+
+Their line is working.
+
+Sarah gets your alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Sarah.
+
+I'll keep a shared shortlist.
+
+(in 60s)
+```
+
+### Sarah says "OK" -> Sarah: snapshot, same as the owner's
+```
+
+```
+
+### Sarah says "love the yard!! but is the garage big enough for two cars?" -> Alex
+```
+Sarah on Example:
+
+"love the yard!! but is the garage big enough for two cars?"
+```
+
+### Sarah says "love the yard!! but is the garage big enough for two cars?" -> Sarah
+```
+Passed that to Alex.
+```
+
+### Alex says "yes, close to work" -> Sarah
+```
+Alex on Example:
+
+"yes, close to work"
+```
+
+### Alex says "yes, close to work" -> Alex
+```
+You both like Example 🏡
+
+It's on your shortlist.
+```
+
+### Alex says "yes, close to work" -> Sarah
+```
+You both like Example 🏡
+
+It's on your shortlist.
+```
+
+### Sarah says "tour Maple St" -> Alex
+```
+Sarah on Example:
+
+"tour Maple St"
+```
+
+### Sarah says "tour Maple St" -> Sarah
+```
+Saved Example.
+
+It's on your shortlist.
+```
+
+### Sarah says "tour Maple St" -> Alex
+```
+Sarah wants to tour Example.
+
+It's on your shortlist.
+
+I won't contact anyone.
+
+The next step is yours.
+```
+
+### Alex says "shortlist" -> Alex
+```
+Your shared shortlist:
+
+1. Example
+$1,695/mo
+You both like it, tour asked
+```
+
+### Sarah says "hmm" -> Alex
+```
+Sarah on Example:
+
+"hmm"
+```
+
+### Sarah says "pic" -> Alex
+```
+Sarah sent a photo of Example.
+```
+
+_[sim] would forward the media as is to ['Alex']_
+
+### Sarah says "pause" -> Sarah
+```
+Got it, texts are paused.
+
+Resume works anytime.
+```
+
+### Sarah says "pause" -> Alex
+```
+Sarah paused their texts.
+```
+
+### Sarah says "resume" -> Sarah
+```
+Welcome back.
+
+Pause works anytime.
+```
+
+### Sarah says "resume" -> Alex
+```
+Sarah resumed their texts.
+```
+
+### Alex says "help" -> Alex
+```
+Thoughts on a place help.
+
+I'll pass your words to Sarah.
+
+Naming the street helps.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+Leave takes you off.
+
+STOP turns texts off.
+
+I never contact landlords.
+```
+
+### Sarah says "what do you keep" -> Sarah
+```
+Replies stay while we search.
+
+When it ends, I delete them.
+
+Only Photon sees the texts.
+```
+
+### Alex says "add 78745" -> Alex
+```
+Got it:
+
+Add 78745 to the search.
+
+Want me to make that change?
+```
+
+### Alex says "yes" -> Alex
+```
+Done, the search is updated.
+
+New matches start from now.
+```
+
+_[sim] would back up and update CRITERIA (zip_add = 78745), then re-seed quietly_
+
+### Sarah says "can we go up to 4,500?" -> Alex
+```
+Sarah suggested:
+
+"can we go up to 4,500?"
+
+Set your target to $4,500.
+
+Want me to make that change?
+```
+
+### Sarah says "can we go up to 4,500?" -> Sarah
+```
+I passed that to Alex.
+
+Alex gets the final say.
+```
+
+### Alex says "no" -> Alex
+```
+Okay, nothing changed.
+```
+
+### Sarah says "we found a place" -> Alex
+```
+Sarah wrote:
+
+"we found a place"
+
+Want me to wrap up the search?
+```
+
+### Sarah says "we found a place" -> Sarah
+```
+I passed that to Alex.
+
+Alex gets the final say.
+```
+
+### Alex says "yes" -> Sarah
+```
+Congrats on the new place!
+
+The search is wrapped up.
+
+No more listing texts from me.
+```
+
+### Alex says "yes" -> Alex
+```
+Congrats on the new place!
+
+The search is wrapped up.
+
+No more listing texts from me.
+```
+
+### Alex says "yes" -> Alex
+```
+I can clear our search data.
+
+And close the saved searches.
+
+Want me to?
+```
+
+### Alex says "no" -> Alex
+```
+Okay, I'll keep it for now.
+
+Thanks for searching with me 🏡
+```
+
+_LISTENER_STOP_
+
+### Sarah says "bug, the link didn't open" -> Sarah
+```
+Got it:
+
+"bug, the link didn't open"
+
+Send it to the Scout team?
+```
+
+### Sarah says "yes" -> Sarah
+```
+Thanks, I passed it on.
+
+The team reviews each one.
+```
+
+### Alex says "idea: a map view" -> Alex
+```
+Got it:
+
+"idea: a map view"
+
+Send it to the Scout team?
+```
+
+### Alex says "no" -> Alex
+```
+Okay, I won't send it.
+```
+
+### Sarah says "leave" -> Sarah
+```
+You're off the search now.
+
+Thanks for helping look.
+```
+
+### Sarah says "leave" -> Alex
+```
+Sarah left the search.
+
+Their texts have stopped.
+```
+
+### Sarah says "STOP" -> left the search; ignored
+```
+
+```
+
+### B9 media unsupported
+```
+I can't pass a photo on yet.
+
+Words come through fine.
+```
+
+### B10 found ask
+```
+That's wonderful news 🏡
+
+Want me to wrap up the search?
+```
+
+### B11 congrats
+```
+Congrats on the new place!
+
+The search is wrapped up.
+
+No more listing texts from me.
+```
+
+### B12 left (owner)
+```
+Sarah left the search.
+
+Their texts have stopped.
+```
+
+### B13 left (member)
+```
+You're off the search now.
+
+Thanks for helping look.
+```
+
+### B14 stopped (owner)
+```
+Sarah turned off texts.
+
+I'll stay quiet for them.
+
+Start turns them back on.
+```
+
+### B15 which one
+```
+Which place do you mean?
+
+Naming the street helps.
+```
+
+### B16 empty shortlist
+```
+Your shortlist is empty.
+
+Places you both like go here.
+```
+
+## Extra features
+
+### F1 Take a break: owner removes someone (asks first)
+```
+Take Sarah off the search?
+```
+
+### F1b removed (owner)
+```
+Sarah is off the search.
+
+I deleted their replies too.
+```
+
+### H1 first-alert note (once per person)
+```
+Quick note on that one.
+
+Missing details say so.
+
+The site didn't list them.
+
+Links open the listing itself.
+```
+
+### H2 what can you do (proven: Zillow)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Ask me to change the search.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites working so far:
+
+Zillow.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### H3 what can you do (none proven)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites are still warming up.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### H4 help (Android)
+```
+Thoughts on a place help.
+
+I'll pass your words to Sarah.
+
+Naming the street helps.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+Leave takes you off.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Emoji may show as words.
+
+Reactions may too.
+
+That's just Android.
+```
+
+### F2 Sleep mode offer (once, the morning after)
+```
+That last one came at 2:14 AM.
+
+Overnight finds can wait.
+
+They'd come at 7 AM instead.
+
+Want me to?
+```
+
+### F2b Sleep mode on
+```
+Sleep mode is on.
+
+Night finds come at 7 AM.
+```
+
+### F2c Sleep mode off
+```
+Sleep mode is off.
+
+Alerts come right away.
+```
+
+### F3 Still available? (liked place gone ~24h)
+```
+Heads up on Santa Isabel:
+
+It's no longer listed.
+
+I'll say if it comes back.
+```
+
+### F5 Fine-tune: read-back
+```
+Got it:
+
+Add 78745 to the search.
+
+Want me to make that change?
+```
+
+### F5b co-decider suggestion (to owner)
+```
+Sarah suggested:
+
+"can we add 78745?"
+
+Add 78745 to the search.
+
+Want me to make that change?
+```
+
+### F5c done
+```
+Done, the search is updated.
+
+New matches start from now.
+```
+
+### F5d unclear
+```
+I'm not sure what to change.
+
+Could you say it another way?
+```
+
+### F5e passed (to co-decider)
+```
+I passed that to Alex.
+
+Alex gets the final say.
+```
+
+### F5f no change
+```
+Okay, nothing changed.
+```
+
+### F6 We found it: co-decider says it (to owner)
+```
+Sarah wrote:
+
+"we found it!!"
+
+Want me to wrap up the search?
+```
+
+### F6b data offer (owner)
+```
+I can clear our search data.
+
+And close the saved searches.
+
+Want me to?
+```
+
+### F7 end my search: ask (owner)
+```
+End your search for good?
+
+Everyone gets one goodbye.
+
+Then no more texts.
+
+Reply yes to end it.
+```
+
+### F7b end my search: goodbye (everyone)
+```
+This search has ended.
+
+No more listing texts from me.
+
+Thanks for searching with me 🏡
+```
+
+### F7c Photon Users reminder (owner)
+```
+One last step is yours.
+
+Open Photon's Users page.
+
+Remove each person there.
+```
+
+### F6c final (cleared)
+```
+Done, it's all cleared.
+
+Thanks for searching with me 🏡
+```
+
+### F6d final (kept)
+```
+Okay, I'll keep it for now.
+
+Thanks for searching with me 🏡
+```
+
+### F7 What I keep
+```
+Replies stay while we search.
+
+When it ends, I delete them.
+
+Only Photon sees the texts.
+```
+
+### F7b delete everything (asks first)
+```
+Delete all the search data?
+
+This can't be undone.
+```
+
+### F7c deleted
+```
+Done, it's all deleted.
+```
+
+## Make it better (bug or idea, confirm first, pending_review only)
+
+### M1 confirm
+```
+Got it:
+
+"bug, the link didn't open"
+
+Send it to the Scout team?
+```
+
+### M2 sent (after a clear yes)
+```
+Thanks, I passed it on.
+
+The team reviews each one.
+```
+
+### M3 dropped (no)
+```
+Okay, I won't send it.
+```
+
+### M4 DRAFT ONLY: You asked, it's fixed (sent by hand after approval + fix)
+```
+You asked, it's fixed:
+
+"bug, the link didn't open"
+
+Thanks for telling me.
+```
+
+## Channels: iPhone (iMessage) vs Android (SMS/RCS)
+
+### H1 reaction sent as text (to an iPhone)
+```
+Sarah ❤️ Maple St
+```
+
+### H1b reaction sent as text (to Android)
+```
+Sarah loved Maple St
+```
+
+### H2 alert (to Android: no emoji)
+```
+New place that fits
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### H3 member welcome (to Android: no card, save line)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Alex said you'd stop by.
+
+Save me as Listing Scout.
+
+Here's what we're looking for:
+
+Your City
+2+ beds
+Up to $3,000/mo
+Stretch to $3,500
+
+You get Alex's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Alex.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### H4 owner invite intro (owner on Android)
+```
+Here's Sarah's invite.
+
+Forward the next text.
+
+Press and hold it.
+
+Tap the menu, then Forward.
+
+Pick Sarah and press Send.
+```
+
+## Criteria hygiene (must-have vs nice-to-have; confirm-first)
+
+### K1 setup question
+```
+Is a garage a must-have?
+
+Or just nice to have?
+```
+
+### K1b setup question (layout)
+```
+Is ground floor a must-have?
+
+Or just nice to have?
+```
+
+### K2 trade-off (real counts)
+```
+Here's the trade-off today:
+
+As a must-have, about 2 fit.
+
+As a nice-to-have, about 12.
+```
+
+### K2b trade-off (can't count)
+```
+I can't count that one yet.
+
+Either way works for now.
+```
+
+### K3 weekly near-miss check-in
+```
+3 places missed only on price.
+
+To see places like these:
+
+Set your stretch to $5,200.
+
+Want me to make that change?
+```
+
+### K4 volume: quiet week
+```
+No new matches in a week.
+
+Loosening one thing may help:
+
+Set your stretch to $5,200.
+
+Want me to make that change?
+```
+
+### K5 volume: busy week
+```
+Lots of matches lately.
+
+One change could trim them:
+
+Make a garage a must-have.
+
+Want me to make that change?
+```
+
+## Source line, quiet week, daily cap, first week
+
+### P1 alert with Via + Posted (source gave a time)
+```
+New place that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+
+Posted about 20 min ago
+Available 12/1/26
+Via Redfin
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### P2 quiet-week pulse (real count)
+```
+Quiet week, still watching.
+
+I checked 620 places.
+
+Nothing new fit yet.
+
+Say no check-ins to skip.
+```
+
+### P2b quiet-week pulse (no count)
+```
+Quiet week, still watching.
+
+Nothing new fit yet.
+
+Say no check-ins to skip.
+```
+
+### P3 daily cap ask
+```
+Got it:
+
+Cap alerts at 3 a day.
+
+Want me to make that change?
+```
+
+### P3b evening bundle
+```
+Today's other 3 finds:
+
+1. 1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695/mo
+In your target range
+Available 12/1/26
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+2. 1 bed, 1 bath
+Los Angeles, 90002
+$1,950/mo
+In your target range
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+Move-in date: not listed yet
+
+200 Sample Ave Apt 210
+https://example.com/listing/2
+Showing link from the listing:
+https://example.com/showing/2
+
+3. 2 bed, 1 bath duplex
+Los Angeles, 90003
+$2,400/mo
+In your target range
+Available now
+Via Demo PM
+Garage: not listed yet
+Layout: not listed yet
+
+It wants money before a tour.
+
+4500 Demo St
+https://example.com/listing/3
+
+No rush.
+
+I'll keep watching.
+```
+
+### P6 what can you do (owner)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Ask me to change the search.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites are still warming up.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### P6b what can you do (member)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites are still warming up.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### P7 no check-ins
+```
+Okay, no more check-ins.
+
+Alerts keep coming as usual.
+```
+
+### P7b check-ins on
+```
+Okay, check-ins are back on.
+```
+
+### P4 first-week ask
+```
+A few days in.
+
+Anything bugging you so far?
+
+Say no check-ins to skip.
+```
+
+### P4b all good
+```
+Glad it's working well.
+```
+
+### P5 listener back
+```
+Replies paused for a moment.
+
+They're working again now.
+```
+
+
+# Buying (experimental): every text in buy mode
+
+
+## Flow A: owner setup
+
+### A1 owner welcome (with card)
+```
+Hi Jordan!
+
+It's Listing Scout.
+
+Tap the card to save me.
+
+I'm watching 620 places.
+
+Quiet days mean nothing fit.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### A2 snapshot
+```
+What's out there now 🏡
+
+I checked 620 places.
+
+3 fit your search right now:
+
+3 in your target range
+
+Here are the top 3:
+
+1. 1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+2. 1 bed, 1 bath
+Los Angeles, 90002
+$1,950
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+200 Sample Ave Apt 210
+https://example.com/listing/2
+Showing link from the listing:
+https://example.com/showing/2
+
+3. 2 bed, 1 bath duplex
+Los Angeles, 90003
+$2,400
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+4500 Demo St
+https://example.com/listing/3
+
+From here, I'll stay quiet.
+
+I'll text when a new one fits.
+```
+
+### A2b snapshot, nothing fits
+```
+What's out there now 🏡
+
+I checked 620 places.
+
+Nothing fits today.
+
+From here, I'll stay quiet.
+
+I'll text when a new one fits.
+```
+
+### A3 first-day note
+```
+I checked 620 places today.
+
+Nothing new fit yet.
+
+That's normal on day one.
+
+No rush.
+
+I'll keep watching.
+```
+
+## Flow C: alerts
+
+### C1 single new (approved)
+```
+New home that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C2 price drop
+```
+Price cut 📉
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+Now $1,695 (was $1,895)
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C3 relist
+```
+Back on the market 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C4 back, and lower
+```
+Back, and lower 📉
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+Now $1,695 (was $1,895)
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C5 two sites, two prices
+```
+New home that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Also $1,750 on Zillow
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C6 missing fields
+```
+New home that fits 🏡
+
+1 bath apartment
+90001
+
+Via Demo PM
+Beds: not listed yet
+Price: not listed yet
+HOA: not listed yet
+
+Address: not listed yet
+Link: not listed yet
+
+No rush.
+
+I'll keep watching.
+```
+
+### C9 with the listing's apply link
+```
+New home that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C7 scam caution (one signal)
+```
+New home that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+It wants money before a tour.
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C7b scam caution (two signals)
+```
+New home that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+See it before paying anything.
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### C8 bundle of 3
+```
+Three updates today 🏡
+
+1. 1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+2. 1 bed, 1 bath
+Los Angeles, 90002
+$1,950
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+200 Sample Ave Apt 210
+https://example.com/listing/2
+Showing link from the listing:
+https://example.com/showing/2
+
+3. 2 bed, 1 bath duplex
+Price came down
+Los Angeles, 90003
+Now $2,400 (was $2,500)
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+It wants money before a tour.
+
+4500 Demo St
+https://example.com/listing/3
+
+No rush.
+
+I'll keep watching.
+```
+
+### C10 outage notice
+```
+Example PM is quiet today.
+
+I'll keep checking it.
+
+Your other sites are fine.
+```
+
+## Flow B: sharing the search
+
+### B1a invite intro (to owner)
+```
+Here's Sarah's invite.
+
+Forward the next text.
+
+Press and hold it.
+
+Tap More, then the arrow.
+
+Pick Sarah and press Send.
+```
+
+### B1 invite note
+```
+Hi Sarah!
+
+I set up Listing Scout for us.
+
+It texts us homes that fit.
+
+Tap the number to say hi:
+
+(555) 000-1234
+```
+
+### B2 member welcome (co-decider, replies on)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Jordan said you'd stop by.
+
+Here's what we're looking for:
+
+Exampleville
+3+ beds
+Up to $800,000
+Stretch to $900,000
+HOA up to $400/mo
+
+You get Jordan's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Jordan.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### B2b member welcome (in the know)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Jordan said you'd stop by.
+
+Here's what we're looking for:
+
+Exampleville
+3+ beds
+Up to $800,000
+Stretch to $900,000
+HOA up to $400/mo
+
+You get Jordan's alerts too.
+
+I'll pass your thoughts on.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### B2c member welcome (replies off)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Jordan said you'd stop by.
+
+Here's what we're looking for:
+
+Exampleville
+3+ beds
+Up to $800,000
+Stretch to $900,000
+HOA up to $400/mo
+
+You get Jordan's alerts too.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### B3 owner: member is in
+```
+Sarah is in.
+
+Their line is working.
+
+Sarah gets your alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Sarah.
+
+I'll keep a shared shortlist.
+```
+
+### B4 member prefs
+```
+This can fit you, too.
+
+Just ask if you'd like:
+
+1. Only target-range places.
+
+2. Alerts without replies.
+
+If it gets busy, pause works.
+```
+
+### B5 owner nudge (no OK)
+```
+Sarah hasn't texted yet.
+
+No rush.
+
+Want me to resend the invite?
+```
+
+### B6 hint: target not allowed
+```
+My text to Sarah didn't go.
+
+Nothing is wrong on their end.
+
+Their line isn't open yet.
+
+Please ask Sarah to text it.
+
+It's the number ending XXXX.
+
+Any text works, like "hi".
+
+Then I'll try again.
+```
+
+### B7 full household (plan limit)
+```
+Your search has 10 people.
+
+That's your plan's limit.
+
+To add someone, remove one.
+```
+
+### B8 help
+```
+Thoughts on a place help.
+
+I'll pass your words along.
+
+Naming the street helps.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+Leave takes you off.
+
+STOP turns texts off.
+
+I never contact landlords.
+```
+
+## Flow B: replies (replies.py --as, sandbox state)
+
+### Sarah says "OK" -> Sarah
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Jordan said you'd stop by.
+
+Here's what we're looking for:
+
+Exampleville
+3+ beds
+Up to $800,000
+Stretch to $900,000
+HOA up to $400/mo
+
+You get Jordan's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Jordan.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Not an agent or advice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### Sarah says "OK" -> Jordan
+```
+Sarah is in.
+
+Their line is working.
+
+Sarah gets your alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Sarah.
+
+I'll keep a shared shortlist.
+
+(in 60s)
+```
+
+### Sarah says "OK" -> Sarah: snapshot, same as the owner's
+```
+
+```
+
+### Sarah says "love the yard!! but is the garage big enough for two cars?" -> Jordan
+```
+Sarah on Example:
+
+"love the yard!! but is the garage big enough for two cars?"
+```
+
+### Sarah says "love the yard!! but is the garage big enough for two cars?" -> Sarah
+```
+Passed that to Jordan.
+```
+
+### Jordan says "yes, close to work" -> Sarah
+```
+Jordan on Example:
+
+"yes, close to work"
+```
+
+### Jordan says "yes, close to work" -> Jordan
+```
+You both like Example 🏡
+
+It's on your shortlist.
+```
+
+### Jordan says "yes, close to work" -> Sarah
+```
+You both like Example 🏡
+
+It's on your shortlist.
+```
+
+### Sarah says "tour Maple St" -> Jordan
+```
+Sarah on Example:
+
+"tour Maple St"
+```
+
+### Sarah says "tour Maple St" -> Sarah
+```
+Saved Example.
+
+It's on your shortlist.
+```
+
+### Sarah says "tour Maple St" -> Jordan
+```
+Sarah wants to tour Example.
+
+It's on your shortlist.
+
+I won't contact anyone.
+
+The next step is yours.
+```
+
+### Jordan says "shortlist" -> Jordan
+```
+Your shared shortlist:
+
+1. Example
+$1,695/mo
+You both like it, tour asked
+```
+
+### Sarah says "hmm" -> Jordan
+```
+Sarah on Example:
+
+"hmm"
+```
+
+### Sarah says "pic" -> Jordan
+```
+Sarah sent a photo of Example.
+```
+
+_[sim] would forward the media as is to ['Jordan']_
+
+### Sarah says "pause" -> Sarah
+```
+Got it, texts are paused.
+
+Resume works anytime.
+```
+
+### Sarah says "pause" -> Jordan
+```
+Sarah paused their texts.
+```
+
+### Sarah says "resume" -> Sarah
+```
+Welcome back.
+
+Pause works anytime.
+```
+
+### Sarah says "resume" -> Jordan
+```
+Sarah resumed their texts.
+```
+
+### Jordan says "help" -> Jordan
+```
+Thoughts on a place help.
+
+I'll pass your words to Sarah.
+
+Naming the street helps.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+Leave takes you off.
+
+STOP turns texts off.
+
+I never contact landlords.
+```
+
+### Sarah says "what do you keep" -> Sarah
+```
+Replies stay while we search.
+
+When it ends, I delete them.
+
+Only Photon sees the texts.
+```
+
+### Jordan says "add 78745" -> Jordan
+```
+Got it:
+
+Add 78745 to the search.
+
+Want me to make that change?
+```
+
+### Jordan says "yes" -> Jordan
+```
+Done, the search is updated.
+
+New matches start from now.
+```
+
+_[sim] would back up and update CRITERIA (zip_add = 78745), then re-seed quietly_
+
+### Sarah says "can we go up to 4,500?" -> Jordan
+```
+Sarah suggested:
+
+"can we go up to 4,500?"
+
+Set your target to $4,500.
+
+Want me to make that change?
+```
+
+### Sarah says "can we go up to 4,500?" -> Sarah
+```
+I passed that to Jordan.
+
+Jordan gets the final say.
+```
+
+### Jordan says "no" -> Jordan
+```
+Okay, nothing changed.
+```
+
+### Sarah says "we found a place" -> Jordan
+```
+Sarah wrote:
+
+"we found a place"
+
+Want me to wrap up the search?
+```
+
+### Sarah says "we found a place" -> Sarah
+```
+I passed that to Jordan.
+
+Jordan gets the final say.
+```
+
+### Jordan says "yes" -> Sarah
+```
+Congrats on the new place!
+
+The search is wrapped up.
+
+No more listing texts from me.
+```
+
+### Jordan says "yes" -> Jordan
+```
+Congrats on the new place!
+
+The search is wrapped up.
+
+No more listing texts from me.
+```
+
+### Jordan says "yes" -> Jordan
+```
+I can clear our search data.
+
+And close the saved searches.
+
+Want me to?
+```
+
+### Jordan says "no" -> Jordan
+```
+Okay, I'll keep it for now.
+
+Thanks for searching with me 🏡
+```
+
+_LISTENER_STOP_
+
+### Sarah says "bug, the link didn't open" -> Sarah
+```
+Got it:
+
+"bug, the link didn't open"
+
+Send it to the Scout team?
+```
+
+### Sarah says "yes" -> Sarah
+```
+Thanks, I passed it on.
+
+The team reviews each one.
+```
+
+### Jordan says "idea: a map view" -> Jordan
+```
+Got it:
+
+"idea: a map view"
+
+Send it to the Scout team?
+```
+
+### Jordan says "no" -> Jordan
+```
+Okay, I won't send it.
+```
+
+### Sarah says "leave" -> Sarah
+```
+You're off the search now.
+
+Thanks for helping look.
+```
+
+### Sarah says "leave" -> Jordan
+```
+Sarah left the search.
+
+Their texts have stopped.
+```
+
+### Sarah says "STOP" -> left the search; ignored
+```
+
+```
+
+### B9 media unsupported
+```
+I can't pass a photo on yet.
+
+Words come through fine.
+```
+
+### B10 found ask
+```
+That's wonderful news 🏡
+
+Want me to wrap up the search?
+```
+
+### B11 congrats
+```
+Congrats on the new place!
+
+The search is wrapped up.
+
+No more listing texts from me.
+```
+
+### B12 left (owner)
+```
+Sarah left the search.
+
+Their texts have stopped.
+```
+
+### B13 left (member)
+```
+You're off the search now.
+
+Thanks for helping look.
+```
+
+### B14 stopped (owner)
+```
+Sarah turned off texts.
+
+I'll stay quiet for them.
+
+Start turns them back on.
+```
+
+### B15 which one
+```
+Which place do you mean?
+
+Naming the street helps.
+```
+
+### B16 empty shortlist
+```
+Your shortlist is empty.
+
+Places you both like go here.
+```
+
+## Extra features
+
+### F1 Take a break: owner removes someone (asks first)
+```
+Take Sarah off the search?
+```
+
+### F1b removed (owner)
+```
+Sarah is off the search.
+
+I deleted their replies too.
+```
+
+### H1 first-alert note (once per person)
+```
+Quick note on that one.
+
+Missing details say so.
+
+The site didn't list them.
+
+Links open the listing itself.
+```
+
+### H2 what can you do (proven: Zillow)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Ask me to change the search.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites working so far:
+
+Zillow.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### H3 what can you do (none proven)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites are still warming up.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### H4 help (Android)
+```
+Thoughts on a place help.
+
+I'll pass your words to Sarah.
+
+Naming the street helps.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+Leave takes you off.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Emoji may show as words.
+
+Reactions may too.
+
+That's just Android.
+```
+
+### F2 Sleep mode offer (once, the morning after)
+```
+That last one came at 2:14 AM.
+
+Overnight finds can wait.
+
+They'd come at 7 AM instead.
+
+Want me to?
+```
+
+### F2b Sleep mode on
+```
+Sleep mode is on.
+
+Night finds come at 7 AM.
+```
+
+### F2c Sleep mode off
+```
+Sleep mode is off.
+
+Alerts come right away.
+```
+
+### F3 Still available? (liked place gone ~24h)
+```
+Heads up on Santa Isabel:
+
+It's no longer listed.
+
+I'll say if it comes back.
+```
+
+### F5 Fine-tune: read-back
+```
+Got it:
+
+Add 78745 to the search.
+
+Want me to make that change?
+```
+
+### F5b co-decider suggestion (to owner)
+```
+Sarah suggested:
+
+"can we add 78745?"
+
+Add 78745 to the search.
+
+Want me to make that change?
+```
+
+### F5c done
+```
+Done, the search is updated.
+
+New matches start from now.
+```
+
+### F5d unclear
+```
+I'm not sure what to change.
+
+Could you say it another way?
+```
+
+### F5e passed (to co-decider)
+```
+I passed that to Jordan.
+
+Jordan gets the final say.
+```
+
+### F5f no change
+```
+Okay, nothing changed.
+```
+
+### F6 We found it: co-decider says it (to owner)
+```
+Sarah wrote:
+
+"we found it!!"
+
+Want me to wrap up the search?
+```
+
+### F6b data offer (owner)
+```
+I can clear our search data.
+
+And close the saved searches.
+
+Want me to?
+```
+
+### F7 end my search: ask (owner)
+```
+End your search for good?
+
+Everyone gets one goodbye.
+
+Then no more texts.
+
+Reply yes to end it.
+```
+
+### F7b end my search: goodbye (everyone)
+```
+This search has ended.
+
+No more listing texts from me.
+
+Thanks for searching with me 🏡
+```
+
+### F7c Photon Users reminder (owner)
+```
+One last step is yours.
+
+Open Photon's Users page.
+
+Remove each person there.
+```
+
+### F6c final (cleared)
+```
+Done, it's all cleared.
+
+Thanks for searching with me 🏡
+```
+
+### F6d final (kept)
+```
+Okay, I'll keep it for now.
+
+Thanks for searching with me 🏡
+```
+
+### F7 What I keep
+```
+Replies stay while we search.
+
+When it ends, I delete them.
+
+Only Photon sees the texts.
+```
+
+### F7b delete everything (asks first)
+```
+Delete all the search data?
+
+This can't be undone.
+```
+
+### F7c deleted
+```
+Done, it's all deleted.
+```
+
+## Make it better (bug or idea, confirm first, pending_review only)
+
+### M1 confirm
+```
+Got it:
+
+"bug, the link didn't open"
+
+Send it to the Scout team?
+```
+
+### M2 sent (after a clear yes)
+```
+Thanks, I passed it on.
+
+The team reviews each one.
+```
+
+### M3 dropped (no)
+```
+Okay, I won't send it.
+```
+
+### M4 DRAFT ONLY: You asked, it's fixed (sent by hand after approval + fix)
+```
+You asked, it's fixed:
+
+"bug, the link didn't open"
+
+Thanks for telling me.
+```
+
+## Channels: iPhone (iMessage) vs Android (SMS/RCS)
+
+### H1 reaction sent as text (to an iPhone)
+```
+Sarah ❤️ Maple St
+```
+
+### H1b reaction sent as text (to Android)
+```
+Sarah loved Maple St
+```
+
+### H2 alert (to Android: no emoji)
+```
+New home that fits
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### H3 member welcome (to Android: no card, save line)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Jordan said you'd stop by.
+
+Save me as Listing Scout.
+
+Here's what we're looking for:
+
+Exampleville
+3+ beds
+Up to $800,000
+Stretch to $900,000
+HOA up to $400/mo
+
+You get Jordan's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Jordan.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### H4 owner invite intro (owner on Android)
+```
+Here's Sarah's invite.
+
+Forward the next text.
+
+Press and hold it.
+
+Tap the menu, then Forward.
+
+Pick Sarah and press Send.
+```
+
+## Criteria hygiene (must-have vs nice-to-have; confirm-first)
+
+### K1 setup question
+```
+Is a garage a must-have?
+
+Or just nice to have?
+```
+
+### K1b setup question (layout)
+```
+Is ground floor a must-have?
+
+Or just nice to have?
+```
+
+### K2 trade-off (real counts)
+```
+Here's the trade-off today:
+
+As a must-have, about 2 fit.
+
+As a nice-to-have, about 12.
+```
+
+### K2b trade-off (can't count)
+```
+I can't count that one yet.
+
+Either way works for now.
+```
+
+### K3 weekly near-miss check-in
+```
+3 places missed only on price.
+
+To see places like these:
+
+Set your stretch to $5,200.
+
+Want me to make that change?
+```
+
+### K4 volume: quiet week
+```
+No new matches in a week.
+
+Loosening one thing may help:
+
+Set your stretch to $5,200.
+
+Want me to make that change?
+```
+
+### K5 volume: busy week
+```
+Lots of matches lately.
+
+One change could trim them:
+
+Make a garage a must-have.
+
+Want me to make that change?
+```
+
+## Source line, quiet week, daily cap, first week
+
+### P1 alert with Via + Posted (source gave a time)
+```
+New home that fits 🏡
+
+1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+
+Via Redfin
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+No rush.
+
+I'll keep watching.
+```
+
+### P2 quiet-week pulse (real count)
+```
+Quiet week, still watching.
+
+I checked 620 places.
+
+Nothing new fit yet.
+
+Say no check-ins to skip.
+```
+
+### P2b quiet-week pulse (no count)
+```
+Quiet week, still watching.
+
+Nothing new fit yet.
+
+Say no check-ins to skip.
+```
+
+### P3 daily cap ask
+```
+Got it:
+
+Cap alerts at 3 a day.
+
+Want me to make that change?
+```
+
+### P3b evening bundle
+```
+Today's other 3 finds:
+
+1. 1 bed, 1 bath apartment
+Los Angeles, 90001
+$1,695
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+100 Example St Unit 4
+https://example.com/listing/1
+
+2. 1 bed, 1 bath
+Los Angeles, 90002
+$1,950
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+200 Sample Ave Apt 210
+https://example.com/listing/2
+Showing link from the listing:
+https://example.com/showing/2
+
+3. 2 bed, 1 bath duplex
+Los Angeles, 90003
+$2,400
+In your target range
+Via Demo PM
+HOA: not listed yet
+
+It wants money before a tour.
+
+4500 Demo St
+https://example.com/listing/3
+
+No rush.
+
+I'll keep watching.
+```
+
+### P6 what can you do (owner)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Ask me to change the search.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites are still warming up.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### P6b what can you do (member)
+```
+I text new places that fit.
+
+Reply with your thoughts.
+
+Shortlist shows shared picks.
+
+Pause and resume work anytime.
+
+STOP turns texts off.
+
+I never contact landlords.
+
+Sites are still warming up.
+
+The next step is always yours.
+
+Built by @errnsterr
+```
+
+### P7 no check-ins
+```
+Okay, no more check-ins.
+
+Alerts keep coming as usual.
+```
+
+### P7b check-ins on
+```
+Okay, check-ins are back on.
+```
+
+### P4 first-week ask
+```
+A few days in.
+
+Anything bugging you so far?
+
+Say no check-ins to skip.
+```
+
+### P4b all good
+```
+Glad it's working well.
+```
+
+### P5 listener back
+```
+Replies paused for a moment.
+
+They're working again now.
+```
+
+## Buy mode (synthetic Zillow / Redfin / Realtor.com emails)
+
+### Y1 new home (HOA not listed)
+```
+New home that fits 🏡
+
+3 bed, 2 bath house
+Exampleville, 90001
+$850,000
+In your stretch range
+
+1,600 sq ft
+Lot 5,000 sq ft
+Built 1978
+2 days on market
+Via Zillow
+HOA: not listed yet
+
+123 Maple Test Dr
+https://www.zillow.com/homedetails/11111111_zpid/
+
+No rush.
+
+I'll keep watching.
+```
+
+### Y2 new home (HOA, lot, open house)
+```
+New home that fits 🏡
+
+3 bed, 2 bath house
+Exampleville, 90001
+$699,000
+In your target range
+
+Open house Sun 12 PM - 3 PM
+HOA $150/mo
+1,450 sq ft
+Lot 0.25 acres
+Built 2001
+Via Realtor.com
+
+88 Spruce Sample Rd
+https://www.realtor.com/realestateandhomes-detail/88-Spruce-Sample-Rd_Exampleville_CA_90001_M00000-00001
+
+No rush.
+
+I'll keep watching.
+```
+
+### Y3 price cut
+```
+Price cut 📉
+
+4 bed, 3 bath house
+Exampleville, 90001
+Now $725,000 (was $749,000)
+In your target range
+
+Via Realtor.com
+HOA: not listed yet
+
+5 Willow Test Pl
+https://www.realtor.com/realestateandhomes-detail/5-Willow-Test-Pl_Exampleville_CA_90001_M00000-00002
+
+No rush.
+
+I'll keep watching.
+```
+
+### Y4 back on market
+```
+Back on the market 🏡
+
+3 bed, 2.5 bath house
+Exampleville, 90001
+$760,000
+In your target range
+
+Open house Sat 1 - 4 PM
+Via Redfin
+HOA: not listed yet
+
+300 Pine Demo Ave
+https://www.redfin.com/CA/Exampleville/300-Pine-Demo-Ave-90001/home/7777777
+
+No rush.
+
+I'll keep watching.
+```
+
+### Y5 coming soon
+```
+New home that fits 🏡
+
+3 bed, 2 bath townhome
+Exampleville, 90001
+$780,000
+In your target range
+
+Coming soon
+HOA $200/mo
+Via Zillow
+
+12 Elm Pretend St
+https://www.zillow.com/homedetails/66666666_zpid/
+
+No rush.
+
+I'll keep watching.
+```
+
+### Y6 pending (to shortlisters only)
+```
+Update on 9 Birch Fake Ct:
+
+It's now pending.
+
+I'll keep watching for you.
+```
+
+### Y6b sold
+```
+Update on 77 Cedar Mock Way:
+
+It sold.
+
+I'll keep watching for you.
+```
+
+### Y7 evening roundup
+```
+Today's roundup, 2 homes:
+
+1. 3 bed, 2 bath house
+Exampleville, 90001
+$850,000
+In your stretch range
+1,600 sq ft
+Lot 5,000 sq ft
+Built 1978
+2 days on market
+Via Zillow
+HOA: not listed yet
+
+123 Maple Test Dr
+https://www.zillow.com/homedetails/11111111_zpid/
+
+2. 3 bed, 2 bath townhome
+Exampleville, 90001
+$780,000
+In your target range
+Coming soon
+HOA $200/mo
+Via Zillow
+
+12 Elm Pretend St
+https://www.zillow.com/homedetails/66666666_zpid/
+
+No rush.
+
+I'll keep watching.
+```
+
+### Y10 with the listing's agent link
+```
+New home that fits 🏡
+
+3 bed, 2 bath house
+Exampleville, 90001
+$850,000
+In your stretch range
+
+1,600 sq ft
+Lot 5,000 sq ft
+Built 1978
+2 days on market
+Via Zillow
+HOA: not listed yet
+
+123 Maple Test Dr
+https://www.zillow.com/homedetails/11111111_zpid/
+Agent link from the listing:
+https://www.redfin.com/CA/Exampleville/12-Fake-Ln-90001/home/7000123/tour
+
+No rush.
+
+I'll keep watching.
+```
+
+### Y8 owner welcome (buy)
+```
+Hi Jordan!
+
+It's Listing Scout.
+
+Tap the card to save me.
+
+I'm watching 120 places.
+
+Quiet days mean nothing fit.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Not an agent or advice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```
+
+### Y9 member welcome (buy)
+```
+Hi Sarah!
+
+It's Listing Scout.
+
+Jordan said you'd stop by.
+
+Tap the card to save me.
+
+Here's what we're looking for:
+
+Exampleville
+3+ beds
+Up to $800,000
+Stretch to $900,000
+HOA up to $400/mo
+
+You get Jordan's alerts too.
+
+We can decide together here.
+
+Tell me what you think of one.
+
+I'll share it with Jordan.
+
+Always see a place first.
+
+Not listed yet is normal.
+
+A home may show up twice.
+
+Not an agent or advice.
+
+Text STOP anytime to stop.
+
+Spot a bug, just let me know.
+
+Did this come through okay?
+```

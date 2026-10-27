@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+drafts/
+node_modules/
+
+# owner runtime and secrets
+CRITERIA.yaml
+state.json
+outbox.json
+logs/*
+out/*
+inbox/*
+!inbox/.keep
+
+# env files (never commit secrets)
+.env
+.env.*
+*.env
+.envrc
+/env
