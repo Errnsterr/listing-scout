@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Zero-AI scheduler for Listing Scout (no cron/systemd on this box, so a simple loop under nohup).
-# Interval comes from CRITERIA.yaml plan_mode: lean=15 min, standard=5, hands_on=5.
+# Interval: CRITERIA.yaml loop_minutes (default 5). It is read each pass, so a change applies after the current wait.
 # Needs PHOTON_API_KEY in the environment of the shell that starts it (never written to disk here).
 # Start it with ./src/ensure_running.sh (keeps exactly one copy), not directly.
 cd "$(dirname "$0")/.."
 ENVF="${SCOUT_ENV:-$HOME/.config/listing-scout/env}"; [ -f "$ENVF" ] && { set -a; . "$ENVF"; set +a; }   # key survives restarts (chmod 600, never printed)
 while true; do
   mode=$(python3 -c "import yaml;print(yaml.safe_load(open('CRITERIA.yaml')).get('plan_mode','standard'))")
-  case "$mode" in lean) N=15;; *) N=5;; esac
+  N=$(python3 -c "import yaml;print(max(1, int(yaml.safe_load(open('CRITERIA.yaml')).get('loop_minutes') or 5)))" 2>/dev/null || echo 5)
   ts=$(date '+%F %T %Z')
   ./src/ensure_running.sh >/dev/null 2>&1 || true   # keeps the reply listener up (one copy); flags a missing key
   if [ -f out/search_ended.json ]; then echo "$ts search wrapped up (out/search_ended.json); loop stopping" >> logs/loop.log; exit 0; fi   # We found it

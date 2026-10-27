@@ -13,6 +13,8 @@ feedback_email: ""                 # Make it better: a bug or idea someone confi
 inbox_pull: routine              # routine = a 10-minute bot routine copies alert emails into ./inbox (no key); api = AGENTMAIL_API_KEY via the secure flow
 inbox_routine_minutes: 10        # how often that routine runs; "email sync stalled" waits this + 3 h (blank = the plan's interval)
 daily_cap: 0                     # 0 = off (instant); N = at most N alert texts a day, extras in one evening text (owner says yes first)
+loop_minutes: 5                  # how often the script checks listings (default 5); plan_mode does not change it
+bundle_cooldown_min: 0           # 0 = every match is texted on the check that finds it (default); N = later finds within N min of the last text wait and go as one text
 show_source: true                # "Via Redfin" / "Via <manager>" line on each alert
 alert_inbox: ""                  # the bot claims its own inbox on day one and fills this in
 area:
@@ -97,7 +99,7 @@ message_style:                   # calm style; rendered by scout.render()
   price_drop_line: "Now $A/mo (was $B)"
   unknown_phrase: "not listed yet, worth asking"   # unknowns always listed last
   market_min_comps: 8            # plain words only, e.g. "a bit above similar 2-beds"
-  bundle_window_minutes: 60      # several matches within the hour -> one numbered text, links at end
+  bundle_window_minutes: 0       # several matches found on one check -> one numbered text, links at end (timing: bundle_cooldown_min)
   close: "No rush. I'll keep watching."
 
 # Sleep mode (off by default; each person turns it on for themselves, stored in out/members.json).

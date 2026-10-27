@@ -6,10 +6,10 @@ description: >-
   (everyone gets every place, sees each other's thoughts, and shares a shortlist). Use
   from the owner's first message about finding a rental or copying the bot, and whenever
   they say "add my partner", "pause", "shortlist", or "change my search".
-version: 1.2.1
+version: 1.2.2
 ---
 
-# Listing Scout: setup and care (v1.2.1)
+# Listing Scout: setup and care (v1.2.2)
 
 Built by [@errnsterr](https://x.com/errnsterr).
 
@@ -38,7 +38,7 @@ Human-only steps (share this with the owner): `FOR_YOU.md`. Internals map: `FOR_
 
 ## Day one: what you create yourself (before step 1 is finished)
 
-1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.1.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
+1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.2.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
 2. **An alerts inbox.** Claim an email address for listing-site alerts (for example `{firstname}-homes@…`). Ask the owner to approve the name first; a claim is permanent. Put it in `alert_inbox`.
 3. **The Photon secret.** Ask for it with a secure form in step 3. Keep it as the `PHOTON_API_KEY` environment setting only.
 4. **The watcher.** After step 8's approval, run the install in `FOR_YOUR_BOT.md` (quiet first run, then `src/ensure_running.sh`). It keeps exactly one copy running. Add the one-line restart hook to `~/.bashrc` (in `FOR_YOUR_BOT.md`) so it comes back after a restart.
@@ -348,7 +348,7 @@ Confirm: "Great. That's the format I'll use."
 
 *Why: no surprises, no flood of old listings, and proof it works.*
 
-1. Costs and plan (from `docs/COSTS.md`): > Checking listings and sending texts uses no AI. > > AI is used when we talk, and when I read your listing-site emails. > > Which plan fits you? > > Lean checks every 15 minutes and reads emails twice a day. > > Standard checks every 5 minutes and reads emails every 2 hours. > > Hands-on tries a short note per match, and uses the most AI. > > Those notes are experimental. Set `plan_mode`. On Lean, also say: "Listings from Zillow-style emails can take up to about 12 hours to reach you."
+1. Costs and plan (from `docs/COSTS.md`): > Checking listings and sending texts uses no AI. > > AI is used when we talk, and when I read your listing-site emails. > > Which plan fits you? > > Every plan checks listings every 5 minutes. > > Lean reads emails twice a day. > > Standard reads emails every 2 hours. > > Hands-on tries a short note per match, and uses the most AI. > > Those notes are experimental. Set `plan_mode`. On Lean, also say: "Listings from Zillow-style emails can take up to about 12 hours to reach you."
 2. With their okay: run the install (quiet first run + watcher), then create the two routines from "Day one". Then ask "Want me to check for apply texts every 5 minutes?" and, on yes, create "Listing Scout: apply requests" from `docs/routines/apply-watch.md`.
 3. Ask: "May I send your welcome text? It's also the test." Then send `src/notify.py welcome "{Name}" --card --send` (owner wording, with the card; exact text in `style.owner_welcome`, rendered in `docs/SETUP.md`).
 4. When they reply OK (in chat or by text), send the snapshot: `src/notify.py snapshot --send`. It goes out once, built from today's quiet first run.

@@ -7,7 +7,7 @@ is looked up from Photon's Users list at send time by last 4 digits.
 
 Nothing is sent unless --send is given.
   python3 src/notify.py check                  # read-only: auth + users + plan; resolve each recipient
-  python3 src/notify.py alerts FILE [--send]   # FILE = `scout.py --json` output; bundles within the hour
+  python3 src/notify.py alerts FILE [--send]   # FILE = `scout.py --json` output; texts every match on this pass (bundle_cooldown_min: 0)
   NEW_USER_PHONE=+1... python3 src/notify.py add_user "Name" --confirm
                                            # adds a household member as a Photon project user (shared line).
                                            # Number comes ONLY from env NEW_USER_PHONE (secure form); prints last 4 only.
@@ -346,9 +346,10 @@ def main():
         if ob["queue"]:   # Daily cap (off unless the owner said yes to one): extras wait for one evening text
             now_q, held_q = features.cap_split(ob["queue"], int(C.get("daily_cap") or 0), ob.get("texts_today", 0))
             if held_q: ob.setdefault("evening", []).extend(held_q); ob["queue"] = now_q; print(f"daily cap reached; {len(held_q)} held for the evening text")
-        # First new find goes out right away; finds that follow within the cooldown are bundled into the next text.
+        # Every new find goes out on the pass that finds it (bundle_cooldown_min: 0, the default).
+        # With a cooldown set, finds that follow within it are bundled into the next text.
         # Sends are tracked per person: if one person's send fails, only that person is retried (next loop pass).
-        cool = int(C.get("bundle_cooldown_min", 60)) * 60
+        cool = int(C.get("bundle_cooldown_min", 0)) * 60
         akey = lambda x: f"{x['l'].get('id')}|{x.get('reason')}|{x['l'].get('price')}"
         dl = ob.setdefault("delivered", {})
         retry = any(dl.values())

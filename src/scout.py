@@ -1022,7 +1022,7 @@ def main():
                   open(os.path.join("out", "sample.json"), "w"), indent=1)
     if a.seed:
         print(f"quiet first run: saved {len(seen_ids)} current listings; nothing to send", file=sys.stderr); return
-    if a.json:   # for notify.py (bundles within the hour)
+    if a.json:   # for notify.py (texts every match on this pass)
         print(json.dumps([{"reason": m["reason"], "was": m["was"], "market": m.get("market"),
                            "l": {k: v for k, v in m["l"].items() if k != "text"}} for m in msgs]))
     elif a.bundle and len(msgs) > 1:

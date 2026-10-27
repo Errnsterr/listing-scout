@@ -2,6 +2,12 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.2 (October 26, 2026): faster checks
+
+- The script checks listings every 5 minutes on every plan. Set `loop_minutes` in `CRITERIA.yaml` to change it. Plans still decide how often alert emails are read.
+- Every match is texted on the check that finds it. There's no hour-long wait after a text anymore (`bundle_cooldown_min: 0`). Several matches found on one check still go as one numbered text.
+- Docs, examples and the health check match the new timing.
+
 ## v1.2.1 (October 26, 2026): price fix
 
 - HotPads prices written like "$30K/mo", "from $1.8K", "$36.6K" or "$2.12K" are read as the full amount ($30,000, $1,800 and so on). Before, those emails read as no homes and the owner got a "couldn't read homes" note.

@@ -57,11 +57,12 @@ def test_report_and_zero():
     assert os.path.exists(f"{d}/inbox/welcome_no_listings.html")   # kept for review
 
 # ---------- notify: owner-only watch + per-person sends ----------
-def notify_box():
+def notify_box(cool=None):
     d = tempfile.mkdtemp(); [shutil.copy(os.path.join(HERE, "src", f) if str(f).endswith(".py") else f, d) for f in ("notify.py", "scout.py", "style.py", "features.py")]
     os.makedirs(f"{d}/out"); os.makedirs(f"{d}/logs"); c = copy.deepcopy(C)
     c["recipients"] = [{"name": "Alex", "role": "owner"}, {"name": "Sarah", "role": "co_decider"}]
     c["alert_inbox"] = "alerts@example.com"; c["paused"] = False; c["daily_cap"] = 0
+    if cool is not None: c["bundle_cooldown_min"] = cool
     c["quiet_hours"] = {"start": 0, "end": 0} if isinstance(C.get("quiet_hours"), dict) else C.get("quiet_hours")
     yaml.safe_dump(c, open(f"{d}/CRITERIA.yaml", "w")); json.dump({}, open(f"{d}/out/members.json", "w"))
     os.environ["SCOUT_CRITERIA"] = f"{d}/CRITERIA.yaml"
@@ -91,8 +92,17 @@ def test_heartbeat_stale_and_site_quiet():
     assert not any("Redfin" in t for t in txt)   # Redfin never sent a real alert yet: no 48h note
 def alert(i, price=3500): return {"reason": "new", "was": None, "market": None, "l": {**json.load(open(SAMPLE))[0]["l"], "id": f"t:{i}", "price": price}}
 SAMPLE = "tests/sample_alerts.json" if os.path.exists("tests/sample_alerts.json") else "tests/fixtures/sample_alerts.test.json"
-def test_first_find_now_then_bundle_then_retry_one():
-    d, n, sent = notify_box(); fail = {"Sarah"}
+def test_default_no_gap_every_find_texts_same_pass():   # default bundle_cooldown_min: 0
+    d, n, sent = notify_box(); n.record_numbered = lambda q: None
+    n.send = lambda r, t, really, card=None: sent.append(r["name"]) or True
+    f = f"{d}/out/a.json"
+    for i in (1, 2):
+        json.dump([alert(i)], open(f, "w")); call(n, "alerts", f, "--send")
+    assert sent == ["Alex", "Sarah", "Alex", "Sarah"]          # the second find is texted on its own pass, no wait
+    assert json.load(open(f"{d}/outbox.json"))["queue"] == []
+
+def test_first_find_now_then_bundle_then_retry_one():   # optional bundling gap (bundle_cooldown_min: 60)
+    d, n, sent = notify_box(cool=60); fail = {"Sarah"}
     n.send = lambda r, t, really, card=None: (sent.append(r["name"]) or True) if r["name"] not in fail else (sent.append("x" + r["name"]) or False)
     n.record_numbered = lambda q: None
     f = f"{d}/out/a.json"; json.dump([alert(1)], open(f, "w")); call(n, "alerts", f, "--send")

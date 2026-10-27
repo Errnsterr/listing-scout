@@ -146,6 +146,6 @@ message_style:
   price_drop_line: Now $A/mo (was $B)
   unknown_phrase: not listed yet, worth asking
   market_min_comps: 8
-  bundle_window_minutes: 60
+  bundle_window_minutes: 0
   close: No rush. I'll keep watching.
 replies: true

@@ -17,7 +17,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Or download the v1.2.1 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.1.tar.gz
+Or download the v1.2.2 release archive and unpack it: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.2.tar.gz
 
 Then install dependencies (Node 20 or newer, and Python 3) and start a search file:
 
@@ -31,7 +31,7 @@ cp CRITERIA.example.yaml CRITERIA.yaml
 
 ## What it does
 
-- Checks property-manager pages every 5–15 minutes, depending on your plan.
+- Checks property-manager pages about every 5 minutes.
 - Reads Zillow, Redfin and HotPads alert emails on the schedule you pick (see [docs/COSTS.md](docs/COSTS.md)).
 - Sends one short text per new place, price drop or relist. Quiet days mean nothing fit.
 - **Decide together:** invite a partner, roommate, family, friend or coworker. Each joins by texting from their own phone. Everyone gets each place, sees each other's thoughts and shares a shortlist.

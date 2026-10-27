@@ -17,7 +17,7 @@ if not alive:
 if n > 1: issues.append(f"{n} loops running; should be 1")
 log = open("logs/loop.log").read().splitlines() if os.path.exists("logs/loop.log") else []
 runs = [l for l in log if " ok mode=" in l or "scout failed" in l]
-interval = 15 if C.get("plan_mode") == "lean" else 5
+interval = max(1, int(C.get("loop_minutes") or 5))   # same rule as src/run_loop.sh
 if runs:
     last = time.mktime(time.strptime(runs[-1][:19], "%Y-%m-%d %H:%M:%S"))
     age = (time.time() - last) / 60

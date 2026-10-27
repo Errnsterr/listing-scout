@@ -2,9 +2,9 @@
 
 **Features:** calm alerts that fit your list · a "what's out there right now" snapshot on day one · **Decide together**: invite a partner, you both get each place, see each other's thoughts, and Listing Scout keeps a shared shortlist (no forwarding links or screenshots). Texts go through Photon; check its plans at photon.codes/pricing.
 
-Template version **1.2.1** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
+Template version **1.2.2** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
 
-Texts you new places that fit your list. Property-manager pages are checked every 5–15 minutes; Zillow, Redfin and HotPads alerts arrive when the bot next reads its inbox (see docs/COSTS.md). **US only. Rentals (the default), and buying (experimental, new in v1.1.0).** No coding needed by you; your bot does the technical parts.
+Texts you new places that fit your list. Property-manager pages are checked about every 5 minutes; Zillow, Redfin and HotPads alerts arrive when the bot next reads its inbox (see docs/COSTS.md). **US only. Rentals (the default), and buying (experimental, new in v1.1.0).** No coding needed by you; your bot does the technical parts.
 
 **Please read:** [Disclaimer](DISCLAIMER.md) · [Privacy](PRIVACY.md)
 
@@ -45,7 +45,7 @@ Set `shadow: true` in `CRITERIA.yaml` (works for rentals and buying). Every text
 4. [ ] Add property-manager pages (AppFolio pages look like `https://NAME.appfolio.com/listings`). Mark any you could not open as `verified: false`.
 5. [ ] Email alerts (section 2: the bot can create the site accounts for you) and texting (section 3).
 6. [ ] Optional: application profile (Apply for me) and the apply-watch routine, with the owner's okay.
-7. [ ] Approve a sample alert (section 4). Then the bot checks every 15 minutes on Lean, or every 5 on Standard and Hands-on.
+7. [ ] Approve a sample alert (section 4). Then the bot checks about every 5 minutes.
 
 ## Section 2: Email alerts from listing sites (the bot can do this for you)
 
@@ -69,7 +69,7 @@ It dedupes by message id and skips verification, welcome and code emails, so ale
 
 Without the key, a bot routine copies them on your plan's schedule: Lean twice a day (up to about 12 hours), Standard every 2 hours, Hands-on hourly. A faster routine (for example every 10 minutes) works too, but each run uses some Grok Bot usage.
 
-Property-manager listings are checked every 15 minutes on Lean, or every 5 on Standard and Hands-on.
+Property-manager listings are checked about every 5 minutes, on every plan.
 
 **Doing it yourself instead** (same settings): on each site, sign in with an account that uses the alerts address (Zillow emails alerts only to the account's own email), search, set the filters above, **Save search**, and pick **Instantly** / **Instant**.
 
@@ -270,7 +270,7 @@ Nothing is broken on your side; there's always one simple next step.
 1. The bot shows you a sample alert built from a real listing today.
 2. You approve wording + how many texts/day is OK.
 3. Step 8's quiet first run saves everything currently listed as "seen" (no flood). After that only **new** listings, **price drops**, and **relists** (gone 3+ days, then back) are texted.
-4. A small script (no AI) checks every 15 minutes on Lean, or every 5 on Standard and Hands-on. It restarts itself after the bot's computer restarts, and a weekly health check makes sure it's still running. The first alert goes out right away; anything else in the next hour is held and sent as one numbered text.
+4. A small script (no AI) checks about every 5 minutes (`loop_minutes` in `CRITERIA.yaml`). It restarts itself after the bot's computer restarts, and a weekly health check makes sure it's still running. Each match is texted on the check that finds it; several found on one check go as one numbered text.
 
 ## Text style (applies to every text anyone receives)
 
@@ -436,7 +436,7 @@ Tone: calm, warm, plain. One ask at a time. Every step has a one-line *why*, a t
 
 Don't move on until the step is confirmed.
 
-Template 1.2.1. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
+Template 1.2.2. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
 
 Commands for each step are in `FOR_YOUR_BOT.md`.
 
@@ -528,9 +528,9 @@ Confirm: "Great, that's the format I'll use."
 
 > Which fits you?
 
-> - **Lean:** I check every 15 minutes, read alert emails twice a day, and use AI only when you ask.
+> - **Lean:** I check listings every 5 minutes, read alert emails twice a day, and use AI only when you ask.
 
-> - **Standard:** I check every 5 minutes and read emails every 2 hours.
+> - **Standard:** like Lean, but I read emails every 2 hours.
 
 > - **Hands-on:** like Standard, plus I try to add a short note to each match (fit and scam check; experimental). This uses the most AI."
 

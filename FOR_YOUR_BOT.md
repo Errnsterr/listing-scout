@@ -13,7 +13,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.1.tar.gz
+Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.2.tar.gz
 
 Then copy `CRITERIA.example.yaml` to `CRITERIA.yaml`. Install dependencies: Node 20 or newer, `npm install`, and Python 3 with pyyaml, bs4 and Pillow (`python3 -m pip install pyyaml beautifulsoup4 Pillow`). Commands are in this file, under "Commands and technical detail".
 
@@ -26,7 +26,7 @@ To update an existing install, `git pull` (or download the new release archive) 
 | Running, restart, health, email pull, loop commands | This file, "Commands and technical detail" |
 | Photon sign-up, secret, Users, first text, errors | `docs/PHOTON_FAQ.md` |
 | Plans, AI usage, routine schedules | `docs/COSTS.md` |
-| Search settings (incl. `timezone`, `plan_mode`, `inbox_pull`, `shadow`) | `CRITERIA.example.yaml` |
+| Search settings (incl. `timezone`, `plan_mode`, `loop_minutes`, `bundle_cooldown_min`, `inbox_pull`, `shadow`) | `CRITERIA.example.yaml` |
 | What's stored, and the disclaimer | `docs/PRIVACY.md`, `docs/DISCLAIMER.md` |
 | What ships | "What ships" below |
 
@@ -55,7 +55,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.1. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.2. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |
@@ -82,7 +82,7 @@ Not shipped (owner-only): `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/*`
 
 ---
 
-## Commands and technical detail (template 1.2.1)
+## Commands and technical detail (template 1.2.2)
 
 User-facing docs (`docs/SETUP.md`, `docs/PHOTON_FAQ.md`, `docs/COSTS.md`) stay plain. Every command and technical detail lives here.
 
@@ -137,7 +137,7 @@ Household welcome: `python3 src/notify.py welcome "Name" --send` (member wording
   Missing fields stay "not listed yet". Tested on SYNTHETIC tracked-link fixtures in `tests/fixtures/email_tracked/` (`tests/test_email.py`); Unverified: check the first real email of each site by hand and save a redacted copy as a fixture.
 
 - Watch (owner only, `src/notify.py emailwatch`, every loop): an inbox email that parses to 0 homes (file kept in `inbox/` for review), `out/routine_heartbeat.txt` older than the plan's routine interval + 3 h (`features.email_stale_limit`: Lean 15 h, Standard 5 h, Hands-on 4 h; `inbox_pull: api` 3 h), or a site that has sent alerts going quiet for 48 h. Each told once. State: `logs/email_watch.json`.
-- Delay, email landing → text: with `inbox_pull: api`, ≤ one loop (15 min Lean, 5 Standard/Hands-on); with the routine, up to the routine interval (≈12 h Lean, 2 h Standard, 1 h Hands-on) + one loop → the first new find goes out right away (≈ 25 min worst case). Finds that follow within `bundle_cooldown_min` (60) of the last text are bundled: ≈ 85 min worst case. Quiet hours / Sleep mode hold until morning; a daily cap (off by default) holds extras for the evening.
+- Delay, email landing → text: with `inbox_pull: api`, ≤ one loop (`loop_minutes`, default 5); with the routine, up to the routine interval (≈12 h Lean, 2 h Standard, 1 h Hands-on) + one loop → every new find is texted on the pass that finds it (`bundle_cooldown_min: 0`, the default; several on one pass go as one numbered text). Set `bundle_cooldown_min: N` to hold later finds for N minutes after a text and send them together. Quiet hours / Sleep mode hold until morning; a daily cap (off by default) holds extras for the evening.
 
   Sends are tracked per person; a failed send is retried next pass for that person only.
 
