@@ -79,6 +79,36 @@ def test_backup_not_due_twice(tmp_path, monkeypatch):
     assert sh.backup(d) and sh.backup(d) is None
 
 
+def test_deliberate_delete_not_restored(tmp_path, monkeypatch):
+    d = mk(tmp_path); setup(monkeypatch, tmp_path, d)
+    json.dump({"reason": "owner"}, open(d + "/out/search_ended.json", "w")); open(d + "/out/pending_review.json", "w").write("{}")
+    sh.backup(d, force=True); sh.mark(d)
+    os.remove(d + "/out/search_ended.json"); os.remove(d + "/out/pending_review.json")   # lifted on purpose
+    sh.heal(d)
+    assert not os.path.exists(d + "/out/search_ended.json") and not os.path.exists(d + "/out/pending_review.json")
+    import shutil; shutil.rmtree(d + "/out")                                        # now a real wipe
+    monkeypatch.setattr(sh, "dry_run_check", lambda d: (True, 0, []))
+    sh.heal(d)
+    assert os.path.exists(d + "/out/texted.json") and os.path.exists(d + "/out/search_ended.json")
+
+
+def test_purge_removes_backups(tmp_path, monkeypatch):
+    d = mk(tmp_path); setup(monkeypatch, tmp_path, d); sh.backup(d, force=True)
+    json.dump({"Ern": {"joined": True}}, open(d + "/out/members.json", "w"))
+    import features
+    monkeypatch.setattr(features, "HERE", d); monkeypatch.setattr(features, "OUT", d + "/out")
+    features.purge_all()
+    assert not os.path.exists(d + "/backups/auto")
+
+
+def test_block_keeps_existing_end_and_flags(tmp_path, monkeypatch):
+    d = mk(tmp_path); setup(monkeypatch, tmp_path, d)
+    json.dump({"reason": "owner"}, open(d + "/out/search_ended.json", "w")); os.remove(d + "/out/texted.json")
+    sh.heal(d)
+    b = json.load(open(d + "/out/search_ended.json"))
+    assert b["reason"] == "owner" and "texted.json" in b["selfheal_block"] and sh.status(d)["heal_blocked"]
+
+
 if __name__ == "__main__":   # no pytest needed: tiny tmp_path / monkeypatch stand-ins
     import tempfile, pathlib, inspect
 

@@ -206,6 +206,12 @@ def purge_all(keep_members=True, everything=False):
         if os.path.exists(p): os.remove(p); gone.append(f)
     for p in [os.path.join(HERE, "outbox.json")] + glob.glob(os.path.join(HERE, "logs", "*.log")) + glob.glob(os.path.join(HERE, "logs", "*.err")):
         if os.path.exists(p): os.remove(p); gone.append(os.path.basename(p))
+    # v1.2.11: automatic backups hold the same data, so they go too (local and the encrypted off-box copy)
+    import shutil
+    try: _mir = json.load(open(os.path.join(HERE, "selfheal.local.json"))).get("mirror")
+    except Exception: _mir = None
+    for p in [os.path.join(HERE, "backups", "auto")] + ([os.path.join(_mir, "listing-scout-backups", os.path.basename(os.path.abspath(HERE)))] if _mir else []):
+        if os.path.isdir(p): shutil.rmtree(p, ignore_errors=True); gone.append("backups")
     mf = os.path.join(OUT, "members.json")
     if everything:
         for p in [mf, os.path.join(HERE, "state.json")] + glob.glob(os.path.join(OUT, "CRITERIA.backup-*.yaml")):

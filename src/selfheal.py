@@ -19,6 +19,7 @@ import os, sys, json, time, glob, shutil, tarfile, tempfile, subprocess, fcntl, 
 KEEP = {"hourly": 48, "daily": 14}
 SKIP_RESTORE = {"alerts.json"}            # rebuilt every pass; a stale copy is never restored
 CRITICAL = ["state.json", "out/texted.json"]
+SENTINEL = ".selfheal_sentinel"   # in out/: if it vanished, out/ was wiped from outside
 KEYF = os.path.expanduser(os.environ.get("SCOUT_BACKUP_KEY", "~/.config/listing-scout/backup.key"))
 _SRC = os.path.dirname(os.path.abspath(__file__))
 HOME_INSTALL = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
@@ -56,12 +57,14 @@ def snapshot_files(d):
         if os.path.isfile(os.path.join(d, f)): fs.append(f)
     for root, _, names in os.walk(os.path.join(d, "out")):
         for n in names:
+            if n == SENTINEL: continue
             fs.append(os.path.relpath(os.path.join(root, n), d))
     return sorted(fs)
 
 
 def digest(d, fs):
     h = hashlib.sha256()
+    h.update(str(os.path.exists(os.path.join(d, "out", "search_ended.json"))).encode())   # a block set or lifted refreshes the backup
     for f in ("state.json", "out/texted.json", "out/text_log.jsonl", "out/members.json"):
         p = os.path.join(d, f)
         if os.path.exists(p): h.update(f.encode()); h.update(open(p, "rb").read())
@@ -112,7 +115,9 @@ def backup(d, force=False):
     if not (hourly_due or daily_due): return None
     os.makedirs(os.path.join(base, "hourly"), exist_ok=True); os.makedirs(os.path.join(base, "daily"), exist_ok=True)
     os.chmod(base, 0o700)
-    name = f"{stamp()}.tgz"; tmp = os.path.join(base, "." + name)
+    name = f"{stamp()}.tgz"
+    while any(os.path.exists(os.path.join(base, k, name)) for k in ("hourly", "daily")): time.sleep(1); name = f"{stamp()}.tgz"
+    tmp = os.path.join(base, "." + name)
     old = os.umask(0o077)
     try:
         with tarfile.open(tmp, "w:gz") as tf:
@@ -188,9 +193,16 @@ def heal_node(d):
 
 def block(d, why):
     p = os.path.join(d, "out", "search_ended.json"); os.makedirs(os.path.dirname(p), exist_ok=True)
-    if not os.path.exists(p):
-        json.dump({"reason": "selfheal_block", "why": why, "since": now(),
-                   "clear": "fix the cause, then delete this file and run ensure_running.sh"}, open(p, "w"), indent=1)
+    cur = {}
+    try: cur = json.load(open(p)) if os.path.exists(p) else {}
+    except Exception: pass
+    if not isinstance(cur, dict): cur = {}
+    if os.path.exists(p) and cur.get("reason") != "selfheal_block":   # already blocked/ended: keep it, add why
+        cur["selfheal_block"] = why
+    else:
+        cur = {"reason": "selfheal_block", "why": why, "since": now(),
+               "clear": "fix the cause, then delete this file and run ensure_running.sh"}
+    json.dump(cur, open(p, "w"), indent=1)
     log(d, f"BLOCK sends blocked: {why}")
 
 
@@ -242,6 +254,12 @@ def heal(d):
         if r is not None: did.append("npm ci" + ("" if r else " (failed)"))
     except Exception as e: log(d, f"HEAL npm ci error: {type(e).__name__}"); did.append("npm ci (error)")
     ex = expected(d)
+    # Restore out/ files only after a real loss (the sentinel this script keeps in out/ is gone, or texted/members are
+    # gone): files the app deletes on purpose (a lifted send block, a cleared queue) must never come back by themselves.
+    sentinel = os.path.join(d, "out", SENTINEL)
+    lost = not os.path.exists(sentinel) and os.path.exists(os.path.join(d, "backups", "auto", "last.json")) \
+        or any(f in ex and not os.path.exists(os.path.join(d, f)) for f in ("out/texted.json", "out/members.json"))
+    if not lost: ex = {f for f in ex if not f.startswith("out/")}
     missing = sorted(f for f in ex if not os.path.exists(os.path.join(d, f)) and os.path.basename(f) not in SKIP_RESTORE)
     for f in ("state.json", "CRITERIA.yaml"):
         if not os.path.exists(os.path.join(d, f)) and f not in missing: missing.append(f)
@@ -293,10 +311,15 @@ def status(d):
         ls = [l.strip() for l in open(hl) if " HEAL " in l or " BLOCK " in l]
         last_heal = ls[-1] if ls else None
     blocked = False
-    try: blocked = json.load(open(os.path.join(d, "out", "search_ended.json"))).get("reason") == "selfheal_block"
+    try: b = json.load(open(os.path.join(d, "out", "search_ended.json"))); blocked = b.get("reason") == "selfheal_block" or "selfheal_block" in b
     except Exception: pass
     return {"install": d, "last_backup": meta.get("last"), "last_backup_ts": meta.get("last_ts"),
             "mirrored": meta.get("mirrored"), "last_heal": last_heal, "heal_blocked": blocked}
+
+
+def mark(d):
+    os.makedirs(os.path.join(d, "out"), exist_ok=True)
+    open(os.path.join(d, "out", SENTINEL), "w").write("kept by selfheal.py; if this file disappears, out/ was wiped and gets restored from backups\n")
 
 
 def run_one(d, force):
@@ -306,7 +329,7 @@ def run_one(d, force):
     with open(os.path.join(d, "logs", ".selfheal.lock"), "w") as lk:
         try: fcntl.flock(lk, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError: return
-        heal(d)
+        heal(d); mark(d)
         try:
             n = backup(d, force)
             if n and force: log(d, f"BACKUP {n} (forced)")

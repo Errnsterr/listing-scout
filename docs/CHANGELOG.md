@@ -7,6 +7,7 @@ All notable changes to the Listing Scout template. The current version is in `VE
 - Automatic backups: every loop pass checks; a snapshot of out/, state.json and CRITERIA.yaml is taken hourly (sooner when the texted record changes) plus once a day. Kept: 48 hourly, 14 daily, in backups/auto/ (chmod 600). Optional off-box mirror (selfheal.local.json "mirror") is encrypted, so no phone number sits there in plain text.
 - Self-heal (src/selfheal.py, run by ensure_running.sh and health.py --restart): missing node_modules/spectrum-ts -> npm ci; a missing file -> restored from the newest valid backup, only where missing (nothing present is overwritten). Every heal is logged to logs/heal.log.
 - Safety: if state.json or out/texted.json is gone and no backup has it, sends are blocked (out/search_ended.json, reason selfheal_block). After restoring either, a no-send dry run must show nothing already texted would go out again, or sends stay blocked.
+- Files the app removes on purpose (a lifted send block, a cleared queue) never come back: out/ files are restored only after a real loss (texted/members gone, or the out/ sentinel gone). "Delete everything" also deletes the automatic backups.
 - Health shows the last backup time (and off-box copy) and the last heal; a self-heal block or a backup older than 3 hours needs attention.
 
 ## v1.2.10 (October 27, 2026): fewer silent misses, a record of every text
