@@ -1500,7 +1500,7 @@ def main():
         rec.update(bldg=building_name(l), bkeys=bkeys(l))   # building name saved even when there's no street (Redfin)
         S[l["id"]] = rec
         if rec.get("held_review") and not a.all:   # held building: texts once as 'From $X/mo' when it fits (v1.2.10), else stays held
-            if C.get("release_held", True) and held_release_ok(l, C, T_IDS, GONE) and (not held_cap or held_n < held_cap):
+            if not rec.get("held_skipped") and C.get("release_held", True) and held_release_ok(l, C, T_IDS, GONE) and (not held_cap or held_n < held_cap):
                 rec["held_review"] = False; rec["held_released"] = time.strftime("%F %T %Z"); reason = "new"; held_n += 1
             else: continue
         if not l["eligible"] or (reason is None and not a.all): continue
