@@ -235,7 +235,7 @@ def _parse_text_cards(body, portal, fname):
         at_addr = [u for x in (seg[ak_i:ak_i + 3] if ak_i is not None else []) for u in URL_RE.findall(x)]
         link = (at_addr[:1] or pre[-1:] or inside[:1] or res[:1] or [None])[0]
         rg = PRICE_RANGE.match(L[i])
-        price = None if rg else num(PRICE_LINE.match(L[i]).group(1)); beds = num(bd.group(1)) if bd else None
+        price = None if rg else num(PRICE_LINE.match(L[i]).group(1)); beds = num(bd.group(1)) if bd else None   # id below keeps 'x' for a range (saved ids never change)
         zr = _card_id(portal, " ".join(seg) + " " + body if len(starts) == 1 else " ".join(L[max(0, i - 8, prev_end):i] + seg), None)
         prev_end = own_end
         if zr: lid = zr
@@ -252,6 +252,7 @@ def _parse_text_cards(body, portal, fname):
             email_was_price=num(wp.group(1)) if wp else None, email_file=fname,
             price_range=[num(rg.group(1)), num(rg.group(2))] if rg else None,   # a building's unit range: shown as a range, never one made-up price
             beds_range=[num(bdr.group(1)), num(bdr.group(2))] if bdr else None, baths_range=[num(bar.group(1)), num(bar.group(2))] if bar else None))
+        if rg: out[-1].update(price=num(rg.group(1)), price_from=True)   # v1.2.10: '$3,130-$3,295/mo' -> price $3,130 (the lowest unit); text still shows the range
     return out
 
 # ---------- HotPads plain-text alerts ----------
@@ -514,7 +515,118 @@ def parse_email(src):
         json.dump({k: {"reason": v["reason"], "since": v["since"]} for k, v in now_cut.items()}, open(cf, "w"), indent=1)
     return out
 
-PARSERS = {"appfolio": parse_appfolio, "tenantturner": parse_tenantturner, "email": parse_email}
+# ---------- daily market snapshot (v1.2.10) ----------
+# A newest-first look at the sites themselves, saved as JSON in inbox/market/*.json:
+# [{"site","address","zip","price","beds","baths","age_shown","url"}, ...]. Fills gaps the alert emails leave.
+# Every row is checked against what we already track and texted (same id, same link, same street address,
+# same building) and only a place we have never seen can alert. It never changes a saved price.
+MKT_PRICE = re.compile(r"^\s*(from\s+)?\$\s?" + AMT + r"\s*(\+)?\s*(?:/\s*mo\b)?\s*$", re.I)
+MKT_BEDS = re.compile(r"^\s*(studio|\d+)\s*(?:[-\u2013]\s*(studio|\d+))?\s*(?:bd|beds?)?\s*$", re.I)
+def _mkt_num(x): return 0.0 if x.lower() == "studio" else num(x)
+
+def market_row(r):
+    """One snapshot row -> a listing dict in the email parsers' shape. None if it can't be read (never guessed)."""
+    a = (r.get("address") or "").strip(); zp = (r.get("zip") or "").strip() or None
+    site = r.get("site") or "Market"; url = (r.get("url") or "").strip() or None
+    if not a: return None
+    parts = [x.strip() for x in a.split(",") if x.strip()]
+    if parts and parts[-1].upper() == "CA": parts = parts[:-1]
+    if not parts: return None
+    city = parts[-1] if len(parts) > 1 else None
+    pre = parts[:-1] if len(parts) > 1 else parts
+    si = next((k for k, x in enumerate(pre) if re.match(r"\d", x)), None)
+    street = pre[si] if si is not None else None
+    name = ", ".join(pre[:si]) if si else (pre[0] if si is None and not re.match(r"\(?\s*undisclosed", pre[0], re.I) else None)
+    if name and not city:   # 'Eight 80 Newport Beach', 'Mediterranean Village Costa Mesa': the city rides on the name
+        name, city = name, None
+    und = bool(re.search(r"undisclosed", a, re.I))
+    addr = f"{street}, {city}, CA{' ' + zp if zp else ''}" if street and city else None
+    if not addr and name and city: addr = f"{name}, {city}, CA{' ' + zp if zp else ''}"   # a name-only card: shown like a Redfin 'Name, City, CA zip' card
+    pm = MKT_PRICE.match(r.get("price") or ""); price = num(pm.group(2)) if pm else None
+    price_from = bool(pm) and bool(pm.group(1) or pm.group(3))
+    bm = MKT_BEDS.match(r.get("beds") or ""); beds = beds_max = None
+    if bm:
+        beds = _mkt_num(bm.group(1)); beds_max = _mkt_num(bm.group(2)) if bm.group(2) else beds
+    ba = num(r["baths"]) if re.fullmatch(r"\s*\d+(?:\.\d)?\s*", r.get("baths") or "") else None
+    ak = addr_id_key(addr)
+    lid = f"email:addr:{ak.replace(' ', '-')}" if ak else "email:market:" + site.lower() + ":" + re.sub(r"[^a-z0-9]+", "-", (urllib.parse.urlparse(url).path if url else a).lower()).strip("-")
+    t = " ".join(x for x in [name, street, city, r.get("price"), r.get("beds")] if x)
+    return dict(apply_url=None, agent_url=None, id=lid, source=site, url=url, title=t[:120], address=addr, city=city or (None if not und else parts[-1]),
+                zip=zp, state="CA", street_only=None, building=name or None, price=price, price_from=price_from,
+                beds=None if (beds_max or 0) > (beds or 0) else beds, beds_max=beds_max,
+                beds_range=[beds, beds_max] if beds is not None and (beds_max or 0) > beds else None, baths=ba, sqft=None,
+                available=None, pets_raw=None, text=t, photo=None, photo_alt=None, showing_url=None, listed_on=None,
+                email_was_price=None, email_file=None, market=True, age_shown=r.get("age_shown"))
+
+def parse_market(src):
+    """inbox/market/*.json written in the last max_age_days (default 2). Unreadable files are skipped, never fatal."""
+    d = src.get("dir") or os.path.join("inbox", "market"); out, ids = [], set()
+    keep = float(src.get("max_age_days", 2)) * 86400
+    for f in sorted(glob.glob(os.path.join(d, "*.json"))):
+        if time.time() - os.path.getmtime(f) > keep: continue
+        try: rows = json.load(open(f))
+        except Exception: continue
+        for r in rows if isinstance(rows, list) else []:
+            l = market_row(r) if isinstance(r, dict) else None
+            if l and l["id"] not in ids: ids.add(l["id"]); out.append(l)
+    return out
+
+def url_key(u):
+    """Same page on one site, however the link was written: HotPads pad slug, Zillow zpid or building code, Redfin home id."""
+    if not u: return None
+    p = urllib.parse.urlparse(u); h = p.netloc.lower().replace("www.", ""); path = p.path.rstrip("/")
+    m = re.search(r"(\d+)_zpid", path) or re.search(r"/apartments/[^/]+/[^/]+/([A-Za-z0-9]+)$", path)
+    if "zillow" in h and m: return "z:" + m.group(1)
+    m = re.search(r"/home/(\d+)$", path) or re.search(r"/apartment/(\d+)$", path)
+    if "redfin" in h and m: return "r:" + m.group(1)
+    if "hotpads" in h and path: return "h:" + path.split("/")[1] if len(path.split("/")) > 1 else None
+    return None
+
+def market_known(l, S, idx, texted):
+    """A snapshot row we already have -> the saved id it belongs to, else None (a true miss: it may alert).
+    Unit rows match by id, link or street address + unit. Building rows (a 'from' price or bed range, or a
+    name only) also match a saved or texted building by name or street (building-name-to-street via the link)."""
+    if l["id"] in S: return l["id"]
+    uk = url_key(l.get("url"))
+    if uk and uk in idx.get("url", {}): return idx["url"][uk]
+    ak = addr_key(l.get("address"))
+    if ak:
+        loc = addr_loc(l.get("address"))
+        hit = next((k for k, v in S.items() if v.get("addr") == ak and same_place(loc, v.get("loc") or {})), None)
+        if hit: return hit
+    unit = (addr_parts(l.get("address")) or [None] * 4)[3]
+    building_row = not unit and (l.get("price_from") or l.get("beds_range") or not l.get("address"))
+    if building_row:
+        mine = set(bkeys(l)) | ({f"n:{_norm_b(l['building'])}"} if l.get("building") else set())
+        hit = next((k for k, v in S.items() if mine & set(v.get("bkeys") or [])), None) \
+            or next((t["id"] for t in texted if mine & set(t.get("bkeys") or [])), None) \
+            or next((i for n, i in idx.get("name", {}).items() if l.get("building") and _norm_b(l["building"]) == n), None)
+        if hit: return hit
+    return None
+
+def market_index(L):
+    """From every listing parsed this pass (the alert emails): link -> id, building name -> id."""
+    idx = {"url": {}, "name": {}}
+    for x in L:
+        if x.get("market"): continue
+        uk = url_key(x.get("url"))
+        if uk: idx["url"].setdefault(uk, x["id"])
+        n = building_name(x)
+        if n: idx["name"].setdefault(_norm_b(n), x["id"])
+    return idx
+
+# ---------- held buildings (v1.2.10) ----------
+def held_release_ok(l, C, texted_ids, gone):
+    """A held building card that now texts once: a stated 'from' price at or under the cap and a bed range
+    that reaches beds_min. Never one already texted, never one the still-listed check marked gone."""
+    if l["id"] in texted_ids or l["id"] in gone or not l.get("eligible") or not l.get("match"): return False
+    if not (l.get("price_from") or l.get("beds_range")): return False   # a building-level card only
+    pmax = (C.get("match") or {}).get("price_max", (C.get("price_tiers") or {}).get("stretch_max"))
+    if l.get("price") is None or (pmax and l["price"] > pmax): return False
+    hi = max([x for x in [l.get("beds"), l.get("beds_max"), (l.get("beds_range") or [None, None])[1]] if x is not None], default=None)
+    return hi is not None and hi >= C["beds_min"]
+
+PARSERS = {"appfolio": parse_appfolio, "tenantturner": parse_tenantturner, "email": parse_email, "market": parse_market}
 
 # ---------- classify ----------
 def has(text, words): return any(re.search(r"\b" + re.escape(w) + r"\b", text, re.I) for w in words or [])
@@ -612,6 +724,7 @@ def classify(l, C):
     elif has(t, K.get("garage")): l["garage"] = "yes"
     else: l["garage"] = U
     # layout
+    t = strip_names(l, t)   # the building's name never sets a layout
     lay = []
     if has(t, K.get("first_floor")): lay.append("first floor")
     if has(t, K.get("single_story")): lay.append("single story")
@@ -754,7 +867,12 @@ def _bare_street(l):
 
 def another_lines(name):
     one = f"Another unit at {name}"
-    return [one] if len(one) <= style.MAX else ["Another unit at", name]
+    if len(one) <= style.MAX: return [one]
+    out = []   # a long building name wraps at word breaks (v1.2.10: 'Newport Bluffs Apartment Village' was 32 chars on one line)
+    for w in one.split():
+        if out and len(out[-1]) + 1 + len(w) <= style.MAX: out[-1] += " " + w
+        else: out.append(w)
+    return out
 
 def load_texted(path=os.path.join("out", "texted.json")):
     try: return json.load(open(path))
@@ -841,11 +959,29 @@ TYPES = [("townhome", r"townho(me|use)"), ("house", r"single[- ]family|\bhouse\b
          ("ADU", r"\bADU\b"), ("apartment", r"apartment")]
 BUY_TYPES = [("townhome", r"townho(me|use)"), ("condo", r"\bcondo"), ("house", r"single[- ]family|\bhouse\b")]   # stated types only
 
+def _hp_slug_name(l):
+    """HotPads building page slug -> its name words ('halcyon-house-costa-mesa-ca-92626-x' -> 'halcyon house'). None for a street slug."""
+    m = re.search(r"hotpads\.com/([a-z0-9-]+)-[a-z]{2}-\d{5}-[a-z0-9]+/pad", l.get("url") or "")
+    if not m: return None
+    w = m.group(1).split("-")
+    c = re.sub(r"[^a-z ]", "", (l.get("city") or "").lower()).split()
+    if c and w[-len(c):] == c: w = w[:-len(c)]
+    return " ".join(w) if w and not w[0].isdigit() else None
+
+def strip_names(l, t):
+    """A building's own name ('Halcyon House', 'Garden Cottages') is not a stated type or layout (v1.2.10)."""
+    for n in {building_name(l), _hp_slug_name(l)} - {None}:
+        t = re.sub(r"\b" + r"\W+".join(map(re.escape, n.split())) + r"\b", " ", t, flags=re.I)
+    return t
+
 def ptype(l):
     """A property type only when the listing states one; never from the address ('APT C2') or 'home'."""
-    t = f"{l.get('title','')} {l.get('ptype_raw') or ''} {l.get('home_type_raw') or ''}"
+    hr = l.get("home_type_raw") or ""
+    if hr and not re.search(re.escape(hr), strip_names(l, l.get("title") or ""), re.I) and re.search(re.escape(hr), l.get("title") or "", re.I): hr = ""   # read from the building's name only
+    t = f"{l.get('title','')} {l.get('ptype_raw') or ''} {hr}"
     for a in (l.get("address"), l.get("street_only")):
         if a: t = t.replace(a, " ").replace(a.split(",")[0], " ")
+    t = strip_names(l, t)
     t = re.sub(r"open[ -]house|\[image[^\]]*\]", " ", t, flags=re.I)   # an open house or an icon ('[image: House Icon]') is not a property type
     for name, rx in (BUY_TYPES if is_buy(CFG) else TYPES):
         if re.search(rx, t, re.I): return name
@@ -854,7 +990,7 @@ def ptype(l):
 def money(v): return f"${v:,.0f}"
 def rng(r, f=lambda v: f"{v:g}"): return f"{f(r[0])}-{f(r[1])}"
 def price_range_text(l, C):
-    r = l.get("price_range"); return f"${r[0]:,.0f}-${r[1]:,.0f}{per(C)}" if r and l.get("price") is None else None
+    r = l.get("price_range"); return f"${r[0]:,.0f}-${r[1]:,.0f}{per(C)}" if r and (l.get("price") is None or l["price"] == r[0]) else None
 def beds_text(l):
     b, r = l.get("beds"), l.get("beds_range")
     if b is not None: return "Studio" if b == 0 else f"{int(b)} bed"
@@ -1034,6 +1170,8 @@ def summary_block(a, C):
     if a["reason"] in ("price_drop", "relist_lower") and a.get("was"):
         lines.append(f"Now {money(l['price'])}{per(C)} (was {money(a['was'])})")
         if tw: lines.append(tw[0].upper() + tw[1:])
+    elif price_range_text(l, C) and l.get("price") is not None:   # a stated unit range: shown as stated
+        lines.append(price_range_text(l, C))
     elif l.get("price") is not None:
         lines.append(price_text(l, C))
         if tw and not l.get("price_from"): lines.append(tw[0].upper() + tw[1:])   # a 'from' price: no tier claim for units we can't see
@@ -1102,7 +1240,7 @@ def fact_lines(l, C, split=None):
     Same shape for every entry in one text: all on one line, or (split) the area on its own line."""
     beds = beds_text(l)
     if beds and baths_text(l): beds += ", " + baths_text(l)
-    pr = price_text(l, C) if l.get("price") is not None else price_range_text(l, C)
+    pr = price_range_text(l, C) or (price_text(l, C) if l.get("price") is not None else None)
     ar = area_name(l)
     one = ", ".join(x for x in [pr, beds, ar] if x)
     if split is None: split = len(one) > style.MAX
@@ -1272,6 +1410,7 @@ def main():
             report.append((src["name"], "skipped", "placeholder URL; add your own")); continue
         try:
             got = [classify(l, C) for l in PARSERS[src["type"]](dict(src, report=not a.dry_run) if src["type"] == "email" else src)]
+            if src["type"] == "market" and not got: report.append((src["name"], "ok", "no snapshot today")); continue   # an empty folder is normal
             if src["type"] == "email" and got and not a.dry_run and not os.path.exists(os.path.join("out", "email_proven.json")):   # first real alert parsed
                 os.makedirs("out", exist_ok=True)
                 json.dump({"first": time.strftime("%F %T %Z"), "source": got[0]["source"], "count": len(got)}, open(os.path.join("out", "email_proven.json"), "w"))
@@ -1299,11 +1438,27 @@ def main():
             zm[l["id"]] = time.strftime("%F %T %Z")
             open(os.path.join("logs", "zip_missing.log"), "a").write(f"{zm[l['id']]} | {l['id']} | {street(l) or 'no street'} | ZIP not listed; area matched by city\n")
         json.dump(zm, open(zf, "w"), indent=1)
+    mkt = [l for l in allL if l.get("market")]; allL = [l for l in allL if not l.get("market")]   # snapshot rows never merge into, or replace, an email listing
     _ids = set(); allL = [l for l in allL if not (l["id"] in _ids or _ids.add(l["id"]))]   # two sources reading one inbox: same listing once
     allL = merge_dupes(allL, C)
+    _ak = {addr_key(l.get("address")) for l in allL} - {None}
+    for l in mkt:   # the same place on two sites in one snapshot: once; a row an email already has this pass: skipped
+        k = addr_key(l.get("address"))
+        if l["id"] in _ids or (k and k in _ak): continue
+        _ids.add(l["id"]); _ak.add(k) if k else None; l["also_ids"] = []; allL.append(l)
     for l in allL: l["also_ids"] = [x for x in l.get("also_ids", []) if x != l["id"]]   # never 'seen' via its own id (was: 0 alerts after an empty first run)
     msgs, seen_ids, offm = [], set(), []
+    MIDX = market_index(allL); T_IDS = {t.get("id") for t in TEXTED}
+    try: GONE = json.load(open(os.path.join(os.path.dirname(os.path.abspath(a.state)), "out", "link_gone.json")))
+    except Exception: GONE = {}
+    held_cap, held_n = int(C.get("held_release_per_pass") or 0), 0
     for l in allL:
+        if l.get("market"):   # a snapshot row we already have: touch it, never re-alert, never change its saved price
+            kn = market_known(l, S, MIDX, TEXTED)
+            if kn:
+                seen_ids.add(kn)
+                if kn in S: S[kn].update(last_seen=today)
+                continue
         seen_ids.add(l["id"]); seen_ids.update(l.get("also_ids", []))
         prev = S.get(l["id"])   # read BEFORE marking other ids seen (same email twice must still alert)
         for oid in l.get("also_ids", []):
@@ -1342,7 +1497,10 @@ def main():
         if l.get("zip") and not rec["loc"].get("zip"): rec["loc"]["zip"] = l["zip"]
         rec.update(bldg=building_name(l), bkeys=bkeys(l))   # building name saved even when there's no street (Redfin)
         S[l["id"]] = rec
-        if rec.get("held_review") and not a.all: continue   # owner decides (out/pending_review.json); never auto-sent
+        if rec.get("held_review") and not a.all:   # held building: texts once as 'From $X/mo' when it fits (v1.2.10), else stays held
+            if C.get("release_held", True) and held_release_ok(l, C, T_IDS, GONE) and (not held_cap or held_n < held_cap):
+                rec["held_review"] = False; rec["held_released"] = time.strftime("%F %T %Z"); reason = "new"; held_n += 1
+            else: continue
         if not l["eligible"] or (reason is None and not a.all): continue
         a_ = {"l": l, "reason": reason or "current", "was": was_price}
         au = another_unit(l, TEXTED)

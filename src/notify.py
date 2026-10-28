@@ -95,6 +95,20 @@ def log_send(r, ch, ok, really, card, n):
                                 "dry_run": not really, "card": bool(card), "chars": n}) + "\n")
     except OSError: pass
 
+TEXTLOG = os.path.join(HERE, "out", "text_log.jsonl")
+CTX = {"places": []}   # the listings a text is about (set by the alert sender; empty for notes)
+def log_text(r, text, ok, mode):
+    """v1.2.10: every text, as sent: time, who (name only, never a number), listing ids, addresses, the body."""
+    try:
+        with open(TEXTLOG, "a") as f:
+            f.write(json.dumps({"ts": time.strftime("%F %T %Z"), "to": r["name"], "ok": bool(ok), "mode": mode,
+                                "ids": [p["id"] for p in CTX["places"]], "addresses": [p["where"] for p in CTX["places"]],
+                                "text": text}) + "\n")
+    except OSError: pass
+
+def places_of(xs, sc):
+    return [{"id": x["l"].get("id"), "where": sc.street_line(x["l"]) or sc.street(x["l"]) or sc.area_name(x["l"]) or None} for x in xs]
+
 def send_parts(r, parts, really):
     """a roundup's texts, in order; stops at the first failure so nobody gets Part 2 without Part 1."""
     if isinstance(parts, str): parts = [parts]
@@ -108,10 +122,12 @@ def send(r, text, really, card=None):
         os.makedirs(os.path.join(HERE, "out"), exist_ok=True)
         with open(os.path.join(HERE, "out", "shadow_texts.jsonl"), "a") as f:
             f.write(json.dumps({"ts": time.strftime("%F %T %Z"), "to": r["name"], "card": bool(card), "text": text, "style_ok": not style.check(text)}) + "\n")
+        log_text(r, text, True, "shadow")
         print(f"[SHADOW] logged a text for {r['name']} (not sent)"); return True
     ch = channel_of(r) if really else (member(r).get("channel") or "imessage")
     text, card = for_channel(text, card, ch)
     ok = _send(r, text, really, card, ch)
+    if really: log_text(r, text, ok, ch)
     log_send(r, ch, ok, really, card, len(text)); return ok
 
 def _send(r, text, really, card, ch="imessage"):
@@ -382,12 +398,15 @@ def main():
                 if instant:   # one text per place; a failed one is retried alone next pass
                     ok1 = True
                     for x in q:
+                        CTX["places"] = places_of([x], sc)
                         okx = send_parts(r, sc.render_parts([x], C), really)
+                        CTX["places"] = []
                         if okx and really: dl.setdefault(r["name"], []).append(akey(x))
                         ok1 = ok1 and okx
                     oks.append(ok1)
                 else:
-                    ok1 = send_parts(r, sc.render_parts(q, C), really); oks.append(ok1)
+                    CTX["places"] = places_of(q, sc)
+                    ok1 = send_parts(r, sc.render_parts(q, C), really); oks.append(ok1); CTX["places"] = []
                 if ok1 and (really or C.get("shadow")) and not m.get("first_alert_note_sent"):   # one-time heads-up, once per person
                     set_member(r["name"], first_alert_note_sent=time.strftime("%F %T %Z"))   # flag saved BEFORE sending: never twice
                     send(r, style.first_alert_note(), really)   # shadow mode: send() only logs it

@@ -34,13 +34,13 @@ def test_redfin_building_and_range():
     X = sc._parse_text_cards(body, "Redfin", "f")
     assert len(X) == 2, X
     r, one = X
-    assert r["price"] is None and r["price_range"] == [2795, 4070] and r["beds"] is None and r["beds_range"] == [1, 2]
+    assert r["price"] == 2795 and r["price_from"] and "-x-" in r["id"] and r["price_range"] == [2795, 4070]   # v1.2.10: lowest unit is the price; id unchanged and r["beds"] is None and r["beds_range"] == [1, 2]
     assert r["address"].startswith("Example Commons") and one["address"].startswith("Example Villas") and one["price"] == 2475
     sc.classify(r, C); sc.classify(one, C)
     assert r["eligible"] and r["match"] and not one["eligible"]   # a 2-bed unit may be in the range; the 1-bed is not
     t = sc.render([{"reason": "new", "l": r}], C)
     assert "$2,795-$4,070/mo" in t and "Rent: not listed yet" not in t and "1-2 bed" in t, t
-    hi = copy.deepcopy(r); hi["price_range"] = [5100, 6000]; sc.classify(hi, C); assert not hi["match"]
+    hi = copy.deepcopy(r); hi["price_range"] = [5100, 6000]; hi["price"] = 5100; sc.classify(hi, C); assert not hi["match"]
 
 if __name__ == "__main__":
     fns = [f for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]

@@ -2,6 +2,14 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.10 (October 27, 2026): fewer silent misses, a record of every text
+
+- Held buildings text once. A building card with a stated "from" price at or under your cap and a bed range that reaches your minimum is sent as its own "New place that fits" text ("From $X/mo", the stated bed range), instead of waiting on the held list. Cards with no price stay held. Never one already texted or marked gone by the still-listed check. `held_release_per_pass: N` (optional) spreads a backlog over several passes; `release_held: false` turns it off.
+- A daily market snapshot can be a source. Rows saved as JSON in `inbox/market/*.json` (`site, address, zip, price, beds, baths, age_shown, url`) are checked against everything tracked and texted (same id, same link, same street address and unit, same building by name or street) and only a place never seen before alerts. A snapshot never changes a saved price and never causes a price-drop text. Add `{name: Market snapshot, type: market, dir: inbox/market}` to `sources`.
+- Every text is logged in `out/text_log.jsonl`: time, who (first name only), listing ids, addresses and the exact text.
+- Redfin unit ranges ("$3,130-$3,295/mo") keep the lowest unit as the price, so they match and sort, and the text still shows the stated range. Saved ids don't change.
+- A building's own name ("Halcyon House", "... Apartment Homes") is no longer read as the property type or layout. A long building name on the "Another unit at" line wraps at a word break.
+
 ## v1.2.9 (October 27, 2026): places from emails can go away
 
 - Once a day the scout checks each place from an alert email (one plain visit per place, spaced out) and marks it gone only on a clear sign: the page is missing (404/410), it sends you to a search or off-market page, or the page itself says it's off market, no longer available or rented. A blocked page, a captcha or no answer counts as unknown and is never marked gone, and the check never tries to get around a block.

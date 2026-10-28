@@ -45,6 +45,7 @@ pets: {dog: null, cat: null, service_animal: false, esa_letter: false}   # servi
 prefer_landlord_types: [property_manager, private_owner]
 sources:
   - {name: Alert emails, type: email, dir: "./inbox"}   # ONE email source reads every site's alerts in ./inbox
+  # - {name: Market snapshot, type: market, dir: inbox/market}   # optional: a daily newest-first look at the sites, saved as JSON (v1.2.10)
   # Sites that can email alerts to alert_inbox (no extra source line needed):
   #   Zillow, Redfin, Realtor.com, Zumper, Rent.com, Craigslist,
   #   and an MLS auto-email from a local agent.
