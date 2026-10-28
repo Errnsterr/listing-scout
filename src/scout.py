@@ -240,6 +240,7 @@ HP_ANCHOR = re.compile(r"^\s*\((https?://(?:www\.)?hotpads\.com/[^)\s]+)\)\s*Con
 HP_PRICE = re.compile(r"^\s*(?:from\s+)?\$\s?" + AMT + r"\+?\s*(?:/\s*mo\b|$)", re.I)   # '$4,350/mo', '$30K/mo', 'from $1.8K'
 HP_BEDS = re.compile(r"^\s*(studio|\d+)(?:\s+to\s+(\d+))?\s+beds?\b|^\s*studio\s*$", re.I)
 HP_CITY = re.compile(r"^\s*([A-Za-z .'-]{3,40}),\s*([A-Z]{2})\s+(\d{5})\s*$")
+HP_STREET_ONLY = re.compile(r"^\s*(?:[NSEW]\.?\s+)?[A-Z0-9][A-Za-z0-9'. -]{0,40}\s(?:St|Street|Ave|Avenue|Dr|Drive|Ln|Lane|Pl|Place|Ct|Court|Blvd|Way|Cir|Circle|Rd|Road|Ter|Terrace|Pkwy|Hwy|Front|Walk|Row|Loop|Trl)\.?(?:\s+[NSEW])?\s*$")   # a street name with no house number
 HP_STREET = re.compile(r"^\s*\d[\d./]*(?:-\d+)?[A-Za-z]?(?:\s+\d/\d)?\s+\S.*$")   # 12, 12B, 218.5, 301-307, 417 1/2
 
 def hotpads_url(u):
@@ -267,7 +268,7 @@ def _parse_hotpads_text(body, fname):
         if bm:
             lo = (bm.group(1) or "studio").lower(); beds = 0.0 if lo == "studio" else num(lo)
             beds_max = num(bm.group(2)) if bm.group(2) else beds
-        addr = city = state = zp = None
+        addr = city = state = zp = street_only = None
         for k, y in enumerate(seg):
             one = ADDR.fullmatch(y)
             cm = HP_CITY.match(y)
@@ -276,13 +277,15 @@ def _parse_hotpads_text(body, fname):
             elif cm and k and HP_STREET.match(seg[k - 1]) and not HP_BEDS.match(seg[k - 1]) and not HP_PRICE.match(seg[k - 1]):
                 addr = f"{seg[k - 1]}, {y}"
             if cm:
-                city, state, zp = cm.group(1).strip(), cm.group(2), cm.group(3); break
+                city, state, zp = cm.group(1).strip(), cm.group(2), cm.group(3)
+                if not addr and k and HP_STREET_ONLY.match(seg[k - 1]): street_only = seg[k - 1].strip()   # 'Royan Ln': HotPads hid the number
+                break
         ak = addr_id_key(addr)
         lid = f"email:addr:{ak.replace(' ', '-')}" if ak else "email:HotPads:" + urllib.parse.urlparse(url).path.strip("/").replace("/", "-")
         if lid in ids: continue
         ids.add(lid); t = " ".join(seg)
         out.append(dict(buy_facts(t), apply_url=None, agent_url=None, id=lid, source="HotPads", url=url, title=t[:120], address=addr, city=city,
-            zip=zp, state=state, price=price, price_from=price_from, beds=None if (beds_max or 0) > (beds or 0) else beds, beds_max=beds_max,
+            zip=zp, state=state, street_only=street_only, price=price, price_from=price_from, beds=None if (beds_max or 0) > (beds or 0) else beds, beds_max=beds_max,
             beds_range=[beds, beds_max] if beds is not None and (beds_max or 0) > beds else None, baths=None, sqft=None,
             available=None, pets_raw=None, text=t, photo=None, photo_alt=None, showing_url=None, listed_on=None,
             email_was_price=None, email_file=fname))
@@ -446,6 +449,24 @@ def _parse_email_file(f):
             email_was_price=num(was.group(1)) if was else None, email_file=os.path.basename(f)))
     return out
 
+SUBJ_PRICE = re.compile(r"\$\s?(\d[\d,]*(?:\.\d+)?)\s*([KkMm])?")
+
+def email_cutoff(f, got):
+    """Why this email may have lost places, or None: the mail reader cut the body ('[body truncated'), or a price in
+    the subject line matches none of the parsed places (within 2%, so HotPads '$3.04K' = $3,045)."""
+    try: raw = open(f, errors="replace").read()
+    except Exception: return None
+    if "[body truncated" in raw: return "body cut off by the mail reader"
+    m = re.search(r"^Subject:\s*(.*)$", raw, re.M)
+    if not m: return None
+    want = []
+    for a, k in SUBJ_PRICE.findall(m.group(1)):
+        v = float(a.replace(",", "")) * {"k": 1e3, "m": 1e6}.get(k.lower(), 1)
+        if v >= 300: want.append(v)
+    have = [x for l in got for x in [l.get("price")] + list(l.get("price_range") or []) if x]
+    miss = [v for v in want if not any(abs(v - h) <= max(0.02 * v, 50) for h in have)]
+    return f"subject price ${miss[0]:,.0f} not among the parsed places" if miss else None
+
 def parse_email(src):
     """Saved-search alert emails (.eml/.html/.txt in src['dir']). Writes out/email_parse.json per file
     (count + portal) so notify.py can flag a 0-listing email to the owner; the file is kept for review."""
@@ -456,9 +477,18 @@ def parse_email(src):
         sender, body = _email_body(f)
         portal = next((v for k, v in PORTALS.items() if k in (sender + body[:5000]).lower()), "Email alert")
         rep[os.path.basename(f)] = {"count": len(got), "portal": portal, "mtime": os.path.getmtime(f)}
+        cut = email_cutoff(f, got)
+        if cut: rep[os.path.basename(f)]["cutoff"] = cut
         out += got
     if src.get("report"):   # only the live run (scout main) writes the report; tests never do
         os.makedirs("out", exist_ok=True); json.dump(rep, open(os.path.join("out", "email_parse.json"), "w"), indent=1)
+        cf = os.path.join("out", "email_cutoff.json"); old = json.load(open(cf)) if os.path.exists(cf) else {}
+        now_cut = {k: dict(v, reason=v["cutoff"], since=old.get(k, {}).get("since") or time.strftime("%F %T %Z")) for k, v in rep.items() if v.get("cutoff")}
+        for k in sorted(set(now_cut) - set(old)):   # one log line per email, the first time it's seen
+            os.makedirs("logs", exist_ok=True)
+            open(os.path.join("logs", "email_cutoff.log"), "a").write(f"{time.strftime('%F %T %Z')} | {k} | {now_cut[k]['reason']} | re-read it in full (50,000 characters)\n")
+            print(f"email may be cut off: {k}: {now_cut[k]['reason']}", file=sys.stderr)
+        json.dump({k: {"reason": v["reason"], "since": v["since"]} for k, v in now_cut.items()}, open(cf, "w"), indent=1)
     return out
 
 PARSERS = {"appfolio": parse_appfolio, "tenantturner": parse_tenantturner, "email": parse_email}
@@ -835,8 +865,9 @@ def details(l, C=None):
         out.append(f"{u[0].upper() + u[1:]}: {style.UNKNOWN}")
     return out
 
+NO_NUMBER = "(no number listed)"
 def street(l):
-    a = l.get("address") or ""
+    a = l.get("address") or l.get("street_only") or ""
     return re.sub(r"\s+", " ", a.split(",")[0]).strip() or None
 
 def market_words(l, pool, C):
@@ -906,6 +937,7 @@ def street_line(l):
     """The street address that labels the link: whole if it fits one line, else with short suffixes.
     Never cut mid-name; if it still doesn't fit, it stays whole (an address is a fact, not prose)."""
     st = street(l)
+    if st and not l.get("address") and l.get("street_only"): st = f"{st} {NO_NUMBER}"   # the street is stated, its number isn't
     if not st or len(st) <= style.MAX: return st
     return re.sub(r"\b(" + "|".join(ABBR) + r")\b", lambda m: ABBR[m.group(1).lower()], st, flags=re.I)
 
@@ -914,6 +946,7 @@ def where_block(l):
     st = street_line(l)
     if not st and l.get("city"):   # street undisclosed (e.g. Zillow '(undisclosed Address), Los Angeles, CA 90001'): city, then the unknown
         return style.Group([l["city"], "Address not shown"] + links(l))
+    if st and len(st) > style.MAX and st.endswith(NO_NUMBER) and not links(l): return style.Group([st[:-len(NO_NUMBER)].strip(), NO_NUMBER])
     return style.Group([st or "Address not shown"] + links(l))
 CLOSE = style.CLOSE
 
@@ -969,7 +1002,9 @@ def entries_for(alerts, C):
         l = a["l"]
         lab = LABEL.get(a["reason"])
         st = street_line(l) or (area_name(l) or "Address not shown")
-        b = [f"{i}. {st}"] + ([lab] if lab else []) + fact_lines(l, C, sp)
+        head = [f"{i}. {st}"]
+        if len(head[0]) > style.MAX and st.endswith(NO_NUMBER): head = [f"{i}. {st[:-len(NO_NUMBER)].strip()}", NO_NUMBER]
+        b = head + ([lab] if lab else []) + fact_lines(l, C, sp)
         e = [style.Group(b + [l["url"]] if l.get("url") else b)]
         cau = [x for x in extras(a) if x not in (a.get("market"),)]
         if cau: e.append(cau)

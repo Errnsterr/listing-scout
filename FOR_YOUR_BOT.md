@@ -122,7 +122,7 @@ Household welcome: `python3 src/notify.py welcome "Name" --send` (member wording
 
 - No cron/systemd on the box. `src/ensure_running.sh` keeps exactly one `src/run_loop.sh` (flock + `logs/loop.pid`; adopts a stray loop instead of starting a second).
 - Restart after a reboot: add this line to `~/.bashrc` on day one (use your real folder path): `[ -x <folder>/src/ensure_running.sh ] && ( <folder>/src/ensure_running.sh >/dev/null 2>&1 & )` It calls `src/ensure_running.sh` whenever any agent shell opens (only starts if `PHOTON_API_KEY` is in that shell). Unverified: After a reboot, nothing restarts until some shell opens; the weekly health check is the backstop.
-- Weekly health check (bot routine, every plan): `python3 src/health.py --restart`. Exit 0 = say nothing. Exit 1 = tell the owner in calm style, one next step.
+- Weekly health check (bot routine, every plan): `python3 src/health.py --restart`. Exit 0 = say nothing. Exit 1 = tell the owner in calm style, one next step. `--quiet` prints nothing on exit 0, so `python3 src/health.py --restart --quiet` can run every 10 minutes. It also flags texts failing for 30+ minutes (`send_failing` in `out/health_flags.json`, from `logs/sends.jsonl`) and alert emails that may be cut off (`out/email_cutoff.json`).
 - Stop: `kill $(cat logs/loop.pid)`. Status: `tail logs/loop.log`, `python3 src/health.py`.
 - Pause: `paused: true` in CRITERIA.yaml (checks continue, nothing is sent).
 
@@ -164,7 +164,8 @@ Household welcome: `python3 src/notify.py welcome "Name" --send` (member wording
 
 - Secrets file: `~/.config/listing-scout/env` (override with `SCOUT_ENV`), chmod 600, outside the install, never printed. `src/ensure_running.sh` and `src/run_loop.sh` source it; `src/run_loop.sh` calls `src/ensure_running.sh` each cycle so the reply listener stays up.
 - `out/health_flags.json`: `photon_key_missing`, `listener_restarted` (owner told once via `src/notify.py outage` → "Replies paused for a moment."), `email_pull_missing` (fetch_inbox, once). `out/email_proven.json` appears when the first real alert email is parsed; until then `src/health.py` says "email path unproven".
-- `inbox_pull: routine | api` in CRITERIA: routine = the inbox-reader routine copies alert emails on the plan's schedule; api = `AGENTMAIL_API_KEY`.
+- `inbox_pull: routine | api` in CRITERIA: routine = the inbox-reader routine copies alert emails on the plan's schedule; api = `AGENTMAIL_API_KEY`. The routine must read each email with `body_max_chars: 50000` (the default 4,000 cuts long Redfin emails). `src/scout.py` logs any email whose body ends "[body truncated" or whose subject-line price matches no parsed place to `logs/email_cutoff.log` and `out/email_cutoff.json`; re-read those in full.
+- HotPads cards with a street but no house number keep it as `street_only`; texts show "Royan Ln (no number listed)" (roundups put "(no number listed)" on its own line when the entry would pass 30 characters).
 - `timezone` in CRITERIA (default America/Los_Angeles): quiet hours, Sleep mode, the 6 PM roundup and the day-4 check-in use `features.local_hour(C)`, never the box clock.
 - "end my search": see skill "Ongoing care". `out/search_ended.json` has `pause_routines: true`; pause your routines when you see `PAUSE_ROUTINES`.
 - New loop commands: `src/notify.py evening` (daily cap bundle after 6 PM; `daily_cap: 0` = off), `src/notify.py pulse` (quiet-week pulse, real count from the last check), `src/notify.py firstweek` (once, day 4+, pending `feedback_open` → Make it better, gated).

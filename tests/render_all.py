@@ -40,6 +40,8 @@ l = copy.deepcopy(A[0]["l"]); l.update(source="Redfin", address="Example Villas,
 l = sc._street_from_url(l); R("C11 building name in the email, street from the listing page (Redfin)", sc.render(al(l), C))
 l = copy.deepcopy(A[0]["l"]); l.update(source="HotPads", price=2295.0, price_from=True, beds=None, beds_range=[1, 3], baths=None, available="", url="https://hotpads.com/example-terrace-los-angeles-ca-90001-x1/pad")
 R("C12 building with several units (from price, bed range)", sc.render(al(sc.classify(l, C)), C))
+l = copy.deepcopy(A[0]["l"]); l.update(source="HotPads", address=None, street_only="Example Ln", city="Los Angeles", url="https://hotpads.com/town-ca-90001-x2/pad")
+R("C13 street given, number hidden (HotPads)", sc.render(al(sc.classify(l, C)), C))
 l = copy.deepcopy(A[0]["l"]); l["flags"] = ["suspicious payment/deposit wording"]; R("C7 scam caution (one signal)", sc.render(al(l), C))
 l = copy.deepcopy(A[0]["l"]); l["flags"] = ["suspicious payment/deposit wording", "photo/address mismatch"]; R("C7b scam caution (two signals)", sc.render(al(l), C))
 R("C8 bundle of 3", sc.render([A[0], A[1], dict(A[2], reason="price_drop", was=(A[2]["l"].get("price") or 0) + 100)], C))

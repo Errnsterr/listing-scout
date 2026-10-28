@@ -44,7 +44,7 @@ Human-only steps (share this with the owner): `FOR_YOU.md`. Internals map: `FOR_
 4. **The watcher.** After step 8's approval, run the install in `FOR_YOUR_BOT.md` (quiet first run, then `src/ensure_running.sh`). It keeps exactly one copy running. Add the one-line restart hook to `~/.bashrc` (in `FOR_YOUR_BOT.md`) so it comes back after a restart.
 5. **Two routines** (create them with your routines tool, only after the owner approves going live):
    - **Inbox reader**: on Lean twice a day (Standard every 2 hours, Hands-on hourly). Copy new alert emails from the alerts inbox into `inbox/`. Read-only, never reply to those emails.
-   - **Weekly health check**: run `python3 src/health.py --restart`. If it says OK, say nothing. Otherwise tell the owner calmly, with one next step.
+   - **Weekly health check**: run `python3 src/health.py --restart`. If it says OK, say nothing. Otherwise tell the owner calmly, with one next step. `python3 src/health.py --restart --quiet` is safe to run every 10 minutes (for example from the inbox routine): it prints nothing when all is well.
 6. **Optional: the reply listener** for co-deciders (case B). Set `replies: true`; `src/ensure_running.sh` starts `src/listen.mjs`.
 
 If your computer has no way to keep a program running, tell the owner plainly that alerts only run while you're active, and offer the routine-only option (checks at the routine's schedule).
@@ -580,7 +580,7 @@ Expect about an hour, including the listing-site accounts.
 
    Check: each line is open, with no "Target not allowed".
 
-7. **Alerts inbox**: claim the bot's inbox (permanent, so confirm the name first). Choose how mail reaches `inbox/`: the inbox-reader routine on the plan's schedule (`inbox_pull: routine`, no key; Lean twice a day, Standard every 2 h, Hands-on hourly; it skips no-listing setup mail, logs skips and writes `out/routine_heartbeat.txt`) or `AGENTMAIL_API_KEY` via the secure flow (`inbox_pull: api`). Check: the routine runs and writes the heartbeat, or `src/fetch_inbox.py` saves alerts. `out/health_flags.json` has no `email_pull_missing`.
+7. **Alerts inbox**: claim the bot's inbox (permanent, so confirm the name first). Choose how mail reaches `inbox/`. Read each email with the full 50,000-character limit (`body_max_chars: 50000`); the mail reader's default of 4,000 cuts long Redfin emails and drops places. Options: the inbox-reader routine on the plan's schedule (`inbox_pull: routine`, no key; Lean twice a day, Standard every 2 h, Hands-on hourly; it skips no-listing setup mail, logs skips and writes `out/routine_heartbeat.txt`) or `AGENTMAIL_API_KEY` via the secure flow (`inbox_pull: api`). Check: the routine runs and writes the heartbeat, or `src/fetch_inbox.py` saves alerts. `out/health_flags.json` has no `email_pull_missing`.
 8. **Saved searches on Zillow, Redfin and HotPads**: the bot creates them on the alerts inbox with instant email alerts. Keep site filters to **for rent plus area only**, with no price, bed, bath, pet or 'deals' filters, and let the scout filter. Site filters silently hide listings with unknown fields.
 
    Cover every ZIP (Zillow allows up to 5 locations per search; Redfin and HotPads take one region per search). Logins go in the vault. Zillow and HotPads can't edit filters in place: recreate the search, then delete the old one. **Verify each site's email**: Zillow's verify link; Redfin needs a first and last name before its verify link (resends are rate-limited); HotPads' one-time code.

@@ -411,7 +411,7 @@ Every text passes the style check, and the colon rule is strict: nothing may fol
 
 - Same home on two sites at two prices: one alert, lower price first, "Also $X/mo on Site".
 - Gone, then back cheaper (even under a new listing id, same address): one "Back, and lower" alert.
-- Missing rent or beds: "not listed yet". A missing address shows as "Address not shown". Never guessed.
+- Missing rent or beds: "not listed yet". A missing address shows as "Address not shown". When a site gives only the street (HotPads often hides the number), it shows the street with "(no number listed)", for example "Royan Ln (no number listed)". Never guessed.
 - Scam signals (far below similar places, money before a tour): one gentle caution line, never more.
 - A roundup (2+ fits) shows every place that fits, nothing left out: each is "N. address", one line with price, beds and area, then its own link (no "not listed yet" lines). If one text would pass about 1,500 characters, it goes as consecutive texts labeled "Part 1 of 2" and so on; a place is never split across texts, numbers continue across parts, and replying with any number works.
 - Two people reply at once: relayed in the order they arrived.

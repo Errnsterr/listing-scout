@@ -2,6 +2,7 @@
 """Weekly health check for Listing Scout (no AI, sends nothing). Prints a short plain report.
   python3 src/health.py            # report; exit 1 if something needs attention
   python3 src/health.py --restart  # also restart the loop if it is down (keeps exactly one)
+  python3 src/health.py --restart --quiet   # safe every 10 minutes: prints nothing and exits 0 when all is well
 The weekly bot routine runs this with --restart and tells the owner only if something is wrong."""
 import os, sys, re, json, time, subprocess, yaml
 _SRC = os.path.dirname(os.path.abspath(__file__))
@@ -31,6 +32,25 @@ bad = [l.split(" | ")[0] for l in lastrun.splitlines() if " | ERROR | " in l]
 if bad: issues.append("sources with errors on the last check: " + ", ".join(bad))
 nl = open("logs/notify.log").read() if os.path.exists("logs/notify.log") else ""
 if "Not sent:" in nl[-5000:]: issues.append("a recent text was not accepted by Photon (see logs/notify.log)")
+# Texts failing for 30+ minutes: every send since the last success failed, and the first of them is 30+ min old
+sends = [json.loads(x) for x in open("logs/sends.jsonl")] if os.path.exists("logs/sends.jsonl") else []
+sends = [x for x in sends if not x.get("dry_run")]
+tail_fail = []
+for x in reversed(sends):
+    if x.get("ok"): break
+    tail_fail.append(x)
+ff = json.load(open("out/health_flags.json")) if os.path.exists("out/health_flags.json") else {}
+if tail_fail:
+    first = time.mktime(time.strptime(tail_fail[-1]["ts"][:19], "%Y-%m-%d %H:%M:%S"))
+    mins = (time.time() - first) / 60
+    if mins >= 30:
+        issues.append(f"texts have failed for {mins:.0f} min ({len(tail_fail)} sends, Photon): nobody is getting alerts")
+        ff.setdefault("send_failing", {"since": tail_fail[-1]["ts"]})
+elif "send_failing" in ff: ff.pop("send_failing")
+os.makedirs("out", exist_ok=True); json.dump(ff, open("out/health_flags.json", "w"))
+# Alert emails that may have lost places (cut off by the mail reader, or a subject price never parsed)
+cut = json.load(open("out/email_cutoff.json")) if os.path.exists("out/email_cutoff.json") else {}
+if cut: issues.append(f"{len(cut)} alert email(s) may be cut off ({', '.join(sorted(cut)[:3])}{'...' if len(cut) > 3 else ''}): re-read in full (50,000 characters)")
 inbox = [f for f in os.listdir("inbox") if not f.startswith(".")] if os.path.isdir("inbox") else []
 st = json.load(open("state.json"))["listings"] if os.path.exists("state.json") else {}
 # Secrets, listener, email path (flags written by ensure_running.sh / fetch_inbox.py; nothing printed but names)
@@ -45,6 +65,7 @@ if C.get("replies"):
     if not (lp and os.path.exists(f"/proc/{lp}/cmdline") and b"listen.mjs" in open(f"/proc/{lp}/cmdline", "rb").read()):
         issues.append("reply listener is not running" + (" (restart attempted)" if "--restart" in sys.argv else ""))
         if "--restart" in sys.argv: subprocess.run(["./src/ensure_running.sh"])
+if "--quiet" in sys.argv and not issues: sys.exit(0)   # every-10-minutes use: say nothing when all is well
 print(f"Listing Scout health {time.strftime('%F %H:%M %Z')}")
 print(f"loop: {'running' if alive else 'DOWN'} (pid {pid or '-'}), {len(runs)} checks logged, plan {C.get('plan_mode')}")
 print(f"tracking {len(st)} listings; {len(inbox)} alert emails in inbox/")

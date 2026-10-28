@@ -7,6 +7,10 @@ All notable changes to the Listing Scout template. The current version is in `VE
 - The same home listed on two sites with slightly different addresses is now treated as one home. For example, "125 Baker St" on Redfin and "125 E Baker St" on HotPads.
 - Matching ignores "East"/"E", "Street"/"St", "Unit"/"#"/"Apt", punctuation and spacing. "218.5" and "218 1/2" are the same number.
 - It never joins different house numbers, different units, a different ZIP, or "N" and "S" on the same street. Two separate listings from one manager also stay separate.
+- Long alert emails were being cut off by the mail reader at 4,000 characters, so later places in a Redfin email were lost. Your bot now reads each email in full (up to 50,000 characters). The scout also warns when an email looks cut off: it ends early, or a price in its subject line isn't among the places it read.
+- When a site lists the street but hides the house number, the text shows the street, for example "Royan Ln (no number listed)", instead of "Address not shown".
+- The health check can run every 10 minutes and stays quiet when all is well. It speaks up if texts have been failing for 30 minutes or an email looks cut off.
+- The example settings file no longer has an unused headline setting with emoji in it.
 - The text format is the same.
 
 ## v1.2.5 (October 27, 2026): no place left out for missing details

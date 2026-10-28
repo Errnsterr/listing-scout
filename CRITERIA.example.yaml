@@ -94,7 +94,6 @@ message_style:                   # calm style; rendered by scout.render()
   blocks: [headline, summary, details, context, address_and_link, close]
   max_line_chars: 30             # links may run longer
   no_caps_stars_or_tags: true
-  headlines: {new: "New place that fits 🏡", price_drop: "A price came down 📉", relist: "Back on the market", bundle: "{N} new places today 🏡"}
   tier_words: {target: "in your target range", stretch: "in your stretch range", stretch_top: "top of your stretch range", above: "above your usual range"}
   price_drop_line: "Now $A/mo (was $B)"
   unknown_phrase: "not listed yet, worth asking"   # unknowns always listed last
