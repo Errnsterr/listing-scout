@@ -19,7 +19,7 @@ Nothing is sent unless --send is given.
   python3 src/notify.py morning [--send]       # Sleep mode: held overnight finds at wake time + the one-time offer
   python3 src/notify.py gone [--send]          # Still available?: liked places gone ~24h -> "no longer listed"
 """
-import time, os, sys, json, time, base64, subprocess, tempfile, urllib.request, urllib.error, yaml, importlib.util
+import time, os, sys, json, time, base64, subprocess, tempfile, urllib.request, urllib.error, yaml, importlib.util, glob
 _SRC = os.path.dirname(os.path.abspath(__file__))
 HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
 C = yaml.safe_load(open(os.environ.get("SCOUT_CRITERIA", os.path.join(HERE, "CRITERIA.yaml"))))
@@ -327,6 +327,17 @@ def main():
                     elif kind == "hb": w["hb_told"] = True
                     else: sites[key]["told"] = True
         if really or not os.path.exists(wf): json.dump(w, open(wf, "w"), indent=1)
+    elif a[0] == "correct":   # notify.py correct ID [--send]: the right link for a place texted with a wrong one, once per place
+        cf = os.path.join(HERE, "out", "corrections.json"); done = json.load(open(cf)) if os.path.exists(cf) else {}
+        pid = a[1]; N = json.load(open(os.path.join(HERE, "out", "last_numbered.json")))
+        x = next((n for n in N if n["id"] == pid), None)
+        if not x or not x.get("url"): print(f"no saved place {pid} with a link"); sys.exit(1)
+        if pid in done: print(f"already corrected {done[pid]}; not sending again"); sys.exit(0)
+        sc = _sc(); l = next((l for f in glob.glob(os.path.join(HERE, "inbox", "*.txt")) for l in sc.parse_email_file(f) if l["id"] == pid), None)
+        msg = style.link_fix((sc.street_line(l) if l else None) or x["where"], x["url"])
+        oks = [send(r, msg, really) for r in recipients() if not paused(r)]
+        print(msg)
+        if really and oks and all(oks): done[pid] = time.strftime("%F %T %Z"); json.dump(done, open(cf, "w"), indent=1)
     elif a[0] == "alerts":
         if C.get("paused"):
             print("alerts paused (CRITERIA.yaml paused: true); nothing sent"); return
@@ -349,7 +360,8 @@ def main():
         # Every new find goes out on the pass that finds it (bundle_cooldown_min: 0, the default).
         # With a cooldown set, finds that follow within it are bundled into the next text.
         # Sends are tracked per person: if one person's send fails, only that person is retried (next loop pass).
-        cool = int(C.get("bundle_cooldown_min", 0)) * 60
+        instant = pace == "instant"   # rentals: every fitting place is its own alert (no 'N new places' bundle)
+        cool = 0 if instant else int(C.get("bundle_cooldown_min", 0)) * 60
         akey = lambda x: f"{x['l'].get('id')}|{x.get('reason')}|{x['l'].get('price')}"
         dl = ob.setdefault("delivered", {})
         retry = any(dl.values())
@@ -367,16 +379,25 @@ def main():
                     ob.setdefault("held", {}).setdefault(r["name"], []).extend(q); print(f"holding {len(q)} for {r['name']} (sleep mode)")
                     if really: dl.setdefault(r["name"], []).extend(akey(x) for x in q)
                     continue
-                ok1 = send_parts(r, sc.render_parts(q, C), really); oks.append(ok1)
+                if instant:   # one text per place; a failed one is retried alone next pass
+                    ok1 = True
+                    for x in q:
+                        okx = send_parts(r, sc.render_parts([x], C), really)
+                        if okx and really: dl.setdefault(r["name"], []).append(akey(x))
+                        ok1 = ok1 and okx
+                    oks.append(ok1)
+                else:
+                    ok1 = send_parts(r, sc.render_parts(q, C), really); oks.append(ok1)
                 if ok1 and (really or C.get("shadow")) and not m.get("first_alert_note_sent"):   # one-time heads-up, once per person
                     set_member(r["name"], first_alert_note_sent=time.strftime("%F %T %Z"))   # flag saved BEFORE sending: never twice
                     send(r, style.first_alert_note(), really)   # shadow mode: send() only logs it
-                if ok1 and really: dl.setdefault(r["name"], []).extend(akey(x) for x in q)
+                if ok1 and really and not instant: dl.setdefault(r["name"], []).extend(akey(x) for x in q)
                 if ok1 and really and features.in_quiet(C) and not m.get("sleep_offered") and not m.get("late_at"):
                     set_member(r["name"], late_at=features.local_str(C, "%-I:%M %p"))   # Sleep mode is offered once, in the morning
             ok = all(oks) if oks else True
             if really and ok:
                 record_numbered(sc.shown(ob["queue"], C))
+                sc.record_texted(ob["queue"], os.path.join(HERE, "out", "texted.json"))   # 'Another unit at' checks these
                 ob = {"queue": [], "last_sent": time.time(), "held": ob.get("held", {}), "evening": ob.get("evening", []),
                       "day": ob.get("day"), "texts_today": ob.get("texts_today", 0) + 1, "delivered": {}}
             elif really:

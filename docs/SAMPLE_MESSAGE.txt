@@ -295,6 +295,39 @@ No rush.
 I'll keep watching.
 ```
 
+### C14 another unit in a building texted before
+```
+New place that fits
+
+1 bed, 1 bath
+Los Angeles, 90002
+$1,950/mo
+In your target range
+
+Another unit at Example Villas
+
+Via Demo PM
+
+200 Sample Ave Apt 210
+https://example.com/listing/2
+Showing link from the listing:
+https://example.com/showing/2
+
+No rush.
+
+I'll keep watching.
+```
+
+### C15 link fix (a wrong link went out)
+```
+Fix for 994 Example Dr #6
+
+The link I sent was wrong.
+
+Here is the right one:
+https://www.zillow.com/apartments/town-ca/994-example-dr/9Abc1x/
+```
+
 ### C7 scam caution (one signal)
 ```
 New place that fits
@@ -341,7 +374,7 @@ No rush.
 I'll keep watching.
 ```
 
-### C8 bundle of 3
+### C8 bundle of 3 (Sleep mode wake-up or a daily cap only; instant rentals never bundle)
 ```
 Three updates today
 

@@ -8,6 +8,7 @@ NOT_TEXTS = {"sentences", "wrap", "quote", "text", "check", "fit", "shorten", "s
 CH = "Set your stretch to $5,200."
 LONG = "1234 Extraordinarily Longname Boulevard"
 CASES = {
+    "link_fix": [("994 Example Dr #6", "https://www.zillow.com/apartments/town-ca/994-example-dr/9Abc1x/"), ("9999 Very Long Example Boulevard #12", "https://www.zillow.com/homedetails/1_zpid/")],
  "apply_ack": [("Maple St",), (LONG,)], "apply_expired": [("Maple St",), (LONG,)], "apply_need_profile": [()], "apply_no_place": [()],
  "capabilities": [(), (True,), (True, ["Zillow", "Redfin"]), (True, [], False)], "change_ask": [(CH,)], "change_done": [()], "change_passed": [("Alex",)],
  "change_suggested": [("Sarah", "go up to 5.2k", CH)], "change_unclear": [()], "checkins_set": [(True,), (False,)], "data_note": [()],

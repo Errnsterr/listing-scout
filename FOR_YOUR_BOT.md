@@ -13,7 +13,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.6.tar.gz
+Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.7.tar.gz
 
 Then copy `CRITERIA.example.yaml` to `CRITERIA.yaml`. Install dependencies: Node 20 or newer, `npm install`, and Python 3 with pyyaml, bs4 and Pillow (`python3 -m pip install pyyaml beautifulsoup4 Pillow`). Commands are in this file, under "Commands and technical detail".
 
@@ -39,6 +39,15 @@ Key internals:
 - Every text goes through `src/style.py`; never write a text by hand.
 - Tests: `python3 -B tests/test_*.py`, `python3 tests/render_all.py` (both modes). Shadow mode: `shadow: true` logs to `out/shadow_texts.jsonl` and sends nothing.
 
+
+**v1.2.7 behavior (alerts):**
+- Rentals are instant: each fitting place is its own single alert (range words, pets, "Via ___"), even when several come in one email. A failed send is retried for that place and person only.
+- Card IDs and links in text-only alert emails come from that card's own lines; the next card's photo link is never borrowed (`scout._parse_text_cards`).
+- Held buildings (`held_review`, e.g. a "From $X, 0-3 bed" building listing) stay held, but they never block a specific unit with its own price and beds. That unit is a separate listing and alerts normally.
+- "Another unit at <Building>": a new place in a building texted before (same street number and street, or same building name or Zillow/Redfin building slug) gets this line. Sent places are saved in `out/texted.json`; state records keep `bldg` and `bkeys`, even Redfin records with no street.
+- ZIP backfill: a missing ZIP comes from a saved record at the same street address or building (one ZIP only, never guessed). Places still without one are logged once in `logs/zip_missing.log` and matched by city as before.
+- Wrong link sent: `python3 src/notify.py correct ID --send` texts everyone "Fix for <street>" with the saved right link, once per place (`out/corrections.json`). Fix the saved link in `out/last_numbered.json` first.
+
 ## What ships
 
 Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc` are internal and do not ship (see `.gitignore` / `.exportignore`). No owner criteria, Project ID, phone numbers, listing history, logs, contact cards or secrets.
@@ -55,7 +64,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.6. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.7. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |
@@ -82,7 +91,7 @@ Not shipped (owner-only): `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/*`
 
 ---
 
-## Commands and technical detail (template 1.2.6)
+## Commands and technical detail (template 1.2.7)
 
 User-facing docs (`docs/SETUP.md`, `docs/PHOTON_FAQ.md`, `docs/COSTS.md`) stay plain. Every command and technical detail lives here.
 

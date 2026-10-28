@@ -6,10 +6,10 @@ description: >-
   (everyone gets every place, sees each other's thoughts, and shares a shortlist). Use
   from the owner's first message about finding a rental or copying the bot, and whenever
   they say "add my partner", "pause", "shortlist", or "change my search".
-version: 1.2.6
+version: 1.2.7
 ---
 
-# Listing Scout: setup and care (v1.2.6)
+# Listing Scout: setup and care (v1.2.7)
 
 Built by [@errnsterr](https://x.com/errnsterr).
 
@@ -38,7 +38,7 @@ Human-only steps (share this with the owner): `FOR_YOU.md`. Internals map: `FOR_
 
 ## Day one: what you create yourself (before step 1 is finished)
 
-1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.6.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
+1. **Your working folder.** Get the code with `git clone https://github.com/Errnsterr/listing-scout` (or by downloading the release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.7.tar.gz). Copy `CRITERIA.example.yaml` to `CRITERIA.yaml`.
 2. **An alerts inbox.** Claim an email address for listing-site alerts (for example `{firstname}-homes@…`). Ask the owner to approve the name first; a claim is permanent. Put it in `alert_inbox`.
 3. **The Photon secret.** Ask for it with a secure form in step 3. Keep it as the `PHOTON_API_KEY` environment setting only.
 4. **The watcher.** After step 8's approval, run the install in `FOR_YOUR_BOT.md` (quiet first run, then `src/ensure_running.sh`). It keeps exactly one copy running. Add the one-line restart hook to `~/.bashrc` (in `FOR_YOUR_BOT.md`) so it comes back after a restart.
@@ -517,6 +517,9 @@ The header follows the style. **Their words are sent exactly as written**: no wr
 - "pause" / "resume": set `paused: true/false` in `CRITERIA.yaml` (checks continue, nothing is sent).
 - "change my search": in chat, edit `CRITERIA.yaml`, reflect it back like step 1, then refresh with `src/scout.py --all --dry-run`. By text, **Fine-tune the search** handles it (read back, owner's yes, backup, quiet re-seed). Co-decider suggestions go to the owner verbatim; only the owner's yes applies them.
 - "show me everything today": `src/scout.py --all --dry-run --bundle`, shown in chat.
+- Rentals are instant: each fitting place is its own text, even when several arrive in one email. "Another unit at <Building>" marks a building they were sent before.
+- A wrong link went out: fix the saved link, dry-run `src/notify.py correct ID`, get the owner's OK, then add `--send` (once per place).
+- A held building listing stays held; a specific unit there with its own price and beds alerts normally.
 - "end my search" (owner, by text or chat): `src/replies.py` asks, needs a word yes, sends one goodbye to everyone, writes `out/search_ended.json` (loop and listener stop) and prints `PAUSE_ROUTINES`. Then **you pause your own inbox-reader and health-check routines**, offer data deletion and closing the Zillow/Redfin/HotPads saved searches, and remind them to remove people on Photon's Users page.
 - Site blocks your sign-up: ask the owner to make the account themselves, save the search with email alerts, and forward those emails to the alerts inbox (docs/SETUP.md section 2).
 - Errors: say what happened, that nothing is wrong on their side, and one next step. Never retry a failed send more than once without asking.

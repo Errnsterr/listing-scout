@@ -2,7 +2,7 @@
 
 **Features:** calm alerts that fit your list · a "what's out there right now" snapshot on day one · **Decide together**: invite a partner, you both get each place, see each other's thoughts, and Listing Scout keeps a shared shortlist (no forwarding links or screenshots). Texts go through Photon; check its plans at photon.codes/pricing.
 
-Template version **1.2.6** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
+Template version **1.2.7** (see `VERSION`). To update, run `git pull` in this folder (or download the new release archive) and keep your own `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/` and `out/`.
 
 Texts you new places that fit your list. Property-manager pages are checked about every 5 minutes; Zillow, Redfin and HotPads alerts arrive when the bot next reads its inbox (see docs/COSTS.md). **US only. Rentals (the default), and buying (experimental, new in v1.1.0).** No coding needed by you; your bot does the technical parts.
 
@@ -280,7 +280,7 @@ All texts (alerts, bundles, price drops, welcome, invite note, error hints, rela
 - Every line is **one whole thought of 30 characters or fewer**, so it never wraps mid-thought on an iPhone. Nothing is ever wrapped; long sentences are rewritten shorter, and names drop out of a line when they would push it past 30. Exempt: links, a street address directly above its link, and a member's own quoted words.
 - After a colon, leave a blank line: an intro line ending in ':' gets a blank line before what follows, and text after an inline colon goes below a blank line, on the next line ('2. Text it:' / 'Hi Listing Scout, I'm in.'). For now, alert fact labels ('Pets: …', 'Garage: …') stay on one line.
 - Links always sit alone on their own line.
-- Same headlines, no emoji in any text ("New place that fits", "A price came down", "Back on the market", "Two new places today"; buying: "New home that fits", "Two new homes today"), and the same close: "No rush." / "I'll keep watching."
+- Same headlines, no emoji in any text ("New place that fits", "A price came down", "Back on the market"; buying: "New home that fits", and "Two new homes today" for a buying roundup). Rentals are instant: several fits from one email go out as separate single texts, never "Two new places today", and the same close: "No rush." / "I'll keep watching."
 - Nothing is sent if it fails the style check.
 
 All rendered examples are in `docs/SAMPLE_MESSAGE.txt`.
@@ -289,7 +289,7 @@ All rendered examples are in `docs/SAMPLE_MESSAGE.txt`.
 
 Short blocks separated by a blank line, short lines, no capitals for emphasis, no stars or tags.
 
-1. Headline: "New place that fits" / "A price came down" / "Back on the market" / "Two new places today" (buying: "New home that fits" / "Two new homes today")
+1. Headline: "New place that fits" / "A price came down" / "Back on the market" (buying: "New home that fits" / "Two new homes today"). Rentals never get a "N new places today" bundle
 2. Beds, baths, type · area + ZIP · "$3,895/mo" · "In your target range" (each on its own line) (the ranges come from your CRITERIA price tiers: target range, stretch range, top of your stretch range, above your usual range) Price drop: "Now $3,895/mo (was $4,095)". A building priced from its lowest unit: "From $2,295/mo".
 3. Garage · available date · pets. Only rent, beds, baths and pets say "not listed yet" when missing (last in their block). Anything else shows only when the listing states it.
 
@@ -436,7 +436,7 @@ Tone: calm, warm, plain. One ask at a time. Every step has a one-line *why*, a t
 
 Don't move on until the step is confirmed.
 
-Template 1.2.6. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
+Template 1.2.7. Runs after getting started's welcome, 4 questions, current matches and recommended next step. Order: 1 reflect · 2 promise · 3 Photon + secret · 4 add people · 5 save contact · 6 first text · 7 sample alert · 8 go live (plan, quiet first run, welcome = test, snapshot).
 
 Commands for each step are in `FOR_YOUR_BOT.md`.
 

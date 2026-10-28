@@ -195,11 +195,27 @@ def _parse_text_cards(body, portal, fname):
     L = L[:cut]; out, ids = [], set()
     msgid = (re.search(r"message_id\s+(\w+)", body) or re.search(r"(\d{5,})", fname) or re.match("()", "")).group(1)
     starts = [i for i, x in enumerate(L) if PRICE_LINE.match(x) or PRICE_RANGE.match(x)]
+    prev_end = 0   # where the previous card's own lines end (its links never label this card)
     for n, i in enumerate(starts):
         end = starts[n + 1] if n + 1 < len(starts) else len(L)
         seg = L[i:end]
         stop = next((k for k, x in enumerate(seg) if re.search(r"see (latest|all|more) (search )?results|^\s*zillow, inc\.|unsubscribe|^\s*©", x, re.I)), len(seg))
-        seg = seg[:stop]; t = " ".join(y for x in seg for y in [re.sub(r"\(\s*\)", "", URL_RE.sub("", x)).strip()] if y)
+        seg = seg[:stop]
+        # The card's own lines only: Zillow puts the NEXT card's photo link just above the next price, inside this
+        # segment. Drop that trailing link (with the noise around it), never this card's own address or apply links.
+        if end < len(L):
+            isurl = lambda x: bool(re.fullmatch(r"\s*\(?\s*https?://\S+\s*\)?\s*", x))
+            noise = lambda x: bool(re.fullmatch(r"\s*(\[image[^\]]*\]|\u25cf.*|new!?|for rent|)\s*", x, re.I))
+            ai = next((k for k, x in enumerate(seg) if ADDR.search(x) or UNDISCLOSED.search(x)), None)
+            k = len(seg)
+            while k > 0 and (isurl(seg[k - 1]) or noise(seg[k - 1])): k -= 1
+            tail_urls = [j for j in range(k, len(seg)) if isurl(seg[j])]
+            if ai is not None:   # the first link right after the address is the card's own
+                own = next((j for j in range(ai + 1, min(ai + 4, len(seg))) if isurl(seg[j])), None)
+                tail_urls = [j for j in tail_urls if own is None or j > own]
+            if tail_urls: seg = seg[:tail_urls[-1]] if len(tail_urls) == 1 else seg[:tail_urls[0]]
+        own_end = i + len(seg)
+        t = " ".join(y for x in seg for y in [re.sub(r"\(\s*\)", "", URL_RE.sub("", x)).strip()] if y)
         bdr = re.search(r"(\d+)\s*[-\u2013]\s*(\d+)\s*(?:bd|bds|beds?|br)\b", t, re.I); bar = re.search(r"(\d+(?:\.\d)?)\s*[-\u2013]\s*(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
         bd = None if bdr else re.search(r"(\d+(?:\.\d)?)\s*(?:bd|bds|beds?|br)\b", t, re.I); ba = None if bar else re.search(r"(\d+(?:\.\d)?)\s*(?:ba|baths?)\b", t, re.I)
         sq = re.search(r"([\d,]{3,})\s*sq\.?\s*ft", t, re.I)
@@ -207,14 +223,15 @@ def _parse_text_cards(body, portal, fname):
         if not (ad or und):   # building name instead of a street number: 'Example Villas, Vista del Sol, CA 90001'
             ad = next((m.group().strip() for x in seg for m in [NAMED_PLACE.match(URL_RE.sub("", x))] if m), None)
         if not (bd or ba or bdr or bar or ad or und): continue
-        pre = [u for x in L[max(0, i - 8):i] for u in URL_RE.findall(x)]   # tracked link nearest the card (just above the price)
+        pre = [u for x in L[max(0, i - 8, prev_end):i] for u in URL_RE.findall(x)]   # tracked link nearest the card (just above the price)
         inside = [u for x in seg for u in URL_RE.findall(x)]
         res = next((URL_RE.findall(L[k - 1] if k else "") or URL_RE.findall(L[k - 2] if k > 1 else "") for k, x in enumerate(L)
                     if re.search(r"see latest search results", x, re.I)), [])
         link = (pre[-1:] or inside[:1] or res[:1] or [None])[0]
         rg = PRICE_RANGE.match(L[i])
         price = None if rg else num(PRICE_LINE.match(L[i]).group(1)); beds = num(bd.group(1)) if bd else None
-        zr = _card_id(portal, " ".join(seg) + " " + body if len(starts) == 1 else " ".join(L[max(0, i - 8):end]), None)
+        zr = _card_id(portal, " ".join(seg) + " " + body if len(starts) == 1 else " ".join(L[max(0, i - 8, prev_end):i] + seg), None)
+        prev_end = own_end
         if zr: lid = zr
         elif ad and addr_id_key(ad): lid = f"email:addr:{addr_id_key(ad).replace(' ', '-')}"
         else: lid = f"email:{portal}:m{msgid}-{int(price) if price else 'x'}-{int(beds) if beds is not None else 'x'}-{sq.group(1).replace(',', '') if sq else 'x'}"
@@ -564,6 +581,10 @@ def classify(l, C):
     t = " ".join(str(l.get(k) or "") for k in ("title", "text", "address"))
     K = C.get("keywords", {})
     zipm = (re.findall(r"\b(\d{5})(?:-\d{4})?\b", l.get("address") or "") or [None])[-1]
+    if not zipm and l.get("zip"): zipm = l["zip"]   # the parser read it from the card's city line
+    if not zipm:
+        zipm = zip_backfill(l)
+        if zipm: l["zip_from"] = "saved record, same street or building"
     l["zip"] = zipm
     area = C["area"]
     in_area = (l["zip"] in area["zips"]) if l["zip"] else any(c.lower() in t.lower() for c in area["cities"])
@@ -677,6 +698,75 @@ def addr_key(a):
     p = addr_parts(a)
     if not p: return None
     return f"{p[0]}|{p[1]}|{p[3] or ''}"
+
+# ---------- same building + ZIP backfill (v1.2.7) ----------
+SMALL_WORDS = {"at", "of", "the", "on", "in", "by", "and"}
+def building_name(l):
+    """The building's own name when we have one: the email's name line, else the Zillow/Redfin building page slug.
+    A numbered street address is not a building name. None if unknown (never guessed)."""
+    if l.get("building"): return l["building"]
+    a = (l.get("address") or "").split(",")[0].strip()
+    if a and not re.match(r"\d", a) and a.lower() not in ("address not shown",) and not UNDISCLOSED.search(l.get("address") or ""): return a
+    u = l.get("url") or ""
+    m = re.search(r"zillow\.com/apartments/[^/]+/([a-z0-9-]+)/[A-Za-z0-9]+/?$", u) or re.search(r"redfin\.com/[A-Z]{2}/[^/]+/([A-Za-z0-9-]+)/apartment/\d+", u)
+    if m and not m.group(1)[0].isdigit():
+        w = m.group(1).split("-")
+        return " ".join(x.lower() if i and x.lower() in SMALL_WORDS else x[:1].upper() + x[1:] for i, x in enumerate(w))
+    return None
+
+def _norm_b(n): return re.sub(r"[^a-z0-9]+", " ", n.lower()).strip()
+def bkeys(l):
+    """Building keys: 'n:<name>' and 's:<number>|<street>|<city>' (no unit). Two places sharing one are one building."""
+    ks, n = set(), building_name(l)
+    if n: ks.add("n:" + _norm_b(n))
+    p = addr_parts(l.get("address"))
+    if p and p[5]: ks.add(f"s:{p[0]}|{p[1]}|{p[5]}")
+    return sorted(ks)
+
+def another_unit(l, texted):
+    """A building texted before under another id -> the name for 'Another unit at <name>', else None."""
+    mine, own = set(bkeys(l)), {l.get("id")} | set(l.get("also_ids") or [])
+    hit = next((t for t in texted if t.get("id") not in own and mine & set(t.get("bkeys") or [])), None)
+    if not hit: return None
+    return building_name(l) or hit.get("name") or _bare_street(l)
+
+def _bare_street(l):
+    """'994 Example Dr #6' -> '994 Example Dr' (the building, not the unit)."""
+    return re.sub(r"\s*(#|\b(?:apt|unit|ste|suite)\b).*$", "", street(l) or "", flags=re.I) or None
+
+def another_lines(name):
+    one = f"Another unit at {name}"
+    return [one] if len(one) <= style.MAX else ["Another unit at", name]
+
+def load_texted(path=os.path.join("out", "texted.json")):
+    try: return json.load(open(path))
+    except Exception: return []
+
+def record_texted(alerts, path=os.path.join("out", "texted.json")):
+    """notify.py calls this after a real send: which places (and buildings) went out."""
+    T = load_texted(path); have = {t.get("id") for t in T}
+    for a in alerts:
+        l = a["l"]
+        if l.get("id") in have: continue
+        T.append({"id": l.get("id"), "bkeys": bkeys(l), "name": building_name(l) or _bare_street(l), "ts": time.strftime("%F %T %Z")})
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True); json.dump(T, open(path, "w"), indent=1)
+
+ZIPIDX = {}   # building key -> set of ZIPs from saved records (filled by main(); empty in tests unless set)
+def build_zipidx(S):
+    idx = {}
+    for v in S.values():
+        loc = v.get("loc") or {}; z = loc.get("zip")
+        if not z: continue
+        ks = set(v.get("bkeys") or [])
+        if v.get("addr") and loc.get("city"):
+            num, st_ = v["addr"].split("|")[:2]; ks.add(f"s:{num}|{st_}|{loc['city']}")
+        for k in ks: idx.setdefault(k, set()).add(z)
+    return idx
+
+def zip_backfill(l):
+    """A missing ZIP from a saved record of the same street address or building (one ZIP only, never a guess)."""
+    zs = set().union(*[ZIPIDX.get(k, set()) for k in bkeys(l)]) if bkeys(l) else set()
+    return next(iter(zs)) if len(zs) == 1 else None
 
 def _same_feed(a, b):
     """Two ids from one manager feed (appfolio:, tt:...) are two listings, never one home. Email ids are shared across sites."""
@@ -984,7 +1074,9 @@ def render_parts(alerts, C, head=None):
         a = alerts[0]; l = a["l"]
         G = style.Group
         sb = summary_block(a, C)
-        blocks = [[head or (HEAD_BUY if is_buy(C) else HEAD)[a["reason"]]], G(sb), G(details(l, C))]
+        blocks = [[head or (HEAD_BUY if is_buy(C) else HEAD)[a["reason"]]], G(sb)]
+        if a.get("another_at"): blocks.append(G(another_lines(a["another_at"])))
+        blocks.append(G(details(l, C)))
         if extras(a): blocks.append(extras(a))
         blocks += [where_block(l), [CLOSE]]
         return [style.text(blocks)]   # the one shared formatter (style.py)
@@ -1004,7 +1096,7 @@ def entries_for(alerts, C):
         st = street_line(l) or (area_name(l) or "Address not shown")
         head = [f"{i}. {st}"]
         if len(head[0]) > style.MAX and st.endswith(NO_NUMBER): head = [f"{i}. {st[:-len(NO_NUMBER)].strip()}", NO_NUMBER]
-        b = head + ([lab] if lab else []) + fact_lines(l, C, sp)
+        b = head + ([lab] if lab else []) + (another_lines(a["another_at"]) if a.get("another_at") else []) + fact_lines(l, C, sp)
         e = [style.Group(b + [l["url"]] if l.get("url") else b)]
         cau = [x for x in extras(a) if x not in (a.get("market"),)]
         if cau: e.append(cau)
@@ -1123,6 +1215,8 @@ def main():
     C = yaml.safe_load(open(a.criteria))
     st = json.load(open(a.state)) if os.path.exists(a.state) else {"listings": {}}
     S, now, today = st["listings"], time.time(), date.today().isoformat()
+    global ZIPIDX; ZIPIDX = build_zipidx(S)
+    TEXTED = load_texted(os.path.join(os.path.dirname(os.path.abspath(a.state)), "out", "texted.json"))
     allL, report = [], []
     for src in C["sources"]:
         if src.get("enabled") is False or src["type"] not in PARSERS:
@@ -1151,6 +1245,13 @@ def main():
                 json.dump({"source": src["name"], "since": __import__("features").local_str(C, "%a %-I:%M %p", h["failing_since"])},
                           open(os.path.join(os.path.dirname(os.path.abspath(a.state)), "out", "outage_pending.json"), "w"))
         time.sleep(1)
+    if not a.dry_run:   # ZIP not in the email and no saved record to borrow it from: logged once per place
+        zf = os.path.join("out", "zip_missing.json"); zm = json.load(open(zf)) if os.path.exists(zf) else {}
+        for l in allL:
+            if l.get("zip") or l["id"] in zm or not str(l["id"]).startswith("email:") or not l.get("in_area"): continue
+            zm[l["id"]] = time.strftime("%F %T %Z")
+            open(os.path.join("logs", "zip_missing.log"), "a").write(f"{zm[l['id']]} | {l['id']} | {street(l) or 'no street'} | ZIP not listed; area matched by city\n")
+        json.dump(zm, open(zf, "w"), indent=1)
     _ids = set(); allL = [l for l in allL if not (l["id"] in _ids or _ids.add(l["id"]))]   # two sources reading one inbox: same listing once
     allL = merge_dupes(allL, C)
     for l in allL: l["also_ids"] = [x for x in l.get("also_ids", []) if x != l["id"]]   # never 'seen' via its own id (was: 0 alerts after an empty first run)
@@ -1191,10 +1292,14 @@ def main():
         if l.get("price") is not None and (not rec["price_history"] or rec["price_history"][-1][1] != l["price"]):
             rec["price_history"].append([today, l["price"]])
         rec.update(price=l.get("price"), last_seen=today, gone_since=None, eligible=l["eligible"], addr=ak, loc=addr_loc(l.get("address")))
+        if l.get("zip") and not rec["loc"].get("zip"): rec["loc"]["zip"] = l["zip"]
+        rec.update(bldg=building_name(l), bkeys=bkeys(l))   # building name saved even when there's no street (Redfin)
         S[l["id"]] = rec
         if rec.get("held_review") and not a.all: continue   # owner decides (out/pending_review.json); never auto-sent
         if not l["eligible"] or (reason is None and not a.all): continue
         a_ = {"l": l, "reason": reason or "current", "was": was_price}
+        au = another_unit(l, TEXTED)
+        if au: a_["another_at"] = au
         if C.get("market_context", True):
             a_["market"] = market_words(l, [x for x in allL if x["eligible"]], C)
         if a.matches_only and not l["match"]: continue
@@ -1222,7 +1327,7 @@ def main():
     if a.seed:
         print(f"quiet first run: saved {len(seen_ids)} current listings; nothing to send", file=sys.stderr); return
     if a.json:   # for notify.py (texts every match on this pass)
-        print(json.dumps([{"reason": m["reason"], "was": m["was"], "market": m.get("market"),
+        print(json.dumps([{"reason": m["reason"], "was": m["was"], "market": m.get("market"), **({"another_at": m["another_at"]} if m.get("another_at") else {}),
                            "l": {k: v for k, v in m["l"].items() if k != "text"}} for m in msgs]))
     elif a.bundle and len(msgs) > 1:
         print(render(msgs, C))

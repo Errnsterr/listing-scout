@@ -2,6 +2,15 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.7 (October 27, 2026): the right link, one text per place
+
+- Fixed a mix-up in Zillow emails: a place without its own Zillow ID could borrow the next place's ID and link. Each place now uses only its own lines. The place that was mixed up stays recorded correctly, and the next place is no longer dropped.
+- Rentals are instant: several fits from one email now go out as separate texts, each with its price range words, pets and source. No more "Three new places today".
+- New line "Another unit at <Building>" when a place is in a building you were already sent.
+- Missing ZIPs are filled from a saved place at the same address or building; places still missing one are logged.
+- New `notify.py correct` sends one short "Fix for ..." text with the right link when a wrong link went out.
+- A held building listing never holds back a specific unit with its own price and beds (documented).
+
 ## v1.2.6 (October 27, 2026): one home, one text across sites
 
 - The same home listed on two sites with slightly different addresses is now treated as one home. For example, "125 Baker St" on Redfin and "125 E Baker St" on HotPads.

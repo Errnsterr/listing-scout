@@ -677,3 +677,9 @@ def apply_expired(where):
 
 def member_paused(name, on):
     return text([[f"{name} {'resumed' if on else 'paused'} their texts."]])
+
+
+def link_fix(where, url):
+    """A wrong link went out: one short correction (v1.2.7)."""
+    head = f"Fix for {where}"
+    return text([[head if len(head) <= MAX else "A link fix"], ["The link I sent was wrong."], Group(["Here is the right one:", url])])

@@ -101,7 +101,7 @@ def test_default_no_gap_every_find_texts_same_pass():   # default bundle_cooldow
     assert sent == ["Alex", "Sarah", "Alex", "Sarah"]          # the second find is texted on its own pass, no wait
     assert json.load(open(f"{d}/outbox.json"))["queue"] == []
 
-def test_first_find_now_then_bundle_then_retry_one():   # optional bundling gap (bundle_cooldown_min: 60)
+def test_instant_rentals_never_bundle_retry_one():   # rentals are instant: a cooldown never holds or bundles a find
     d, n, sent = notify_box(cool=60); fail = {"Sarah"}
     n.send = lambda r, t, really, card=None: (sent.append(r["name"]) or True) if r["name"] not in fail else (sent.append("x" + r["name"]) or False)
     n.record_numbered = lambda q: None
@@ -110,10 +110,15 @@ def test_first_find_now_then_bundle_then_retry_one():   # optional bundling gap 
     fail.clear(); json.dump([], open(f, "w")); call(n, "alerts", f, "--send")
     assert sent[2:] == ["Sarah"]                              # retry only Sarah, right away
     json.dump([alert(2)], open(f, "w")); call(n, "alerts", f, "--send")
-    assert sent[3:] == []                                     # within the cooldown: held for the bundle
-    ob = json.load(open(f"{d}/outbox.json")); assert len(ob["queue"]) == 1
-    ob["last_sent"] = 0; json.dump(ob, open(f"{d}/outbox.json", "w")); json.dump([], open(f, "w")); call(n, "alerts", f, "--send")
-    assert sent[3:] == ["Alex", "Sarah"]
+    assert sent[3:] == ["Alex", "Sarah"]                      # no cooldown hold for rentals
+    assert json.load(open(f"{d}/outbox.json"))["queue"] == []
+
+def test_several_fits_one_email_one_text_each():   # three fits from one email: three single alerts, no 'N new places today'
+    d, n, sent = notify_box(); n.record_numbered = lambda q: None
+    n.send = lambda r, t, really, card=None: sent.append((r["name"], t)) or True
+    f = f"{d}/out/a.json"; json.dump([alert(1, 3100), alert(2, 3200), alert(3, 3300)], open(f, "w")); call(n, "alerts", f, "--send")
+    assert [w for w, _ in sent] == ["Alex"] * 3 + ["Sarah"] * 3, [w for w, _ in sent]
+    assert all(t.startswith("New place that fits") and "today" not in t.split("\n")[0] for _, t in sent)
 
 # ---------- real Zillow text render (live: real, personal details removed; template: synthetic values, same layout) ----------
 REAL = "tests/fixtures/email_real/zillow_rental_instant.txt"
