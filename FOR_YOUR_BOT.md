@@ -13,7 +13,7 @@ git clone https://github.com/Errnsterr/listing-scout
 cd listing-scout
 ```
 
-Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.8.tar.gz
+Release archive: https://github.com/Errnsterr/listing-scout/archive/refs/tags/v1.2.9.tar.gz
 
 Then copy `CRITERIA.example.yaml` to `CRITERIA.yaml`. Install dependencies: Node 20 or newer, `npm install`, and Python 3 with pyyaml, bs4 and Pillow (`python3 -m pip install pyyaml beautifulsoup4 Pillow`). Commands are in this file, under "Commands and technical detail".
 
@@ -40,7 +40,7 @@ Key internals:
 - Tests: `python3 -B tests/test_*.py`, `python3 tests/render_all.py` (both modes). Shadow mode: `shadow: true` logs to `out/shadow_texts.jsonl` and sends nothing.
 
 
-**v1.2.8 behavior (alerts):**
+**v1.2.9 behavior (alerts):**
 - Rentals are instant: each fitting place is its own single alert (range words, pets, "Via ___"), even when several come in one email. A failed send is retried for that place and person only.
 - Card IDs and links in text-only alert emails come from that card's own lines; the next card's photo link is never borrowed (`scout._parse_text_cards`).
 - Held buildings (`held_review`, e.g. a "From $X, 0-3 bed" building listing) stay held, but they never block a specific unit with its own price and beds. That unit is a separate listing and alerts normally.
@@ -64,7 +64,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.8. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.9. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |
@@ -91,7 +91,7 @@ Not shipped (owner-only): `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/*`
 
 ---
 
-## Commands and technical detail (template 1.2.8)
+## Commands and technical detail (template 1.2.9)
 
 User-facing docs (`docs/SETUP.md`, `docs/PHOTON_FAQ.md`, `docs/COSTS.md`) stay plain. Every command and technical detail lives here.
 
@@ -222,3 +222,9 @@ Household welcome: `python3 src/notify.py welcome "Name" --send` (member wording
 - **Wake-up routine:** "Listing Scout: apply requests", every 5 minutes, prompt in `docs/routines/apply-watch.md`. Create it at go-live with the owner's okay. It runs `python3 src/apply.py pending --send` (prints `none` when idle: stay silent), then `apply.py plan <id>` for each new request, messages the member in the Grok Bot app, Statuses: `new` → `waiting` (set by `plan`) → `in_progress` (`mark` on the member's yes) → `handled` / `declined`.
 
   The routine acts only on `new`. `new`/`waiting` requests older than 24 h expire (never `in_progress`) on the next run; only that member gets `style.apply_expired()`.
+
+**v1.2.9: "Still listed?" check (`src/gonecheck.py`):**
+- Loop runs `gonecheck.py --apply --daily` in the background, at most once a day; `python3 src/gonecheck.py` alone is a dry run.
+- Gone = 404/410, a redirect to a search or off-market page, or visible page text (not site code) saying off market / no longer available / rented. 403/429/5xx, block pages, captchas, timeouts = unknown, never gone; never retried around.
+- Marks live in `out/link_gone.json` (state.json is never edited by it). They are NOT `gone_since`, so the "Still available?" text (`notify.py gone`, liked places from manager feeds) and relist alerts never fire on them. Texting about these needs the owner's OK first.
+- Flat installed copies (no `src/` folder) get a `src -> .` link so the same commands and tests work.

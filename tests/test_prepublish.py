@@ -57,5 +57,7 @@ def test_first_run_alert_in_exported_copy():
     finally: shutil.rmtree(d, ignore_errors=True)
 
 if __name__ == "__main__":
+    if not os.path.exists(os.path.join(HERE, "README.md")):   # an installed copy (no release docs): this checks the release package only
+        print("skipped: prepublish checks run in the release checkout, not an installed copy"); sys.exit(0)
     for k, f in list(globals().items()):
         if k.startswith("test_"): f(); print("ok", k)

@@ -336,7 +336,7 @@ def _l(**k):
     l = dict(id="t", source="t", url="https://x.example/1", title="", text="", address="1 A St, Los Angeles, CA 90002", price=3600, beds=2, baths=2,
              sqft=None, available=None, pets_raw=None, photo=None, photo_alt=None, showing_url=None, listed_on=None); l.update(k); return l
 def _LC():
-    c = copy.deepcopy(C); c["beds_min"] = 2; c["area"] = {"cities": ["Los Angeles"], "zips": ["90002"]}; c["match"] = {"baths_min": 1, "price_max": 5000, "exclude_no_pets": True, "nice_to_have": ["garage", "layout"], "layout_any": [], "garage_min": 0}; return c
+    c = copy.deepcopy(C); c["beds_min"] = 2; c["area"] = {"cities": ["Los Angeles"], "zips": ["90002"]}; c["match"] = {"baths_min": 1, "price_max": 5000, "exclude_no_pets": True, "nice_to_have": ["garage", "layout"], "layout_any": [], "garage_min": 0}; c["pets"] = {}; return c   # owner pet settings (ESA) never leak into this test
 def test_light_filters():
     c = _LC()
     assert sc.classify(_l(), c)["match"]                                   # garage/layout unknown: still a match

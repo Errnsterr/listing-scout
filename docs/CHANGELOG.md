@@ -2,6 +2,12 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.9 (October 27, 2026): places from emails can go away
+
+- Once a day the scout checks each place from an alert email (one plain visit per place, spaced out) and marks it gone only on a clear sign: the page is missing (404/410), it sends you to a search or off-market page, or the page itself says it's off market, no longer available or rented. A blocked page, a captcha or no answer counts as unknown and is never marked gone, and the check never tries to get around a block.
+- Gone places come off the shortlist (kept in `out/shortlist_gone.json` with their notes) and the reply-by-number lists. Every change is logged in `logs/gonecheck.log`. Nothing is texted about it.
+- The scripts run the same from `src/` or from a flat installed copy.
+
 ## v1.2.8 (October 27, 2026): buying details you can trust
 
 - Lot size shows only when it's the home's own lot. Redfin lists a condo or HOA community's whole lot (for example "10.42 acre lot" on a condo), so a unit, a condo or townhome, or an HOA home on half an acre or more shows no lot. A lot is read only where the email calls it one.

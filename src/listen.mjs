@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SRC = dirname(fileURLToPath(import.meta.url));
-const ROOT = dirname(SRC);
+const ROOT = SRC.endsWith("/src") ? dirname(SRC) : SRC;   // src/ (repo) or a flat install
 const observe = process.argv.includes("--observe");
 let pid = process.env.PHOTON_PROJECT_ID;
 if (!pid) { const m = readFileSync(join(ROOT, "CRITERIA.yaml"), "utf8").match(/project_id:\s*"([^"]+)"/); pid = m && m[1]; }
