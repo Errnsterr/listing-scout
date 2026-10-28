@@ -18,3 +18,7 @@ inbox/*
 *.env
 .envrc
 /env
+
+# self-heal backups and local config
+backups/
+selfheal.local.json

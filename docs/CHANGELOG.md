@@ -2,6 +2,13 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.11 (October 27, 2026): survives a box restart on its own
+
+- Automatic backups: every loop pass checks; a snapshot of out/, state.json and CRITERIA.yaml is taken hourly (sooner when the texted record changes) plus once a day. Kept: 48 hourly, 14 daily, in backups/auto/ (chmod 600). Optional off-box mirror (selfheal.local.json "mirror") is encrypted, so no phone number sits there in plain text.
+- Self-heal (src/selfheal.py, run by ensure_running.sh and health.py --restart): missing node_modules/spectrum-ts -> npm ci; a missing file -> restored from the newest valid backup, only where missing (nothing present is overwritten). Every heal is logged to logs/heal.log.
+- Safety: if state.json or out/texted.json is gone and no backup has it, sends are blocked (out/search_ended.json, reason selfheal_block). After restoring either, a no-send dry run must show nothing already texted would go out again, or sends stay blocked.
+- Health shows the last backup time (and off-box copy) and the last heal; a self-heal block or a backup older than 3 hours needs attention.
+
 ## v1.2.10 (October 27, 2026): fewer silent misses, a record of every text
 
 - Held buildings text once. A building card with a stated "from" price at or under your cap and a bed range that reaches your minimum is sent as its own "New place that fits" text ("From $X/mo", the stated bed range), instead of waiting on the held list. Cards with no price stay held. Never one already texted or marked gone by the still-listed check. `held_release_per_pass: N` (optional) spreads a backlog over several passes; `release_held: false` turns it off.

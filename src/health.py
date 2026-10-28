@@ -8,6 +8,8 @@ import os, sys, re, json, time, subprocess, yaml
 _SRC = os.path.dirname(os.path.abspath(__file__))
 HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
 os.chdir(HERE)
+if "--restart" in sys.argv:   # v1.2.11: heal first (npm ci, restore missing files only, block on re-text risk)
+    subprocess.run(["python3", os.path.join(_SRC, "selfheal.py")], capture_output=True)
 C = yaml.safe_load(open("CRITERIA.yaml")); issues = []
 SHADOW = os.path.exists("SHADOW_ONLY")   # shadow-only proof install: the loop is run_shadow.sh (never sends)
 LOOP = "run_shadow.sh" if SHADOW else "run_loop.sh"
@@ -76,6 +78,15 @@ if C.get("replies"):
     if not (lp and os.path.exists(f"/proc/{lp}/cmdline") and b"listen.mjs" in open(f"/proc/{lp}/cmdline", "rb").read()):
         issues.append("reply listener is not running" + (" (restart attempted)" if "--restart" in sys.argv else ""))
         if "--restart" in sys.argv: subprocess.run([f"./{S}ensure_running.sh"])
+# v1.2.11: backups and self-heal
+try: HS = json.loads(subprocess.run(["python3", os.path.join(_SRC, "selfheal.py"), "--status"], capture_output=True, text=True).stdout or "[]")
+except Exception: HS = []
+for h in HS:
+    nm = os.path.basename(h["install"])
+    if h.get("heal_blocked"): issues.append(f"{nm}: sends blocked by self-heal (see logs/heal.log)")
+    if not h.get("last_backup_ts"): issues.append(f"{nm}: no automatic backup yet")
+    elif time.time() - h["last_backup_ts"] > 3 * 3600: issues.append(f"{nm}: last backup {h['last_backup']} is over 3 hours old")
+    notes.append(f"{nm}: last backup {h.get('last_backup') or 'none'}{' (+ off-box copy)' if h.get('mirrored') else ''}; last heal: {h.get('last_heal') or 'none'}")
 if "--quiet" in sys.argv and not issues: sys.exit(0)   # every-10-minutes use: say nothing when all is well
 print(f"Listing Scout health {time.strftime('%F %H:%M %Z')}")
 print(f"{'shadow loop (sends nothing)' if SHADOW else 'loop'}: {'running' if alive else 'DOWN'} (pid {pid or '-'}), {len(runs)} checks logged, plan {C.get('plan_mode')}")

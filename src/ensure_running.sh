@@ -19,6 +19,7 @@ else: d.pop(k, None)
 json.dump(d, open(f, "w"), indent=1)
 PY
 }
+python3 ${S}selfheal.py >/dev/null 2>&1 || true   # v1.2.11: npm ci / restore missing files from backups (logs/heal.log); hourly + daily backups; may block sends
 [ -f out/search_ended.json ] && exit 0   # We found it: the search is wrapped up; start nothing
 start_loop() {
   pid=$(cat logs/loop.pid 2>/dev/null)
