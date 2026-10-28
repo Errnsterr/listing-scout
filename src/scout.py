@@ -1395,6 +1395,8 @@ def main():
     ap.add_argument("--sample", action="store_true", help="also save current matches to out/sample.json (proof-of-life sample)")
     ap.add_argument("--matches-only", action="store_true", help="only MATCH listings")
     a = ap.parse_args()
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(a.state)), "out", "search_ended.json")):
+        a.dry_run = True   # v1.2.10: wrapped up or sends blocked: nothing is marked seen, so nothing is swallowed (a watchdog run included)
     global RESOLVE_LINKS; RESOLVE_LINKS = True
     for _d in ("out", "logs", "inbox"): os.makedirs(_d, exist_ok=True)   # exported copies ship without these
     C = yaml.safe_load(open(a.criteria))

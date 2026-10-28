@@ -357,6 +357,8 @@ def main():
     elif a[0] == "alerts":
         if C.get("paused"):
             print("alerts paused (CRITERIA.yaml paused: true); nothing sent"); return
+        if features.search_ended():   # v1.2.10: never mark a queue texted when nobody could get it
+            print("search wrapped up or sends blocked (out/search_ended.json); nothing sent, nothing marked texted"); return
         spec = importlib.util.spec_from_file_location("scout", os.path.join(_SRC, "scout.py"))
         sc = importlib.util.module_from_spec(spec); spec.loader.exec_module(sc)
         obf = os.path.join(HERE, "outbox.json")

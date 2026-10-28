@@ -36,6 +36,16 @@ def test_held_building_texts_once():
     assert not st["email:addr:1562-testwood7"]["held_review"] and st["email:addr:2238-testwood10"]["held_review"]
     assert _run(d) == []                                                   # never twice
 
+def test_blocked_run_marks_nothing():
+    d = _box(); _run(d, "--seed")
+    st = json.load(open(f"{d}/state.json"))
+    st["listings"]["email:addr:1562-testwood7"]["held_review"] = True; json.dump(st, open(f"{d}/state.json", "w"))
+    json.dump({"reason": "test"}, open(f"{d}/out/search_ended.json", "w"))
+    before = open(f"{d}/state.json").read()
+    assert len(_run(d)) == 1 and open(f"{d}/state.json").read() == before     # previewed, never saved
+    os.remove(f"{d}/out/search_ended.json")
+    assert len(_run(d)) == 1 and _run(d) == []                              # after resume: once
+
 def test_held_not_released_when_texted_or_gone():
     l = {"id": "a", "eligible": True, "match": True, "price": 2000, "price_from": True, "beds_range": [0, 2], "beds_max": 2}
     C = {"beds_min": 2, "match": {"price_max": 5000}}
