@@ -118,13 +118,17 @@ STATUS = [("sold", r"\bsold\b"), ("pending", r"\bpending\b|under contract|contin
 
 def buy_facts(t):
     """For-sale facts from one alert card; anything missing stays None (never guessed)."""
-    hoa = re.search(r"HOA(?: dues| fee)?s?\s*:?\s*\$\s?([\d,]+)\s*(?:/\s*mo|per month|monthly|/month)?", t, re.I)
+    hoa = re.search(r"HOA(?: dues| fee)?s?\s*:?\s*\$\s?([\d,]+)\s*(?:/\s*mo|per month|monthly|/month)?", t, re.I) \
+        or re.search(r"\$\s?([\d,]+)\s*(?:/\s*mo\s*)?HOA\b", t, re.I)   # Redfin: '$635 HOA'
+
     no_hoa = re.search(r"\bno HOA\b|HOA:?\s*(?:none|\$0\b)", t, re.I)
-    lot = re.search(r"([\d,.]+)\s*(acres?|ac)\b|([\d,]+)\s*(?:sq\.?\s*ft\.?|sqft)\s*lot|lot(?: size)?:?\s*([\d,]+)\s*(?:sq\.?\s*ft|sqft)", t, re.I)
+    # a lot is only read where the card calls it one: '0.25 acre lot', '6,120 sq ft lot', 'Lot size: 0.3 acres'
+    lot = re.search(r"([\d.]+)\s*(?:acres?|ac)\.?\s*lot\b|([\d,]+)\s*(?:sq\.?\s*ft\.?|sqft)\s*lot|lot(?: size)?:?\s*([\d.]+)\s*(?:acres?|ac)\b|lot(?: size)?:?\s*([\d,]+)\s*(?:sq\.?\s*ft|sqft)", t, re.I)
     lot_s = None
     if lot:
-        if lot.group(1): lot_s = f"{lot.group(1)} acre" + ("" if lot.group(1) in ("1", "1.0") else "s")
-        else: lot_s = f"{num(lot.group(3) or lot.group(4)):,.0f} sq ft lot"
+        ac = lot.group(1) or lot.group(3)
+        if ac: lot_s = f"{ac} acre" + ("" if ac in ("1", "1.0") else "s")
+        else: lot_s = f"{num(lot.group(2) or lot.group(4)):,.0f} sq ft lot"
     st = next((name for name, rx in STATUS if re.search(rx, t, re.I)), None)
     oh = re.search(r"open house:?\s*((?:mon|tue|wed|thu|fri|sat|sun)\w*,?\s*(?:\w{3,9}\.? \d{1,2},?\s*)?\d{1,2}(?::\d{2})?\s*(?:am|pm)?\s*(?:-|–|to)\s*\d{1,2}(?::\d{2})?\s*(?:am|pm))", t, re.I)
     return {"hoa": 0 if no_hoa else (num(hoa.group(1)) if hoa else None),
@@ -132,7 +136,7 @@ def buy_facts(t):
             "lot": lot_s, "year_built": _n(r"(?:built(?: in)?|year built:?)\s*((?:18|19|20)\d\d)", t),
             "dom": _n(r"(\d{1,4})\s*days? on (?:market|zillow|redfin|realtor\.com)", t),
             "status": st, "open_house": re.sub(r"\s+", " ", oh.group(1)).strip() if oh else None,
-            "home_type_raw": next((k for k in ("townhome", "townhouse", "condo", "single family", "house") if k in t.lower()), None)}
+            "home_type_raw": next((k for k in ("townhome", "townhouse", "condo", "single family", "house") if re.search(r"\b" + k + r"\b", re.sub(r"open[ -]house|\[image[^\]]*\]", " ", t.lower()))), None)}
 
 UNDISCLOSED = re.compile(r"\(?\s*(?:undisclosed|address not (?:disclosed|listed))\s*address\)?\s*,\s*([A-Za-z .]{3,40}),\s*([A-Z]{2})\b(?:\s*(\d{5}))?", re.I)
 URL_RE = re.compile(r"https?://[^\s)<>\"']+")
@@ -610,7 +614,7 @@ def classify(l, C):
     else: l["pets"] = U if NO_RELAY.search(p) else l["pets_raw"]   # never repeat discriminatory ad wording
     # tier
     pr, T = l.get("price"), C["price_tiers"]
-    l["tier"] = U if pr is None else ("TARGET" if pr <= T["target_max"] else "STRETCH" if pr <= T["stretch_max"] else "CURIOSITY")
+    l["tier"] = U if pr is None else ("TARGET" if T.get("target_max") is None or pr <= T["target_max"] else "STRETCH" if pr <= T["stretch_max"] else "CURIOSITY")
     br_ = l.get("beds_range")
     hi = max([x for x in [l.get("beds"), l.get("beds_max"), br_[1] if br_ else None] if x is not None], default=None)
     beds_ok = hi is None or hi >= C["beds_min"]   # unknown beds: kept (not listed yet); a range or several units fit if any could   # unknown beds: kept, shown as not listed yet
@@ -819,11 +823,16 @@ def merge_dupes(L, C):
 NUMW = {2: "Two", 3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven", 8: "Eight", 9: "Nine"}
 TYPES = [("townhome", r"townho(me|use)"), ("house", r"single[- ]family|\bhouse\b|\bhome\b(?! ?owner)"),
          ("condo", r"\bcondo"), ("duplex", r"duplex|triplex|fourplex"), ("cottage", r"cottage"),
-         ("ADU", r"\bADU\b"), ("apartment", r"apartment|\bapt\b")]
+         ("ADU", r"\bADU\b"), ("apartment", r"apartment")]
+BUY_TYPES = [("townhome", r"townho(me|use)"), ("condo", r"\bcondo"), ("house", r"single[- ]family|\bhouse\b")]   # stated types only
 
 def ptype(l):
-    t = f"{l.get('title','')} {l.get('ptype_raw') or ''}"
-    for name, rx in TYPES:
+    """A property type only when the listing states one; never from the address ('APT C2') or 'home'."""
+    t = f"{l.get('title','')} {l.get('ptype_raw') or ''} {l.get('home_type_raw') or ''}"
+    for a in (l.get("address"), l.get("street_only")):
+        if a: t = t.replace(a, " ").replace(a.split(",")[0], " ")
+    t = re.sub(r"open[ -]house|\[image[^\]]*\]", " ", t, flags=re.I)   # an open house or an icon ('[image: House Icon]') is not a property type
+    for name, rx in (BUY_TYPES if is_buy(CFG) else TYPES):
         if re.search(rx, t, re.I): return name
     return None
 
@@ -842,7 +851,7 @@ def baths_text(l):
 
 def tier_words(p, C):
     T = C["price_tiers"]
-    if p is None: return None
+    if p is None or T.get("target_max") is None or T.get("stretch_max") is None: return None   # no price limit set: say nothing about range
     if p <= T["target_max"]: return "in your target range"
     if p < T["stretch_max"]: return "in your stretch range"
     if p == T["stretch_max"]: return "top of your stretch range"
@@ -893,6 +902,20 @@ def posted_line(l, now=None):
     if m < 60: return f"Posted about {max(m, 1)} min ago"
     h = m // 60; return f"Posted about {h} hour{'s' if h > 1 else ''} ago"
 
+SHARED_LOT_ACRES = 0.5
+def own_lot(l):
+    """The home's own lot, or None. Redfin gives a condo or HOA community's whole lot ('10.42 acre lot' on a
+    1,778 sq ft home with a $635 HOA), so: no lot for a unit, a condo or townhome, or an HOA home on half an acre or more."""
+    lot = l.get("lot")
+    if not lot: return None
+    a = (l.get("address") or "").split(",")[0]
+    if UNIT_RX.search(a) or re.search(r"#|\b(?:apt|unit|ste|suite)\b", a, re.I): return None
+    if (l.get("home_type_raw") or "") in ("condo", "townhome", "townhouse"): return None
+    m = re.match(r"([\d.]+) acre", lot)
+    acres = float(m.group(1)) if m else (num(re.sub(r"[^\d,]", "", lot)) or 0) / 43560
+    if l.get("hoa") and acres >= SHARED_LOT_ACRES: return None
+    return lot
+
 def buy_details(l, C):
     """For-sale details, one short line each; unknowns as 'X: not listed' (style.UNKNOWN). Never guessed."""
     known, unknown = [], []
@@ -905,7 +928,7 @@ def buy_details(l, C):
     h = l.get("hoa")
     if h is not None: known.append("No HOA" if h == 0 else f"HOA ${h:,.0f}/mo")
     if l.get("sqft_buy"): known.append(f"{l['sqft_buy']:,.0f} sq ft")
-    if l.get("lot"): known.append("Lot " + l["lot"].replace(" sq ft lot", " sq ft"))
+    if own_lot(l): known.append("Lot " + l["lot"].replace(" sq ft lot", " sq ft"))
     if l.get("year_built"): known.append(f"Built {int(l['year_built'])}")
     if l.get("dom") is not None: known.append(f"{int(l['dom'])} days on market")
     for k, (src, p) in enumerate(l.get("alt_prices") or []):
@@ -1147,7 +1170,7 @@ def reflect(C):
         out.append(_join(rest[:k]) if k == len(rest) else ", ".join(rest[:k]) + ","); rest = rest[k:]
     out.append(f"{C['beds_min']}+ bed" + ("s" if C["beds_min"] != 1 else ""))
     T = C["price_tiers"]; per_ = per(C)
-    out += [f"Up to ${T['target_max']:,}{per_}", f"Stretch to ${T['stretch_max']:,}{per_}"]
+    out += [f"Up to ${T['target_max']:,}{per_}", f"Stretch to ${T['stretch_max']:,}{per_}"] if T.get("target_max") is not None and T.get("stretch_max") is not None else ["Any price"]
     m = C.get("match") or {}
     lay = {"first_floor": "ground floor", "single_story": "single story", "two_story_townhome": "townhome"}
     L = [lay.get(x, x) for x in m.get("layout_any") or []]

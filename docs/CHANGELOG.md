@@ -2,6 +2,13 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.8 (October 27, 2026): buying details you can trust
+
+- Lot size shows only when it's the home's own lot. Redfin lists a condo or HOA community's whole lot (for example "10.42 acre lot" on a condo), so a unit, a condo or townhome, or an HOA home on half an acre or more shows no lot. A lot is read only where the email calls it one.
+- HOA written as "$635 HOA" (Redfin) is now read. HOA shows only when the listing states it.
+- The home type (condo, townhome, house) shows only when the listing states it. It's never taken from the address ("APT C2") or an open-house icon.
+- A search with no price limit works again ("Any price"; no range words).
+
 ## v1.2.7 (October 27, 2026): the right link, one text per place
 
 - Fixed a mix-up in Zillow emails: a place without its own Zillow ID could borrow the next place's ID and link. Each place now uses only its own lines. The place that was mixed up stays recorded correctly, and the next place is no longer dropped.
