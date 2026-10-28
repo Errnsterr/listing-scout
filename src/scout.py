@@ -231,7 +231,9 @@ def _parse_text_cards(body, portal, fname):
         inside = [u for x in seg for u in URL_RE.findall(x)]
         res = next((URL_RE.findall(L[k - 1] if k else "") or URL_RE.findall(L[k - 2] if k > 1 else "") for k, x in enumerate(L)
                     if re.search(r"see latest search results", x, re.I)), [])
-        link = (pre[-1:] or inside[:1] or res[:1] or [None])[0]
+        ak_i = next((k for k, x in enumerate(seg) if ad and ad in x), None)   # the address line's own link is the listing's
+        at_addr = [u for x in (seg[ak_i:ak_i + 3] if ak_i is not None else []) for u in URL_RE.findall(x)]
+        link = (at_addr[:1] or pre[-1:] or inside[:1] or res[:1] or [None])[0]
         rg = PRICE_RANGE.match(L[i])
         price = None if rg else num(PRICE_LINE.match(L[i]).group(1)); beds = num(bd.group(1)) if bd else None
         zr = _card_id(portal, " ".join(seg) + " " + body if len(starts) == 1 else " ".join(L[max(0, i - 8, prev_end):i] + seg), None)
@@ -581,10 +583,22 @@ def misses(l, C):
     if need.get("garage_min", 0) > 0 and l.get("garage") != "yes": out.append("garage")
     return out
 
+def zip_typo(z, l, C):
+    """'02627' on a Costa Mesa card is a typo for 92627: only a leading 0, the 9xxxx form must be one of the
+    search ZIPs, and the listing's own city or link must agree. Anything else stays as written."""
+    if not z or not re.fullmatch(r"0\d{4}", z): return z
+    fix = "9" + z[1:]
+    if fix not in (C["area"].get("zips") or []): return z
+    city_ok = any(c.lower() in (l.get("address") or "").lower() for c in C["area"].get("cities") or [])
+    if city_ok or fix in (l.get("url") or ""):
+        l["zip_typo"] = f"{z} read as {fix}"; return fix
+    return z
+
 def classify(l, C):
     t = " ".join(str(l.get(k) or "") for k in ("title", "text", "address"))
     K = C.get("keywords", {})
     zipm = (re.findall(r"\b(\d{5})(?:-\d{4})?\b", l.get("address") or "") or [None])[-1]
+    zipm = zip_typo(zipm, l, C)
     if not zipm and l.get("zip"): zipm = l["zip"]   # the parser read it from the card's city line
     if not zipm:
         zipm = zip_backfill(l)
@@ -613,7 +627,7 @@ def classify(l, C):
     elif "cat" in p and "allowed" in p: l["pets"] = "cats only"
     else: l["pets"] = U if NO_RELAY.search(p) else l["pets_raw"]   # never repeat discriminatory ad wording
     # tier
-    pr, T = l.get("price"), C["price_tiers"]
+    pr, T = l.get("price"), tiers(C)
     l["tier"] = U if pr is None else ("TARGET" if T.get("target_max") is None or pr <= T["target_max"] else "STRETCH" if pr <= T["stretch_max"] else "CURIOSITY")
     br_ = l.get("beds_range")
     hi = max([x for x in [l.get("beds"), l.get("beds_max"), br_[1] if br_ else None] if x is not None], default=None)
@@ -800,7 +814,8 @@ def merge_dupes(L, C):
         if k and k in by:
             b = by[k]
             took_link = not b.get("url") and l.get("url")   # the link comes from this source, so "Via" must name it
-            for f in ("url", "showing_url", "listed_on", "sqft", "photo", "ptype_raw", "apply_url", "agent_url"):
+            for f in ("url", "showing_url", "listed_on", "sqft", "photo", "ptype_raw", "apply_url", "agent_url",
+                      "hoa", "open_house", "lot", "year_built", "dom", "sqft_buy", "home_type_raw"):   # same home on two sites: facts combine
                 b[f] = b.get(f) or l.get(f)
             if l["garage"] == "yes" and b["garage"] == U: b["garage"] = "yes"
             if b["layout"] == U: b["layout"] = l["layout"]
@@ -849,8 +864,17 @@ def baths_text(l):
     if b is not None: return f"{'%g' % b} bath"
     return f"{rng(r)} bath" if r else None
 
+def tiers(C):
+    """Target and cap for the range line. Buying: price_tiers, else the buy budget (buy.target_max / buy.price_max)."""
+    T = dict(C.get("price_tiers") or {})
+    if is_buy(C) and (T.get("target_max") is None or T.get("stretch_max") is None):
+        B = C.get("buy") or {}
+        cap = B.get("price_max"); tgt = B.get("target_max") or cap
+        if cap is not None: T = {"target_max": tgt, "stretch_max": cap}
+    return T
+
 def tier_words(p, C):
-    T = C["price_tiers"]
+    T = tiers(C)
     if p is None or T.get("target_max") is None or T.get("stretch_max") is None: return None   # no price limit set: say nothing about range
     if p <= T["target_max"]: return "in your target range"
     if p < T["stretch_max"]: return "in your stretch range"
@@ -1169,7 +1193,7 @@ def reflect(C):
         while k > 1 and len(_join(rest[:k]) if k == len(rest) else ", ".join(rest[:k]) + ",") > style.MAX: k -= 1
         out.append(_join(rest[:k]) if k == len(rest) else ", ".join(rest[:k]) + ","); rest = rest[k:]
     out.append(f"{C['beds_min']}+ bed" + ("s" if C["beds_min"] != 1 else ""))
-    T = C["price_tiers"]; per_ = per(C)
+    T = tiers(C); per_ = per(C)
     out += [f"Up to ${T['target_max']:,}{per_}", f"Stretch to ${T['stretch_max']:,}{per_}"] if T.get("target_max") is not None and T.get("stretch_max") is not None else ["Any price"]
     m = C.get("match") or {}
     lay = {"first_floor": "ground floor", "single_story": "single story", "two_story_townhome": "townhome"}

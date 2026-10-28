@@ -9,16 +9,24 @@ _SRC = os.path.dirname(os.path.abspath(__file__))
 HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
 os.chdir(HERE)
 C = yaml.safe_load(open("CRITERIA.yaml")); issues = []
-pid = open("logs/loop.pid").read().strip() if os.path.exists("logs/loop.pid") else ""
-alive = bool(pid) and os.path.exists(f"/proc/{pid}/cmdline") and b"run_loop.sh" in open(f"/proc/{pid}/cmdline", "rb").read()
-n = len(subprocess.run(["pgrep", "-f", "bash ./src/run_loop.sh"], capture_output=True, text=True).stdout.split())
+SHADOW = os.path.exists("SHADOW_ONLY")   # shadow-only proof install: the loop is run_shadow.sh (never sends)
+LOOP = "run_shadow.sh" if SHADOW else "run_loop.sh"
+pidf = "logs/run_shadow.pid" if SHADOW else "logs/loop.pid"
+pid = open(pidf).read().strip() if os.path.exists(pidf) else ""
+alive = bool(pid) and os.path.exists(f"/proc/{pid}/cmdline") and LOOP.encode() in open(f"/proc/{pid}/cmdline", "rb").read()
+n = len(subprocess.run(["pgrep", "-f", f"bash ./{LOOP}" if SHADOW else "bash ./src/run_loop.sh"], capture_output=True, text=True).stdout.split())
 if not alive:
-    issues.append("watcher loop is not running")
-    if "--restart" in sys.argv: subprocess.run(["./src/ensure_running.sh"]); issues[-1] += " (restart attempted)"
+    issues.append(("shadow " if SHADOW else "") + "watcher loop is not running")
+    if "--restart" in sys.argv and n == 0:
+        if SHADOW:   # no keys in its environment, ever
+            env = {k: v for k, v in os.environ.items() if not re.match(r"(PHOTON|AGENTMAIL)_", k)}
+            subprocess.Popen(["bash", "./run_shadow.sh"], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        else: subprocess.run(["./src/ensure_running.sh"])
+        issues[-1] += " (restart attempted)"
 if n > 1: issues.append(f"{n} loops running; should be 1")
 log = open("logs/loop.log").read().splitlines() if os.path.exists("logs/loop.log") else []
-runs = [l for l in log if " ok mode=" in l or "scout failed" in l]
-interval = max(1, int(C.get("loop_minutes") or 5))   # same rule as src/run_loop.sh
+runs = [l for l in log if " ok mode=" in l or " ok files=" in l or "scout failed" in l]
+interval = 15 if SHADOW else max(1, int(C.get("loop_minutes") or 5))   # same rule as the loop script
 if runs:
     last = time.mktime(time.strptime(runs[-1][:19], "%Y-%m-%d %H:%M:%S"))
     age = (time.time() - last) / 60
@@ -50,7 +58,9 @@ elif "send_failing" in ff: ff.pop("send_failing")
 os.makedirs("out", exist_ok=True); json.dump(ff, open("out/health_flags.json", "w"))
 # Alert emails that may have lost places (cut off by the mail reader, or a subject price never parsed)
 cut = json.load(open("out/email_cutoff.json")) if os.path.exists("out/email_cutoff.json") else {}
-if cut: issues.append(f"{len(cut)} alert email(s) may be cut off ({', '.join(sorted(cut)[:3])}{'...' if len(cut) > 3 else ''}): re-read in full (50,000 characters)")
+notes = []
+if cut and SHADOW: notes.append(f"{len(cut)} alert email(s) may be cut off; left as they are in this proof run")
+elif cut: issues.append(f"{len(cut)} alert email(s) may be cut off ({', '.join(sorted(cut)[:3])}{'...' if len(cut) > 3 else ''}): re-read in full (50,000 characters)")
 inbox = [f for f in os.listdir("inbox") if not f.startswith(".")] if os.path.isdir("inbox") else []
 st = json.load(open("state.json"))["listings"] if os.path.exists("state.json") else {}
 # Secrets, listener, email path (flags written by ensure_running.sh / fetch_inbox.py; nothing printed but names)
@@ -67,7 +77,8 @@ if C.get("replies"):
         if "--restart" in sys.argv: subprocess.run(["./src/ensure_running.sh"])
 if "--quiet" in sys.argv and not issues: sys.exit(0)   # every-10-minutes use: say nothing when all is well
 print(f"Listing Scout health {time.strftime('%F %H:%M %Z')}")
-print(f"loop: {'running' if alive else 'DOWN'} (pid {pid or '-'}), {len(runs)} checks logged, plan {C.get('plan_mode')}")
+print(f"{'shadow loop (sends nothing)' if SHADOW else 'loop'}: {'running' if alive else 'DOWN'} (pid {pid or '-'}), {len(runs)} checks logged, plan {C.get('plan_mode')}")
+for x in notes: print("note: " + x)
 print(f"tracking {len(st)} listings; {len(inbox)} alert emails in inbox/")
 print("OK" if not issues else "NEEDS ATTENTION:\n- " + "\n- ".join(issues))
 sys.exit(1 if issues else 0)

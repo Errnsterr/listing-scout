@@ -3,7 +3,7 @@ import os, sys, copy
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import scout as sc, yaml
 C = yaml.safe_load(open("CRITERIA.example.yaml")); C["mode"] = "buy"
-C["price_tiers"] = {"target_max": None, "stretch_max": None}
+C["price_tiers"] = {"target_max": None, "stretch_max": None}; C.setdefault("buy", {}); C["buy"]["price_max"] = None; C["buy"]["target_max"] = None
 sc.CFG.clear(); sc.CFG.update(C)
 
 def L(addr, facts, title=""):

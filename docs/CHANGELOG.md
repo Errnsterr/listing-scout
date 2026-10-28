@@ -8,6 +8,10 @@ All notable changes to the Listing Scout template. The current version is in `VE
 - HOA written as "$635 HOA" (Redfin) is now read. HOA shows only when the listing states it.
 - The home type (condo, townhome, house) shows only when the listing states it. It's never taken from the address ("APT C2") or an open-house icon.
 - A search with no price limit works again ("Any price"; no range words).
+- Buy alerts use the rental alert's exact shape, with the range line from the buy budget when one is set (see docs/RENT_VS_BUY.md).
+- Redfin links come from the address line's own link, so they resolve to the home's page. HOA, open house, lot and year built combine across Zillow, Redfin and Realtor.com copies of the same home.
+- A ZIP like "02627" on a Costa Mesa listing is read as 92627, only when 92627 is a search ZIP and the city or link agrees.
+- The health check knows the shadow-only proof loop.
 
 ## v1.2.7 (October 27, 2026): the right link, one text per place
 
