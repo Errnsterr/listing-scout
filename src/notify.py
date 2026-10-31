@@ -130,12 +130,16 @@ def send(r, text, really, card=None):
     if really: log_text(r, text, ok, ch)
     log_send(r, ch, ok, really, card, len(text)); return ok
 
+LAST = {"timeout": False}   # v1.2.13: did the last real send time out (delivery unknown)?
+RESEND_LINE = "Resending in case it got lost."   # fix 8: 30 characters max (style.MAX)
+
 def _send(r, text, really, card, ch="imessage"):
     probs = style.check(text)
     if probs: print("style problems (fix before sending):", probs); return False
     tag = f"{r['name']} (***{r['phone'][-4:]}, line ***{r['line_last4']}, {ch})"
     if not really:
         print(f"[DRY RUN] would send to {tag}{' + contact card' if card else ''}:\n{text}\n"); return True
+    LAST["timeout"] = False
     with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f: f.write(text)
     env = {**os.environ, "PHOTON_PROJECT_ID": PID}
     # One quick attempt per pass (v-retry-decouple): a failed send stays queued and is retried on a later pass,
@@ -144,6 +148,7 @@ def _send(r, text, really, card, ch="imessage"):
         p = subprocess.run(["node", os.path.join(_SRC, "photon_send.mjs"), "send", r["phone"], f.name, "--send"] + (["--card", card] if card else []),
                            env=env, capture_output=True, text=True, timeout=int(os.environ.get("SCOUT_SEND_TIMEOUT", 45)))
     except subprocess.TimeoutExpired as e:
+        LAST["timeout"] = True
         p = subprocess.CompletedProcess(e.cmd, 124, stdout=str(e.stdout or ""), stderr="send timed out; will retry next pass")
     os.unlink(f.name)
     ok = p.returncode == 0
@@ -160,6 +165,11 @@ def _send(r, text, really, card, ch="imessage"):
     if not ok and ch != "imessage":
         print("  SMS/RCS delivery is UNVERIFIED on our Photon line; the owner may need to check with this person.")
     return ok
+
+def resend_parts(parts):
+    """The same text, opened with one honest line, when a timeout left delivery unknown (never a silent double)."""
+    parts = [parts] if isinstance(parts, str) else list(parts)
+    return [RESEND_LINE + "\n\n" + parts[0]] + parts[1:] if parts else parts
 
 LIFE = os.path.join(HERE, "logs", "lifecycle.json")
 def life():
@@ -401,11 +411,16 @@ def main():
                     continue
                 if instant:   # one text per place; a failed one is retried alone next pass
                     ok1 = True
+                    unc = ob.setdefault("uncertain", {}).setdefault(r["name"], [])
                     for x in q:
                         CTX["places"] = places_of([x], sc)
-                        okx = send_parts(r, sc.render_parts([x], C), really)
+                        parts = sc.render_parts([x], C)
+                        if akey(x) in unc: parts = resend_parts(parts)   # fix 8: the last try timed out; it may have arrived
+                        okx = send_parts(r, parts, really)
                         CTX["places"] = []
                         if okx and really: dl.setdefault(r["name"], []).append(akey(x))
+                        if really and not okx and LAST["timeout"] and akey(x) not in unc: unc.append(akey(x))
+                        if okx and akey(x) in unc: unc.remove(akey(x))
                         ok1 = ok1 and okx
                     oks.append(ok1)
                 else:
@@ -422,7 +437,7 @@ def main():
                 record_numbered(sc.shown(ob["queue"], C))
                 sc.record_texted(ob["queue"], os.path.join(HERE, "out", "texted.json"))   # 'Another unit at' checks these
                 ob = {"queue": [], "last_sent": time.time(), "held": ob.get("held", {}), "evening": ob.get("evening", []),
-                      "day": ob.get("day"), "texts_today": ob.get("texts_today", 0) + 1, "delivered": {}}
+                      "day": ob.get("day"), "texts_today": ob.get("texts_today", 0) + 1, "delivered": {}, "uncertain": {}}
             elif really:
                 print(f"{oks.count(False)} send(s) failed; next pass retries only those people")
         else:

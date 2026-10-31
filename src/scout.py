@@ -435,10 +435,14 @@ def slug_street(url, city=None):
     if not re.match(r"\d[\d/ ]*\s+[A-Za-z]", st): return None
     return st + (f" #{unit}" if unit else "")
 
+NUMWORDS = r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)"
+SPELLED_NUM = re.compile(r"\s*\d+\s+" + NUMWORDS + r"\b", re.I)
+
 def _street_from_url(l):
     """A building/community name only ('Newport Seaside, Newport Beach, CA 92663'): use the street from the listing URL if it has one."""
     a = l.get("address")
-    if not a or re.match(r"\s*\d", a) or not l.get("url"): return l
+    if not a or not l.get("url"): return l
+    if re.match(r"\s*\d", a) and not SPELLED_NUM.match(a): return l   # v1.2.13: '27 Seventy Five Mesa Verde' is a building name
     parts = [x.strip() for x in a.split(",")]
     if len(parts) < 3: return l
     st = slug_street(l["url"], parts[-2])
@@ -833,6 +837,9 @@ def addr_parts(a):
     unit = None
     m = UNIT_RX.search(st)
     if m: unit = (m.group(1) or m.group(2)).lstrip("0") or "0"; st = st[:m.start()]
+    if unit:   # v1.2.13: a repeated unit ('B-B-B', from a HotPads link folder) is one unit 'b'
+        r3 = re.fullmatch(r"([a-z0-9]+)(?:-\1)+", unit)
+        if r3: unit = r3.group(1)
     st = re.sub(r"(\d)\.5\b", r"\1 1/2", st)                       # 218.5 -> 218 1/2
     toks = re.sub(r"[^a-z0-9/ -]", " ", st).replace(" - ", " ").split()
     if toks and not unit:   # '308-A2 Santa Isabel Ave': the unit rides on the house number
@@ -906,6 +913,24 @@ def bkeys(l):
     if p and p[5]: ks.add(f"s:{p[0]}|{p[1]}|{p[5]}")
     return sorted(ks)
 
+def group_live(lid, S, now, days):
+    """An id linked to this home (dup_of / also_ids, either way) that is still being seen -> that id, else None."""
+    me = S.get(lid) or {}; root = me.get("dup_of") or lid
+    grp = {root} | set((S.get(root) or {}).get("also_ids") or []) | set(me.get("also_ids") or []) | {k for k, v in S.items() if v.get("dup_of") == root}
+    for k in sorted(grp - {lid}):
+        v = S.get(k) or {}
+        if v and (not v.get("gone_since") or (now - v["gone_since"]) / 86400 < days): return k
+    return None
+
+def from_building(l, texted):
+    """A 'From $X' building text already covers this unit when it shares the building and costs at least X -> (id, X)."""
+    mine = set(bkeys(l)); p = l.get("price")
+    if not mine or p is None: return None
+    for t in texted:
+        fp = t.get("from_price")
+        if fp and t.get("id") != l.get("id") and mine & set(t.get("bkeys") or []) and p >= fp: return (t["id"], fp)
+    return None
+
 def another_unit(l, texted):
     """A building texted before under another id -> the name for 'Another unit at <name>', else None."""
     mine, own = set(bkeys(l)), {l.get("id")} | set(l.get("also_ids") or [])
@@ -936,7 +961,10 @@ def record_texted(alerts, path=os.path.join("out", "texted.json")):
     for a in alerts:
         l = a["l"]
         if l.get("id") in have: continue
-        T.append({"id": l.get("id"), "bkeys": bkeys(l), "name": building_name(l) or _bare_street(l), "ts": time.strftime("%F %T %Z")})
+        e = {"id": l.get("id"), "bkeys": bkeys(l), "name": building_name(l) or _bare_street(l), "ts": time.strftime("%F %T %Z")}
+        if l.get("price_from") and l.get("price"): e["from_price"] = l["price"]   # v1.2.13: a 'From $X' building text (fix 7)
+        elif l.get("price_range"): e["from_price"] = l["price_range"][0]
+        T.append(e)
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True); json.dump(T, open(path, "w"), indent=1)
 
 ZIPIDX = {}   # building key -> set of ZIPs from saved records (filled by main(); empty in tests unless set)
@@ -965,13 +993,61 @@ def cross_source(l, S, ak):
     """A home already alerted under another id (e.g. a PM feed, then a Zillow email hours later).
     -> None (not seen: alert as new), ("skip", id) (same or higher price: attach quietly), ("lower", id, old_price).
     No address, or one we can't normalize, never matches: it alerts as usual (we never guess a match)."""
-    if not ak: return None
+    if not ak and not building_name(l): return None
     loc = loc_of(l)
-    hit = next((k for k, v in S.items() if k != l["id"] and v.get("addr") == ak and not v.get("gone_since") and same_place(loc, v.get("loc") or {}) and not _same_feed(l["id"], k)), None)
-    if not hit: return None
+    hit = None if not ak else next((k for k, v in S.items() if k != l["id"] and v.get("addr") == ak and not v.get("gone_since") and same_place(loc, v.get("loc") or {}) and not _same_feed(l["id"], k)), None)
+    if not hit:
+        f = fuzzy_dup(l, S, ak)
+        if not f: return None
+        hit = f[1]; match_log(f"dup {f[2]} | {l['id']} = {hit} | ${l.get('price')}")
+    else: match_log(f"dup same address | {l['id']} = {hit}")
     old = S[hit].get("price")
     if l.get("price") is not None and old and l["price"] < old: return ("lower", hit, old)
     return ("skip", hit)
+
+MATCH_LOG = os.path.join("logs", "match.log")
+def match_log(msg):
+    """v1.2.13: every duplicate / re-list decision, one line each (no phone numbers, no texts)."""
+    try:
+        os.makedirs("logs", exist_ok=True)
+        with open(MATCH_LOG, "a") as f: f.write(f"{time.strftime('%F %T %Z')} | {msg}\n")
+    except OSError: pass
+
+def _close(a, b, pct=0.01): return a is not None and b is not None and abs(a - b) <= pct * max(a, b)
+
+def fuzzy_dup(l, S, ak):
+    """v1.2.13 (fixes 2, 4, 5): the same home under a different address form. Needs same ZIP, price within 1%,
+    and beds equal when both known. (2) no unit vs one unit, only if no other unit of that street is on file;
+    (5) '501 1/2 X' vs '501 X #B'; (4) a building name only (Redfin): matched by name through our own records.
+    -> (kind, id, why) or None. Never matches two different units or two streets."""
+    loc = loc_of(l); z = loc.get("zip") or (str(l["zip"]) if l.get("zip") else None)
+    if not z or l.get("price") is None: return None
+    def ok(k, v):
+        if k == l["id"] or v.get("gone_since") or _same_feed(l["id"], k): return False
+        if (v.get("loc") or {}).get("zip") != z or not _close(l["price"], v.get("price")): return False
+        return l.get("beds") is None or v.get("beds") is None or l["beds"] == v["beds"]
+    if ak:
+        num, name, unit = ak.split("|"); base = num.split(" ")[0]; half = num.endswith("1/2")
+        for k, v in S.items():
+            if not v.get("addr") or v["addr"] == ak or not ok(k, v): continue
+            n2, nm2, u2 = v["addr"].split("|")
+            if nm2 != name or n2.split(" ")[0] != base: continue
+            h2 = n2.endswith("1/2")
+            if half or h2:   # (5) '1/2' is a unit: only against a lettered unit or another '1/2'
+                if (half and h2) or (half and u2 and not unit) or (h2 and unit and not u2): return ("fuzzy", k, "1/2 vs unit")
+                continue
+            if bool(unit) == bool(u2): continue   # two different units never merge
+            others = {x["addr"].split("|")[2] for x in S.values() if x.get("addr") and not x.get("gone_since")
+                      and x["addr"].split("|")[:2] == [num, name] and x["addr"].split("|")[2] not in ("", unit, u2)}
+            if others: continue   # (2) other units of that street are listed: a bare street is ambiguous
+            return ("fuzzy", k, "no unit vs one unit")
+        return None
+    b = building_name(l)
+    if not b: return None
+    nb = _norm_b(b)
+    for k, v in S.items():
+        if v.get("addr") and v.get("bldg") and _norm_b(v["bldg"]) == nb and ok(k, v): return ("fuzzy", k, f"building name {b!r}")
+    return None
 
 def merge_dupes(L, C):
     """Same unit listed by two feeds (e.g. AppFolio + TenantTurner) -> one alert, fields combined."""
@@ -1539,19 +1615,31 @@ def main():
                          "where": street(l) or "a saved home"})
             S[l["id"]] = dict(prev or {"first_seen": today, "price_history": []}, last_seen=today, gone_since=None, status=l["status"], addr=ak)
             continue
+        own_prev = prev is not None and prev is S.get(l["id"])   # the same listing id coming back (not a new id)
         if prev is None and l.get("status") == "back_on_market": reason = "relist"
         elif prev is None: reason = "new"
         elif prev.get("gone_since") and (now - prev["gone_since"]) / 86400 >= C.get("relist_after_days", 3) \
                 and l.get("price") is not None and prev.get("price") and l["price"] < prev["price"]: reason = "relist_lower"
         elif l.get("price") is not None and prev.get("price") and l["price"] < prev["price"]: reason = "price_drop"
         elif prev.get("gone_since") and (now - prev["gone_since"]) / 86400 >= C.get("relist_after_days", 3): reason = "relist"
+        if reason in ("relist", "relist_lower"):   # v1.2.13 re-list rule: every copy gone 3+ days, and a new id or a new posted date
+            live = group_live(l["id"], S, now, C.get("relist_after_days", 3))
+            if live: match_log(f"no relist: copy {live} still seen | {l['id']}"); reason = "price_drop" if reason == "relist_lower" else None
+            elif reason == "relist" and own_prev and not (l.get("listed_on") and l.get("listed_on") != prev.get("listed_on")):
+                match_log(f"no relist: same id, no new posted date | {l['id']}"); reason = None
+            else: match_log(f"relist ({reason}) | {l['id']}")
+        if reason == "new" and not a.all:   # v1.2.13 fix 7: a unit inside a building already texted as 'From $X'
+            fb = from_building(l, TEXTED)
+            if fb: match_log(f"quiet: unit in 'From ${fb[1]:,.0f}' building {fb[0]} | {l['id']} ${l.get('price')}"); reason = None
         was_price = prev.get("price") if prev else None   # read before rec.update() below overwrites it (rec is prev)
         rec = prev or {"first_seen": today, "price_history": []}
         if l.get("price") is not None and (not rec["price_history"] or rec["price_history"][-1][1] != l["price"]):
             rec["price_history"].append([today, l["price"]])
         rec.update(price=l.get("price"), last_seen=today, gone_since=None, eligible=l["eligible"], addr=ak, loc=loc_of(l))
         if l.get("zip") and not rec["loc"].get("zip"): rec["loc"]["zip"] = l["zip"]
-        rec.update(bldg=building_name(l), bkeys=bkeys(l))   # building name saved even when there's no street (Redfin)
+        rec.update(bldg=building_name(l), bkeys=bkeys(l))
+        if l.get("beds") is not None: rec["beds"] = l["beds"]
+        if l.get("listed_on"): rec["listed_on"] = l["listed_on"]   # building name saved even when there's no street (Redfin)
         S[l["id"]] = rec
         if rec.get("held_review") and not a.all:   # held building: texts once as 'From $X/mo' when it fits (v1.2.10), else stays held
             if not rec.get("held_skipped") and C.get("release_held", True) and held_release_ok(l, C, T_IDS, GONE) and (not held_cap or held_n < held_cap):
