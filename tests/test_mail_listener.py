@@ -29,7 +29,7 @@ def test_routing_and_files():
             body = open(path).read(); assert m["subject"] in body and m["text"] in body
     assert len(files(root)) == 3 and len(files(buy)) == 3, (files(root), files(buy))
     ids = open(os.path.join(root, "out", "fetched_ids.txt")).read().split()
-    assert sorted(ids) == sorted(m["message_id"] for m in FX)
+    assert sorted(ids) == sorted(L.norm_id(m["message_id"]) for m in FX)   # v1.2.16: stored bare (no <...>)
     log = open(os.path.join(root, "logs", "email_skips.log")).read()
     assert log.count("| routed |") == 6 and log.count("| skipped |") == 2 and "cloudflare" not in log.lower()
     assert "(Buy Test - 92660)" in log

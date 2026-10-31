@@ -38,23 +38,24 @@ def main():
     inbox = (yaml.safe_load(open("CRITERIA.yaml")).get("alert_inbox") or "").strip()
     if not inbox: print("fetch_inbox: no alert_inbox in CRITERIA.yaml; skipped"); return 0
     old_json = os.path.join("out", "fetched_ids.json")   # one-time migration from the older format
-    seen = set(l.strip() for l in open(IDS)) if os.path.exists(IDS) else set()
+    from fetched_ids import norm   # v1.2.16: one bare form (no am:, no <...>)
+    seen = set(norm(l) for l in open(IDS) if l.strip()) if os.path.exists(IDS) else set()
     if os.path.exists(old_json): seen |= set(json.load(open(old_json))); os.unlink(old_json)
     q, msgs, token = urllib.parse.quote(inbox), [], None
     for _ in range(20):   # up to 2,000 messages; stops at the first page with nothing new
         page = get(f"/inboxes/{q}/messages?limit=100" + (f"&page_token={urllib.parse.quote(token)}" if token else ""), key)
         got = page.get("messages") or []; msgs += got
         token = page.get("next_page_token")
-        if not token or all((m.get("message_id") or m.get("id")) in seen for m in got): break
+        if not token or all(norm(m.get("message_id") or m.get("id") or "") in seen for m in got): break
     n = 0
     for m in msgs:
         mid = m.get("message_id") or m.get("id")
-        if not mid or mid in seen: continue
+        if not mid or norm(mid) in seen: continue
         frm = str(m.get("from") or "").lower(); subj = m.get("subject") or ""
-        if not any(d in frm for d in DOMAINS): seen.add(mid); continue   # not a listing site: ignored quietly
+        if not any(d in frm for d in DOMAINS): seen.add(norm(mid)); continue   # not a listing site: ignored quietly
         full = get(f"/inboxes/{q}/messages/{urllib.parse.quote(str(mid))}", key)
         body, ext = (full.get("html"), "html") if full.get("html") else (full.get("text") or full.get("extracted_text"), "txt")
-        seen.add(mid)
+        seen.add(norm(mid))
         if not body: skip_log("empty body", frm, subj); continue
         if SKIP.search(subj) and not (LISTING.search(body) and LINK.search(body)):
             skip_log("account email, no listings in body", frm, subj); continue

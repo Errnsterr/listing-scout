@@ -16,6 +16,14 @@ from bs4 import BeautifulSoup
 UA = "Mozilla/5.0 (X11; Linux x86_64) listing-scout/1.0 (personal home search, low frequency)"
 U = "unknown"
 
+def backoff_after_timeout(h, now):
+    """v1.2.16: a page that timed out skips the next 2, 4, 8, 16, then 24 passes (~2 h); paused after 3 days failing."""
+    h.setdefault("failing_since", now)
+    h["timeouts"] = h.get("timeouts", 0) + 1; h["skip_left"] = min(2 ** h["timeouts"], 24)
+    if now - h["failing_since"] > 3 * 86400: h["paused"] = True
+    return h
+
+
 def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "identity"})
     with urllib.request.urlopen(req, timeout=int(os.environ.get("SCOUT_SOURCE_TIMEOUT", 20))) as r:
@@ -306,6 +314,54 @@ def hotpads_url(u):
     if not re.fullmatch(r"(?:www\.)?hotpads\.com", p.netloc or "", re.I) or not re.search(r"/pad/?$", p.path or ""): return None
     return f"https://hotpads.com{p.path}"
 
+def _hotpads_html_to_text(body):
+    """HotPads alert HTML -> the plain-text card layout _parse_hotpads_text reads ('lines', then '(url) Contact')."""
+    soup = BeautifulSoup(body, "html.parser"); out = []
+    for a in soup.find_all("a", href=True):
+        u = hotpads_url(a["href"])
+        if not u or "contactmodal" in a["href"].lower(): continue
+        lines = [d.get_text(" ", strip=True) for d in a.find_all("div")]
+        lines = [x for x in lines if x]
+        if not lines: continue
+        out += lines + [f"({a['href']}) Contact"]
+    return "\n".join(out)
+
+# v1.2.16: Redfin plain-text alert ('1. NEW: 425 X Way, City, CA 92626' / '- Price:' / '- Details:' / '- Additional Details: <link>')
+RF_HEAD = re.compile(r"^\s*\d+\.\s+(?:[A-Z][A-Z ]{1,15}:\s+)?(.+?,\s*[A-Za-z .'-]+,\s*[A-Z]{2}\s+\d{5})\s*$")
+def is_redfin_list_text(body):
+    return bool(re.search(r"^\s*-\s*Price:", body, re.M)) and any(RF_HEAD.match(x) for x in body.split("\n"))
+
+def _parse_redfin_list_text(body, fname):
+    out, cur, ids = [], None, set()
+    def flush():
+        if cur and cur.get("url") and cur.get("address"):
+            ak = addr_id_key(cur["address"]); lid = f"email:addr:{ak.replace(' ', '-')}" if ak else None
+            if lid and lid not in ids:
+                ids.add(lid); out.append(dict(cur, id=lid))
+    for x in body.split("\n"):
+        if re.match(r"^\s*\*\s*nearby similar homes", x, re.I): break   # only the homes that match the search
+        m = RF_HEAD.match(x)
+        if m:
+            flush(); a = m.group(1).strip(); cm = re.search(r",\s*([^,]+),\s*([A-Z]{2})\s+(\d{5})$", a)
+            cur = dict(apply_url=None, agent_url=None, source="Redfin", url=None, title=a, address=a, city=cm.group(1).strip(), state=cm.group(2), zip=cm.group(3),
+                street_only=None, price=None, price_from=False, beds=None, beds_max=None, beds_range=None, baths=None, sqft=None, available=None, pets_raw=None,
+                text=a, photo=None, photo_alt=None, showing_url=None, listed_on=None, email_was_price=None, email_file=fname); continue
+        if not cur: continue
+        if re.match(r"^\s*-\s*Price:", x, re.I):
+            ps = re.findall(r"\$\s?([\d,]+)", x)
+            if ps: cur["price"] = num(ps[0]); cur["price_from"] = len(ps) > 1
+        elif re.match(r"^\s*-\s*Details:", x, re.I):
+            b = re.search(r"(\d+)(?:-(\d+))?\s+Beds?", x); ba = re.search(r"([\d.]+)(?:-([\d.]+))?\s+Baths?", x); sq = re.search(r"([\d,]+)(?:-[\d,]+)?\s+Sq", x)
+            if b:
+                lo, hi = num(b.group(1)), num(b.group(2) or b.group(1)); cur.update(beds=lo if hi == lo else None, beds_max=hi, beds_range=[lo, hi] if hi > lo else None)
+            if ba and not ba.group(2): cur["baths"] = num(ba.group(1))
+            if sq and "-" not in sq.group(0): cur["sqft"] = num(sq.group(1))
+            cur["text"] += " " + x.strip()
+        elif re.match(r"^\s*-\s*Additional Details:", x, re.I):
+            u = re.search(r"https?://(?:www\.)?redfin\.com/\S+", x)
+            if u: cur["url"] = u.group(0).split("?")[0]
+    flush(); return out
+
 def _parse_hotpads_text(body, fname):
     L = html.unescape(body).split("\n")
     cut = next((k for k, x in enumerate(L) if re.match(r"\s*see all homes\b", x, re.I)), len(L))
@@ -453,7 +509,7 @@ def _street_from_url(l):
     return l
 
 def parse_email_file(f):
-    return [_street_from_url(l) for l in _parse_email_file(f)]
+    return [l for l in (_street_from_url(x) for x in _parse_email_file(f)) if l.get("url") or l.get("source") != "HotPads"]   # v1.2.16: no HotPads place without a link
 
 def _parse_email_file(f):
     """One alert email -> list of listing dicts. Reads cards (price, beds, baths, address); missing fields stay None."""
@@ -461,9 +517,13 @@ def _parse_email_file(f):
     portal = next((v for k, v in PORTALS.items() if k in sender.lower()), None) or \
              next((v for k, v in PORTALS.items() if k in body[:5000].lower()), "Email alert")
     body = re.sub(r"</?cursor_untrusted_data\w*[^>]*>", "", body)   # wrapper tags from a tool's text render
+    if portal == "HotPads" and re.search(r"<(?:a|div|table)\b", body, re.I):   # v1.2.16: listener saves raw HTML
+        hp = _hotpads_html_to_text(body)
+        if hp: return _parse_hotpads_text(hp, os.path.basename(f))
     if not re.search(r"<(?:a|div|table|td|tr|p|html|body|span|img)\b", body, re.I):   # plain text / text render
         if portal == "HotPads" and any(HP_ANCHOR.match(x) for x in body.split("\n")):
             return _parse_hotpads_text(body, os.path.basename(f))
+        if portal == "Redfin" and is_redfin_list_text(body): return _parse_redfin_list_text(body, os.path.basename(f))
         if portal == "Realtor.com": return _parse_realtor_text(body, os.path.basename(f))
         return _parse_text_cards(body, portal, os.path.basename(f))
     soup = BeautifulSoup(body, "html.parser")
@@ -1556,6 +1616,11 @@ def main():
             report.append((src["name"], "skipped", src.get("note", src["type"]))); continue
         if re.search(r"SUBDOMAIN|CUSTOMER_ID|YOUR_|EXAMPLE", str(src.get("url", ""))):
             report.append((src["name"], "skipped", "placeholder URL; add your own")); continue
+        _bh = st.get("health", {}).get(src["name"], {})   # v1.2.16 timeout backoff (no retries within a pass)
+        if src["type"] != "email" and _bh.get("paused"):
+            report.append((src["name"], "skipped", "paused: timing out for 3+ days")); continue
+        if src["type"] != "email" and _bh.get("skip_left", 0) > 0 and not a.dry_run:
+            _bh["skip_left"] -= 1; report.append((src["name"], "skipped", f"backoff after timeout ({_bh['skip_left']} more)")); continue
         try:
             got = [classify(fill_page_facts(l, PFACTS), C) for l in PARSERS[src["type"]](dict(src, report=not a.dry_run) if src["type"] == "email" else src)]
             if src["type"] == "market" and not got: report.append((src["name"], "ok", "no snapshot today")); continue   # an empty folder is normal
@@ -1573,7 +1638,9 @@ def main():
         except Exception as e:
             report.append((src["name"], "ERROR", str(e)[:120]))
             h = st.setdefault("health", {}).setdefault(src["name"], {})
-            h.setdefault("failing_since", now)   # quiet retries every run; owner told once after a day
+            h.setdefault("failing_since", now)
+            if src["type"] != "email" and "timed out" in str(e).lower() and not a.dry_run:
+                backoff_after_timeout(h, now)
             if now - h["failing_since"] > 86400 and not h.get("told") and not a.dry_run:
                 h["told"] = True
                 json.dump({"source": src["name"], "since": __import__("features").local_str(C, "%a %-I:%M %p", h["failing_since"])},
@@ -1661,6 +1728,7 @@ def main():
             if not rec.get("held_skipped") and C.get("release_held", True) and held_release_ok(l, C, T_IDS, GONE) and (not held_cap or held_n < held_cap):
                 rec["held_review"] = False; rec["held_released"] = time.strftime("%F %T %Z"); reason = "new"; held_n += 1
             else: continue
+        if rec.get("never_text"): continue   # v1.2.16: Ern said skip this home for good
         if not l["eligible"] or (reason is None and not a.all): continue
         a_ = {"l": l, "reason": reason or "current", "was": was_price}
         au = another_unit(l, TEXTED)

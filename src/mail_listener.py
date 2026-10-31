@@ -58,9 +58,16 @@ class Ids:
         self.lk = open(p("out", ".fetched_ids.lock"), "w"); fcntl.flock(self.lk, fcntl.LOCK_EX); return self
     def __exit__(self, *a): fcntl.flock(self.lk, fcntl.LOCK_UN); self.lk.close()
     def seen(self):
-        return set(l.strip() for l in open(self.f)) if os.path.exists(self.f) else set()
+        return set(norm_id(l) for l in open(self.f)) if os.path.exists(self.f) else set()
     def add(self, mid):
-        with open(self.f, "a") as f: f.write(f"{mid}\n")
+        with open(self.f, "a") as f: f.write(f"{norm_id(mid)}\n")
+
+def norm_id(mid):
+    """One form for fetched_ids.txt: the bare message id. 'am:<id>' (older routine lines) counts as the same id."""
+    m = str(mid).strip()
+    if m.startswith("am:"): m = m[3:].strip()
+    if m.startswith("<") and m.endswith(">"): m = m[1:-1].strip()   # v1.2.16: '<id>' and 'id' are the same message
+    return m
 
 def site_of(frm):
     frm = frm.lower()
@@ -103,7 +110,7 @@ def handle(m, key, fetch=True):
     mid = m.get("message_id") or m.get("id")
     if not mid: return None
     with Ids() as ids:
-        if mid in ids.seen(): return None
+        if norm_id(mid) in ids.seen(): return None
         frm = str(m.get("from") or m.get("from_") or ""); subj = m.get("subject") or ""
         if not site_of(frm): ids.add(mid); return None   # not a listing site: ignored quietly (as fetch_inbox.py)
         ts = _ts(m)
@@ -129,7 +136,7 @@ def handle(m, key, fetch=True):
         ids.add(mid); skip_log("routed", frm, subj, dest + " [listener]")
         return path
 
-def catch_up(key):
+def catch_up(key, quiet=False):
     q, token, n = urllib.parse.quote(INBOX), None, 0
     for _ in range(20):
         page = get(f"/inboxes/{q}/messages?limit=100" + (f"&page_token={urllib.parse.quote(token)}" if token else ""), key)
@@ -140,16 +147,35 @@ def catch_up(key):
                 if handle(m, key): n += 1
             except Exception as e: log(f"catch-up message error {type(e).__name__}: {str(e)[:120]}")
         token = page.get("next_page_token")
-        if not token or all((m.get("message_id") or m.get("id")) in seen for m in got): break
-    log(f"catch-up: {n} saved"); return n
+        if not token or all(norm_id(m.get("message_id") or m.get("id")) in seen for m in got): break
+    if not quiet: log(f"catch-up: {n} saved")
+    return n
 
 def heartbeat():
     os.makedirs(p("out"), exist_ok=True)
     with open(p("out", "listener_heartbeat.txt"), "w") as f: f.write(time.strftime("%F %T %Z") + " mail_listener.py\n")
 
+async def side_jobs(key, every=60, poll_every=180):
+    """v1.2.16: every minute run the loop guard (loop_watchdog.py); every 3 min a quiet catch-up poll, so mail that
+    arrives while the socket is silently dead (keepalive timeouts) is still saved within minutes. Never sends."""
+    import subprocess
+    t_poll = time.time()
+    while True:
+        await asyncio.sleep(every)
+        try: await asyncio.to_thread(subprocess.run, [sys.executable, os.path.join(HERE, "loop_watchdog.py")],
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=900)
+        except Exception as e: log(f"watchdog error {type(e).__name__}: {str(e)[:100]}")
+        if time.time() - t_poll >= poll_every:
+            t_poll = time.time()
+            try:
+                n = await asyncio.to_thread(catch_up, key, True)
+                if n: log(f"poll: {n} saved")
+            except Exception as e: log(f"poll error {type(e).__name__}: {str(e)[:100]}")
+
 async def run_forever(key):
     import websockets
     delay = 2
+    asyncio.get_running_loop().create_task(side_jobs(key))
     while True:
         try:
             async with websockets.connect(WS, additional_headers={"Authorization": f"Bearer {key}"},

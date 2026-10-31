@@ -88,6 +88,10 @@ for h in HS:
     elif time.time() - h["last_backup_ts"] > 3 * 3600: issues.append(f"{nm}: last backup {h['last_backup']} is over 3 hours old")
     notes.append(f"{nm}: last backup {h.get('last_backup') or 'none'}{' (+ off-box copy)' if h.get('mirrored') else ''}; last heal: {h.get('last_heal') or 'none'}")
 if "--quiet" in sys.argv and not issues: sys.exit(0)   # every-10-minutes use: say nothing when all is well
+try:   # v1.2.16: pages paused after 3+ days of timeouts
+    _paused = [k for k, v in json.load(open("state.json")).get("health", {}).items() if isinstance(v, dict) and v.get("paused")]
+    if _paused: notes.append(f"Paused after 3+ days of timeouts: {', '.join(sorted(_paused))}")
+except Exception: pass
 print(f"Listing Scout health {time.strftime('%F %H:%M %Z')}")
 print(f"{'shadow loop (sends nothing)' if SHADOW else 'loop'}: {'running' if alive else 'DOWN'} (pid {pid or '-'}), {len(runs)} checks logged, plan {C.get('plan_mode')}")
 for x in notes: print("note: " + x)

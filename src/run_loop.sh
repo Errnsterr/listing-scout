@@ -9,6 +9,7 @@ while true; do
   mode=$(python3 -c "import yaml;print(yaml.safe_load(open('CRITERIA.yaml')).get('plan_mode','standard'))")
   N=$(python3 -c "import yaml;print(max(1, int(yaml.safe_load(open('CRITERIA.yaml')).get('loop_minutes') or 5)))" 2>/dev/null || echo 5)
   ts=$(date '+%F %T %Z'); t0=$(date +%s)
+  touch out/loop_pass_start   # v1.2.16: loop_watchdog.py restarts a pass running > 7 min
   ./${S}ensure_running.sh >/dev/null 2>&1 || true   # keeps the reply listener up (one copy); flags a missing key
   if [ -f out/search_ended.json ]; then echo "$ts search wrapped up (out/search_ended.json); loop stopping" >> logs/loop.log; exit 0; fi   # We found it
   python3 ${S}fetch_inbox.py >> logs/notify.log 2>&1   # pull Zillow/Redfin/HotPads alert emails into ./inbox (needs AGENTMAIL_API_KEY)
