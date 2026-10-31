@@ -2,7 +2,7 @@
 import os, sys, time
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "src")); os.chdir(HERE)
 import scout as sc
-sc.MATCH_LOG = "/tmp/match_test.log"
+sc.MATCH_LOG = "/tmp/match_test.log"; sc.MATCH_ON = True
 
 def L(i, a, z, price, beds=2, **k): return dict(id=i, address=a, zip=z, price=price, beds=beds, **k)
 def rec(l, **k): return dict(addr=sc.addr_key(l["address"]), loc=sc.loc_of(l), price=l["price"], beds=l.get("beds"), gone_since=None, **k)

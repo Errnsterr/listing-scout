@@ -1005,9 +1005,10 @@ def cross_source(l, S, ak):
     if l.get("price") is not None and old and l["price"] < old: return ("lower", hit, old)
     return ("skip", hit)
 
-MATCH_LOG = os.path.join("logs", "match.log")
+MATCH_LOG = os.path.join("logs", "match.log"); MATCH_ON = False   # main() switches it on
 def match_log(msg):
     """v1.2.13: every duplicate / re-list decision, one line each (no phone numbers, no texts)."""
+    if not MATCH_ON: return   # tests and imports never write the live log
     try:
         os.makedirs("logs", exist_ok=True)
         with open(MATCH_LOG, "a") as f: f.write(f"{time.strftime('%F %T %Z')} | {msg}\n")
@@ -1530,7 +1531,7 @@ def main():
     C = yaml.safe_load(open(a.criteria))
     st = json.load(open(a.state)) if os.path.exists(a.state) else {"listings": {}}
     S, now, today = st["listings"], time.time(), date.today().isoformat()
-    global ZIPIDX; ZIPIDX = build_zipidx(S)
+    global ZIPIDX, MATCH_ON; ZIPIDX = build_zipidx(S); MATCH_ON = True
     try: PFACTS = json.load(open(os.path.join("out", "page_facts.json")))
     except Exception: PFACTS = {}
     TEXTED = load_texted(os.path.join(os.path.dirname(os.path.abspath(a.state)), "out", "texted.json"))
