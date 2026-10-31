@@ -48,7 +48,7 @@ def test_listener_catchup_every_connect_and_poll():
     src = open(L.__file__).read()
     assert "await asyncio.to_thread(catch_up, key)" in src.split("async def run_forever")[1]   # on every (re)connect
     async def go():
-        t = asyncio.create_task(L.side_jobs("k", every=0.01, poll_every=0)); await asyncio.sleep(0.2); t.cancel()
+        t = asyncio.create_task(L.side_jobs("k", every=0.01, poll_every=0, tick=0.01)); await asyncio.sleep(0.2); t.cancel()
     import subprocess as sp; real = sp.run; sp.run = lambda *a, **k: None
     try: asyncio.run(go())
     finally: sp.run = real

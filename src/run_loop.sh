@@ -12,8 +12,8 @@ while true; do
   touch out/loop_pass_start   # v1.2.16: loop_watchdog.py restarts a pass running > 7 min
   ./${S}ensure_running.sh >/dev/null 2>&1 || true   # keeps the reply listener up (one copy); flags a missing key
   if [ -f out/search_ended.json ]; then echo "$ts search wrapped up (out/search_ended.json); loop stopping" >> logs/loop.log; exit 0; fi   # We found it
-  python3 ${S}fetch_inbox.py >> logs/notify.log 2>&1   # pull Zillow/Redfin/HotPads alert emails into ./inbox (needs AGENTMAIL_API_KEY)
-  if python3 ${S}scout.py --json --matches-only > out/alerts.json 2>> logs/scout.err; then
+  timeout -k 10 120 python3 ${S}fetch_inbox.py >> logs/notify.log 2>&1   # v1.2.17: hard limit   # pull Zillow/Redfin/HotPads alert emails into ./inbox (needs AGENTMAIL_API_KEY)
+  if timeout -k 10 ${SCOUT_PASS_LIMIT:-300} python3 ${S}scout.py --json --matches-only > out/alerts.json.tmp 2>> logs/scout.err && mv out/alerts.json.tmp out/alerts.json; then   # v1.2.17: scout capped at 5 min
     python3 ${S}notify.py alerts out/alerts.json --send >> logs/notify.log 2>&1
     python3 ${S}notify.py firstday --send >> logs/notify.log 2>&1   # one-time, capped; skipped if the snapshot went out
     python3 ${S}notify.py nudge --send >> logs/notify.log 2>&1      # one-time owner nudge if a member hasn't replied OK in ~24h

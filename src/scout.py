@@ -24,10 +24,19 @@ def backoff_after_timeout(h, now):
     return h
 
 
-def get(url):
+def get(url, total=None):
+    """v1.2.17: hard limit for the whole request (connect + every read), not only per socket call, so a page that
+    drips bytes can't stretch a pass. Raises TimeoutError('timed out') -> the normal timeout backoff."""
+    t = int(os.environ.get("SCOUT_SOURCE_TIMEOUT", 20)); total = total or float(os.environ.get("SCOUT_REQUEST_TOTAL", 45))
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "identity"})
-    with urllib.request.urlopen(req, timeout=int(os.environ.get("SCOUT_SOURCE_TIMEOUT", 20))) as r:
-        return r.read().decode("utf-8", "replace")
+    end = time.monotonic() + total; buf = []
+    with urllib.request.urlopen(req, timeout=t) as r:
+        while True:
+            if time.monotonic() > end: raise TimeoutError(f"timed out (over {total:g}s total)")
+            b = r.read1(65536)   # returns what has arrived (read(n) would wait for all n bytes)
+            if not b: break
+            buf.append(b)
+    return b"".join(buf).decode("utf-8", "replace")
 
 def num(s):
     if s is None: return None
@@ -348,8 +357,10 @@ def _parse_redfin_list_text(body, fname):
                 text=a, photo=None, photo_alt=None, showing_url=None, listed_on=None, email_was_price=None, email_file=fname); continue
         if not cur: continue
         if re.match(r"^\s*-\s*Price:", x, re.I):
-            ps = re.findall(r"\$\s?([\d,]+)", x)
-            if ps: cur["price"] = num(ps[0]); cur["price_from"] = len(ps) > 1
+            ps = [num(p) for p in re.findall(r"\$\s?([\d,]+)", x)][:2]
+            if ps:   # v1.2.17: '$2,469-$3,125' keeps both ends; it fits if any unit could (the 'from' price)
+                cur["price"] = ps[0]; cur["price_from"] = len(ps) > 1
+                cur["price_to"] = ps[-1] if len(ps) > 1 else None; cur["price_range"] = [ps[0], ps[-1]] if len(ps) > 1 else None
         elif re.match(r"^\s*-\s*Details:", x, re.I):
             b = re.search(r"(\d+)(?:-(\d+))?\s+Beds?", x); ba = re.search(r"([\d.]+)(?:-([\d.]+))?\s+Baths?", x); sq = re.search(r"([\d,]+)(?:-[\d,]+)?\s+Sq", x)
             if b:
@@ -1740,7 +1751,7 @@ def main():
     for k, v in S.items():
         if k not in seen_ids and not v.get("gone_since") and not k.startswith("email:"): v["gone_since"] = now
     if not a.dry_run:
-        json.dump(st, open(a.state, "w"), indent=1)
+        _tmp = a.state + ".tmp"; json.dump(st, open(_tmp, "w"), indent=1); os.replace(_tmp, a.state)   # v1.2.17: atomic
         if offm:   # pending/sold events for notify.py offmarket (only people who shortlisted the home hear about it)
             of = os.path.join("out", "offmarket.json"); os.makedirs("out", exist_ok=True)
             old = json.load(open(of)) if os.path.exists(of) else []

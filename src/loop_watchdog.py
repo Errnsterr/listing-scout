@@ -24,12 +24,13 @@ def cmd(pid):
     try: return open(f"/proc/{pid}/cmdline").read().replace("\0", " ")
     except Exception: return ""
 
-def decide(now=None, log_mtime=None, limit=None, sending=False, loop_alive=True, start_mtime=None):
+def decide(now=None, log_mtime=None, limit=None, sending=False, loop_alive=True, start_mtime=None, resumed_at=None):
     """Pure decision: 'ok', 'wait_send', or 'restart'. A pass is running when its start mark is newer than the last
     loop.log line; then the clock is the pass start. Otherwise (sleeping between passes) it is the last line."""
     now = now or time.time(); limit = limit or limit_min()
     if not loop_alive: return "restart"
     ref = start_mtime if (start_mtime and (log_mtime is None or start_mtime > log_mtime)) else log_mtime
+    if ref is not None and resumed_at: ref = max(ref, resumed_at)   # time the box was paused doesn't count
     if ref is None or now - ref <= limit * 60: return "ok"
     return "wait_send" if sending else "restart"
 
@@ -43,7 +44,9 @@ def main(argv):
     kids = children(pid) if alive else []
     sending = any("notify.py" in cmd(k) or "photon_send" in cmd(k) for k in kids)
     sm = "out/loop_pass_start"; st = os.path.getmtime(sm) if os.path.exists(sm) else None
-    d = decide(time.time(), mt, None, sending, alive, st)
+    ra = "out/resumed_at"   # v1.2.17: the box was paused; a pass that "took" the pause isn't stuck. Count from the wake-up.
+    rz = os.path.getmtime(ra) if os.path.exists(ra) else None
+    d = decide(time.time(), mt, None, sending, alive, st, rz)
     if "--check" in argv: print(d); return 0
     if d == "ok": return 0
     stamp = time.strftime("%F %T %Z")

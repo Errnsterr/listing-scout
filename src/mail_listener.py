@@ -155,18 +155,43 @@ def heartbeat():
     os.makedirs(p("out"), exist_ok=True)
     with open(p("out", "listener_heartbeat.txt"), "w") as f: f.write(time.strftime("%F %T %Z") + " mail_listener.py\n")
 
-async def side_jobs(key, every=60, poll_every=180):
-    """v1.2.16: every minute run the loop guard (loop_watchdog.py); every 3 min a quiet catch-up poll, so mail that
-    arrives while the socket is silently dead (keepalive timeouts) is still saved within minutes. Never sends."""
+RESUMED = {"at": 0.0}   # v1.2.17: set when the box wakes from a pause (wall clock jumped past the monotonic clock)
+
+def resumed(prev_wall, prev_mono, now_wall, now_mono, slack=20):
+    """True when more wall time passed than this process could run: the VM was paused/snapshotted and resumed."""
+    return (now_wall - prev_wall) - (now_mono - prev_mono) > slack
+
+def mark_resume(jump):
+    RESUMED["at"] = time.time(); log(f"box resumed after a pause (~{jump:.0f}s); catching up now")
+    try: write_atomic(p("out", "resumed_at"), time.strftime("%F %T %Z") + "\n")   # loop_watchdog.py grace
+    except Exception: pass
+
+async def watchdog_job(every=60):
     import subprocess
-    t_poll = time.time()
     while True:
         await asyncio.sleep(every)
         try: await asyncio.to_thread(subprocess.run, [sys.executable, os.path.join(HERE, "loop_watchdog.py")],
                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=900)
         except Exception as e: log(f"watchdog error {type(e).__name__}: {str(e)[:100]}")
-        if time.time() - t_poll >= poll_every:
-            t_poll = time.time()
+
+async def side_jobs(key, every=60, poll_every=60, tick=5, ws_holder=None):
+    """v1.2.17: a cheap list-call catch-up every minute, on its own task (v1.2.16 ran it after the watchdog, whose
+    restarts could hold it for minutes). Ticks every 5 s; when the box resumes from a pause it polls at once and drops
+    the (now dead) socket so it reconnects. The loop guard runs on a separate task. Never sends."""
+    asyncio.get_running_loop().create_task(watchdog_job(every))
+    w0, m0 = time.time(), time.monotonic(); t_poll = time.monotonic()
+    while True:
+        await asyncio.sleep(tick)
+        w, m = time.time(), time.monotonic(); jump = (w - w0) - (m - m0)
+        woke = resumed(w0, m0, w, m); w0, m0 = w, m
+        if woke:
+            mark_resume(jump)
+            ws = (ws_holder or {}).get("ws")
+            if ws is not None:
+                try: await ws.close()
+                except Exception: pass
+        if woke or time.monotonic() - t_poll >= poll_every:
+            t_poll = time.monotonic()
             try:
                 n = await asyncio.to_thread(catch_up, key, True)
                 if n: log(f"poll: {n} saved")
@@ -175,13 +200,14 @@ async def side_jobs(key, every=60, poll_every=180):
 async def run_forever(key):
     import websockets
     delay = 2
-    asyncio.get_running_loop().create_task(side_jobs(key))
+    holder = {}
+    asyncio.get_running_loop().create_task(side_jobs(key, ws_holder=holder))
     while True:
         try:
             async with websockets.connect(WS, additional_headers={"Authorization": f"Bearer {key}"},
                                           ping_interval=30, ping_timeout=30, open_timeout=20) as ws:
                 await ws.send(json.dumps({"type": "subscribe", "inbox_ids": [INBOX], "event_types": ["message.received"]}))
-                log("connected; subscribing"); delay = 2
+                log("connected; subscribing"); delay = 2; holder["ws"] = ws
                 await asyncio.to_thread(catch_up, key)   # after subscribe, so nothing slips between poll and stream
                 heartbeat()
                 async for raw in ws:
