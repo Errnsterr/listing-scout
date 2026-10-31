@@ -20,7 +20,7 @@ def test_2_no_unit_vs_one_unit():
     c = L("email:addr:108-olive-b", "108 Olive St #B, Newport Beach, CA 92663", "92663", 3900)
     assert cs(c, {a["id"]: rec(a), b["id"]: rec(b)}) is None             # a second unit at another price still alerts
     S = {b["id"]: rec(b), "x": rec(L("x", "108 Olive St #C, Newport Beach, CA 92663", "92663", 4250))}
-    assert cs(a, S) is None                                               # bare street with two units on file: ambiguous
+    assert cs(a, S)[0] == "skip"                                          # v1.2.18: bare street with two units on file = the building, already texted: quiet
 
 def test_3_spelled_number_is_a_building():
     l = sc._street_from_url({"id": "email:addr:27-seventy-five-mesa-verde", "address": "27 Seventy Five Mesa Verde, Costa Mesa, CA 92626",

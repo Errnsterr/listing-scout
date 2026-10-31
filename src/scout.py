@@ -1068,6 +1068,9 @@ def cross_source(l, S, ak):
     if not ak and not building_name(l): return None
     loc = loc_of(l)
     hit = None if not ak else next((k for k, v in S.items() if k != l["id"] and v.get("addr") == ak and not v.get("gone_since") and same_place(loc, v.get("loc") or {}) and not _same_feed(l["id"], k)), None)
+    if not hit and ak:
+        u = unitless_dup(l, S, ak, loc)
+        if u: return u
     if not hit:
         f = fuzzy_dup(l, S, ak)
         if not f: return None
@@ -1076,6 +1079,34 @@ def cross_source(l, S, ak):
     old = S[hit].get("price")
     if l.get("price") is not None and old and l["price"] < old: return ("lower", hit, old)
     return ("skip", hit)
+
+def unitless_dup(l, S, ak, loc):
+    """v1.2.18: a copy with NO unit ('100 Sample Dr') vs stored copies of the same number + street that HAVE a
+    unit ('Sample Glen' #1121E). Same place (ZIP, else city) is enough; a stored record with no ZIP no longer blocks
+    it. One unit on file -> that home (lower price = the usual price-drop alert, else quiet). Several units on file ->
+    the bare street is the building: quiet ('skip'), never a new text; a true re-list still follows the re-list rule.
+    Two copies that both have units never merge, and a copy WITH a unit is never blocked here (held building rule)."""
+    if not ak or ak.count("|") != 2: return None
+    num, name, unit = ak.split("|")
+    if unit: return None
+    hits = []
+    for k, v in S.items():
+        a2 = v.get("addr") or ""
+        if k == l["id"] or not a2 or v.get("gone_since") or _same_feed(l["id"], k): continue
+        pp = a2.split("|")
+        if len(pp) != 3: continue
+        n2, nm2, u2 = pp
+        if not u2 or n2 != num or nm2 != name or not same_place(loc, v.get("loc") or {}): continue
+        hits.append(k)
+    if not hits: return None
+    units = {S[k]["addr"].split("|")[2] for k in hits}
+    if len(units) == 1:
+        k = sorted(hits)[0]; old = S[k].get("price"); match_log(f"dup no unit vs one unit | {l['id']} = {k}")
+        if l.get("price_from") or l.get("beds_range") or l.get("price_range"): return ("skip", k)   # a building 'From $X' card: quiet
+        if l.get("price") is not None and old and l["price"] < old: return ("lower", k, old)
+        return ("skip", k)
+    k = sorted(hits, key=lambda x: S[x].get("first_seen") or "")[0]
+    match_log(f"dup no unit vs {len(units)} units (building) | {l['id']} = {k}"); return ("skip", k)
 
 MATCH_LOG = os.path.join("logs", "match.log"); MATCH_ON = False   # main() switches it on
 def match_log(msg):
@@ -1097,7 +1128,8 @@ def fuzzy_dup(l, S, ak):
     if not z or l.get("price") is None: return None
     def ok(k, v):
         if k == l["id"] or v.get("gone_since") or _same_feed(l["id"], k): return False
-        if (v.get("loc") or {}).get("zip") != z or not _close(l["price"], v.get("price")): return False
+        vz = (v.get("loc") or {}).get("zip")   # v1.2.18: a stored copy with no ZIP matches on city (same_place)
+        if (vz != z if vz else not same_place(loc, v.get("loc") or {})) or not _close(l["price"], v.get("price")): return False
         return l.get("beds") is None or v.get("beds") is None or l["beds"] == v["beds"]
     if ak:
         num, name, unit = ak.split("|"); base = num.split(" ")[0]; half = num.endswith("1/2")
