@@ -138,11 +138,13 @@ def _send(r, text, really, card, ch="imessage"):
         print(f"[DRY RUN] would send to {tag}{' + contact card' if card else ''}:\n{text}\n"); return True
     with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f: f.write(text)
     env = {**os.environ, "PHOTON_PROJECT_ID": PID}
-    for attempt in (1, 2, 3):   # Photon hiccup: quiet retries, no one is told
+    # One quick attempt per pass (v-retry-decouple): a failed send stays queued and is retried on a later pass,
+    # so a Photon outage can no longer stall the 5-minute checks (was 3 tries x 120s + 90s of sleeps).
+    try:
         p = subprocess.run(["node", os.path.join(_SRC, "photon_send.mjs"), "send", r["phone"], f.name, "--send"] + (["--card", card] if card else []),
-                           env=env, capture_output=True, text=True, timeout=120)
-        if p.returncode == 0 or "not allowed" in (p.stdout + p.stderr).lower(): break
-        time.sleep(30 * attempt)
+                           env=env, capture_output=True, text=True, timeout=int(os.environ.get("SCOUT_SEND_TIMEOUT", 45)))
+    except subprocess.TimeoutExpired as e:
+        p = subprocess.CompletedProcess(e.cmd, 124, stdout=str(e.stdout or ""), stderr="send timed out; will retry next pass")
     os.unlink(f.name)
     ok = p.returncode == 0
     if ok and card: print("card: " + ("accepted by Photon" if "card sent" in p.stdout else "NOT confirmed"))

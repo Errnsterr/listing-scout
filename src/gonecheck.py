@@ -65,10 +65,24 @@ def _get(url):
     except Exception as e:
         return None, None, type(e).__name__
 
+FACTS_FILE = os.path.join(HERE, "out", "page_facts.json")
+LAST = {"body": ""}
+def page_facts(body):
+    """v1.2.12: baths and pets stated on the listing page itself (schema.org JSON-LD). Only what the page says; never a guess."""
+    out = {}
+    m = re.search(r'"numberOfBathroomsTotal"\s*:\s*"?(\d+(?:\.\d+)?)', body or "")
+    if m and 0 < float(m.group(1)) < 20: out["baths"] = float(m.group(1))
+    m = re.search(r'"petsAllowed"\s*:\s*"([^"]{2,60})"', body or "")
+    if m: out["pets_raw"] = m.group(1).strip()
+    elif re.search(r'"petsAllowed"\s*:\s*false', body or ""): out["pets_raw"] = "No pets"
+    return out
+
 def check(url, get=_get):
     """Follow up to 4 same-site redirects, one plain GET each."""
+    LAST["body"] = ""
     for _ in range(4):
         st, loc, body = get(url)
+        LAST["body"] = body if st == 200 else ""
         if st is None: return "unknown", f"no answer ({body})"
         verdict, why = classify_response(st, loc, body, url)
         if verdict != "follow": return verdict, why
@@ -140,6 +154,13 @@ def main(argv=sys.argv[1:], get=_get, sleep=time.sleep):
         by_site.setdefault(site, {"gone": 0, "unknown": 0, "live": 0})[verdict] += 1
         if verdict != "live": log(f"{verdict} | {k} | {site} | {why}")
         if verdict == "gone": gone.append((k, why))
+        if verdict == "live" and apply_:
+            f = page_facts(LAST["body"])
+            if f:
+                try: PF = json.load(open(FACTS_FILE))
+                except Exception: PF = {}
+                PF[k] = dict(f, at=time.strftime("%F %T %Z")); tmp = FACTS_FILE + ".tmp"
+                json.dump(PF, open(tmp, "w"), indent=1); os.replace(tmp, FACTS_FILE)
     if apply_ and gone:
         for k, why in gone:
             G[k] = {"at": time.strftime("%F %T %Z"), "why": why}; log(f"marked gone | {k} | {why}")

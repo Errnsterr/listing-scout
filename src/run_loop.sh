@@ -8,7 +8,7 @@ ENVF="${SCOUT_ENV:-$HOME/.config/listing-scout/env}"; [ -f "$ENVF" ] && { set -a
 while true; do
   mode=$(python3 -c "import yaml;print(yaml.safe_load(open('CRITERIA.yaml')).get('plan_mode','standard'))")
   N=$(python3 -c "import yaml;print(max(1, int(yaml.safe_load(open('CRITERIA.yaml')).get('loop_minutes') or 5)))" 2>/dev/null || echo 5)
-  ts=$(date '+%F %T %Z')
+  ts=$(date '+%F %T %Z'); t0=$(date +%s)
   ./${S}ensure_running.sh >/dev/null 2>&1 || true   # keeps the reply listener up (one copy); flags a missing key
   if [ -f out/search_ended.json ]; then echo "$ts search wrapped up (out/search_ended.json); loop stopping" >> logs/loop.log; exit 0; fi   # We found it
   python3 ${S}fetch_inbox.py >> logs/notify.log 2>&1   # pull Zillow/Redfin/HotPads alert emails into ./inbox (needs AGENTMAIL_API_KEY)
@@ -27,9 +27,10 @@ while true; do
     python3 ${S}notify.py hygiene --send >> logs/notify.log 2>&1    # Criteria hygiene: weekly near-miss / volume check-in (confirm-first; quiet on day one)
     nohup python3 ${S}gonecheck.py --apply --daily >> logs/gonecheck.out 2>&1 9>&- &   # Still listed? once a day, polite, in the background; never texts
     PYTHONPATH=${S:-.} python3 -c "import features; features.prune_logs()" 2>> logs/scout.err   # logs kept 30 days
-    echo "$ts ok mode=$mode $(python3 -c "import json;print(len(json.load(open('out/alerts.json'))))") alerts" >> logs/loop.log
+    echo "$ts ok mode=$mode $(python3 -c "import json;print(len(json.load(open('out/alerts.json'))))") alerts took=$(( $(date +%s)-t0 ))s" >> logs/loop.log
   else
     echo "$ts scout failed (see logs/scout.err)" >> logs/loop.log
   fi
-  sleep $((N*60))
+  el=$(( $(date +%s)-t0 )); w=$(( N*60-el )); [ $w -lt 30 ] && w=30
+  sleep $w   # fixed cadence: a slow pass shortens the wait, so checks stay ~every N minutes
 done
