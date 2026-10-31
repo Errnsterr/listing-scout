@@ -837,6 +837,7 @@ def addr_parts(a):
     unit = None
     m = UNIT_RX.search(st)
     if m: unit = (m.group(1) or m.group(2)).lstrip("0") or "0"; st = st[:m.start()]
+    if unit and re.fullmatch(r"\d{5,}", unit): unit = None   # v1.2.14: '#3606403' / '#134810' are Zillow listing numbers, not units
     if unit:   # v1.2.13: a repeated unit ('B-B-B', from a HotPads link folder) is one unit 'b'
         r3 = re.fullmatch(r"([a-z0-9]+)(?:-\1)+", unit)
         if r3: unit = r3.group(1)
@@ -1270,7 +1271,9 @@ def details(l, C=None):
 NO_NUMBER = "(no number listed)"
 def street(l):
     a = l.get("address") or l.get("street_only") or ""
-    return re.sub(r"\s+", " ", a.split(",")[0]).strip() or None
+    a = BOGUS_UNIT.sub("", a.split(",")[0])   # v1.2.14: drop a site listing number shown as a unit
+    return re.sub(r"\s+", " ", a).strip() or None
+BOGUS_UNIT = re.compile(r"\s*(?:#|\b(?:unit|apt)\b\.?)\s*\d{5,}\s*$", re.I)
 
 def market_words(l, pool, C):
     if l.get("price") is None or l.get("beds") is None or not l.get("zip"): return None
@@ -1351,7 +1354,18 @@ def where_block(l):
     if not st and l.get("city"):   # street undisclosed (e.g. Zillow '(undisclosed Address), Los Angeles, CA 90001'): city, then the unknown
         return style.Group([l["city"], "Address not shown"] + links(l))
     if st and len(st) > style.MAX and st.endswith(NO_NUMBER) and not links(l): return style.Group([st[:-len(NO_NUMBER)].strip(), NO_NUMBER])
-    return style.Group([st or "Address not shown"] + links(l))
+    return style.Group(fit_lines(st or "Address not shown") + links(l))
+
+def fit_lines(st):
+    """v1.2.14: an address/name still past MAX after short suffixes wraps at word breaks, never cut."""
+    if len(st) <= style.MAX: return [st]
+    out = style.wrap(st)
+    if all(len(x) <= style.MAX for x in out): return out
+    out = []
+    for w in st.split():
+        if out and len(out[-1]) + 1 + len(w) <= style.MAX: out[-1] += " " + w
+        else: out.append(w)
+    return out
 CLOSE = style.CLOSE
 
 PART_MAX = 1500   # chars per text: under the common 1,600-char carrier cap for long SMS; iMessage itself has no smaller limit
@@ -1410,6 +1424,7 @@ def entries_for(alerts, C):
         st = street_line(l) or (area_name(l) or "Address not shown")
         head = [f"{i}. {st}"]
         if len(head[0]) > style.MAX and st.endswith(NO_NUMBER): head = [f"{i}. {st[:-len(NO_NUMBER)].strip()}", NO_NUMBER]
+        elif len(head[0]) > style.MAX: head = fit_lines(head[0])   # v1.2.14
         b = head + ([lab] if lab else []) + (another_lines(a["another_at"]) if a.get("another_at") else []) + fact_lines(l, C, sp)
         e = [style.Group(b + [l["url"]] if l.get("url") else b)]
         cau = [x for x in extras(a) if x not in (a.get("market"),)]
