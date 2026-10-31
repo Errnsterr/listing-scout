@@ -25,9 +25,11 @@ SITES = (("zillow.com", "zillow"), ("redfin.com", "redfin"), ("hotpads.com", "ho
          ("move.com", "realtor"), ("trulia.com", "trulia"), ("rent.com", "rent"), ("apartments.com", "apartments"), ("zumper.com", "zumper"))
 BUY_SITES = {"realtor"}                     # Realtor.com alerts exist only for the buy test
 BUY_SEARCH = re.compile(r"buy\s*test", re.I)  # saved-search name, e.g. 'Buy Test - 92660', "Your 'Buy Test 1' Search"
-SKIP = re.compile(r"verif|welcome|one-time code|confirm your|confirmation:|email changed|password|sign in|log in", re.I)
+SKIP = re.compile(r"verif|welcome|one-time code|confirm your|confirmation:|email changed|has been modified|email (?:address )?(?:was |has been )?(?:changed|updated)|password|sign in|log in", re.I)
 LISTING = re.compile(r"\$\s?\d{1,3}(?:,\d{3})+|\$\s?\d{4}|\$\s?\d+(?:\.\d+)?\s?[KM]\b", re.I)
 LINK = re.compile(r"homedetails|/home/|/pad\b|click\.mail\.zillow\.com|redmail\d*\.redfin\.com|hotpads\.com/|realtor\.com", re.I)
+
+DETAIL = re.compile(r"hotpads\.com/\d+-[a-z0-9-]+|zillow\.com/homedetails/|redfin\.com/[A-Z]{2}/\S*/home/\d+|realtor\.com/realestateandhomes-detail/", re.I)   # a listing page link
 
 def _key():
     k = os.environ.get("AGENTMAIL_API_KEY")
@@ -73,6 +75,8 @@ def route(frm, subj, body):
     if not body: return None, "empty body"
     if SKIP.search(subj) and not (LISTING.search(body) and LINK.search(body)):
         return None, "account email, no listings in body"
+    if not ((LISTING.search(body) and LINK.search(body)) or DETAIL.search(body)):   # v1.2.15b: a real alert always shows a price + listing link; else it would parse to 0 homes and trip emailwatch
+        return None, "no listings in body"
     if s in BUY_SITES or BUY_SEARCH.search(subj) or BUY_SEARCH.search(body): return "buy", s
     return "rental", s
 
