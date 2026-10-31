@@ -21,17 +21,17 @@ def test_routing_and_files():
     for m in FX:
         path = L.handle(dict(m), "k")
         exp = m["expect"]
-        if exp in ("skip", "ignore"): assert path is None, m["message_id"]
+        if exp in ("skip", "ignore") or exp.startswith("buy:"): assert path is None, m["message_id"]
         else:
             kind, site = exp.split(":")
             assert path and os.path.basename(path).startswith(site + "-"), (m["message_id"], path)
-            assert path.startswith(buy if kind == "buy" else root + "/inbox"), (m["message_id"], path)
+            assert kind == "rental" and path.startswith(root + "/inbox/" + site + "-am-"), (m["message_id"], path)
             body = open(path).read(); assert m["subject"] in body and m["text"] in body
-    assert len(files(root)) == 3 and len(files(buy)) == 3, (files(root), files(buy))
+    assert len(files(root)) == 3 and len(files(buy)) == 0, (files(root), files(buy))
     ids = open(os.path.join(root, "out", "fetched_ids.txt")).read().split()
     assert sorted(ids) == sorted(L.norm_id(m["message_id"]) for m in FX)   # v1.2.16: stored bare (no <...>)
     log = open(os.path.join(root, "logs", "email_skips.log")).read()
-    assert log.count("| routed |") == 6 and log.count("| skipped |") == 2 and "cloudflare" not in log.lower()
+    assert log.count("| routed |") == 3 and log.count("| skipped |") == 5 and log.count("buy test ended") == 3 and "cloudflare" not in log.lower()
     assert "(Buy Test - 92660)" in log
     assert not os.path.exists(os.path.join(buy, "out")), "buy test never gets the id file"
 
@@ -41,7 +41,7 @@ def test_dedupe_and_shared_ids():
     assert L.handle(dict(FX[0]), "k") is None   # already pulled by the routine
     p1 = L.handle(dict(FX[1]), "k"); assert p1
     assert L.handle(dict(FX[1]), "k") is None   # second event for same id
-    assert L.catch_up("k") == 4                 # the rest; nothing twice
+    assert L.catch_up("k") == 1                 # the rest; nothing twice
     assert L.catch_up("k") == 0
     ids = open(os.path.join(root, "out", "fetched_ids.txt")).read().split()
     assert len(ids) == len(set(ids)) and "4505683" in ids

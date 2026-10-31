@@ -4,7 +4,7 @@ Watches one AgentMail inbox (default ern@agentmail.to) over AgentMail's WebSocke
 message.received, fetches the full message by REST, and routes it exactly like the
 'pull site alert emails' routine:
   rental alert  -> <root>/inbox/<site>-<id>.txt
-  buy-test alert (Realtor.com sender, or a 'Buy Test' saved search) -> <buytest>/inbox/<site>-<id>.txt only
+  for-sale alert (Realtor.com/move.com sender, a 'Buy Test' search, or for-sale wording) -> skipped as 'buy test ended', marked seen (v1.2.19)
   ids -> <root>/out/fetched_ids.txt (shared with the routine), lines -> <root>/logs/email_skips.log
 On start (and after every reconnect) a catch-up poll lists the inbox for anything missed.
 Alerts older than LS_CATCHUP_HOURS (default 24) are marked seen and skipped (stale rule).
@@ -25,6 +25,8 @@ SITES = (("zillow.com", "zillow"), ("redfin.com", "redfin"), ("hotpads.com", "ho
          ("move.com", "realtor"), ("trulia.com", "trulia"), ("rent.com", "rent"), ("apartments.com", "apartments"), ("zumper.com", "zumper"))
 BUY_SITES = {"realtor"}                     # Realtor.com alerts exist only for the buy test
 BUY_SEARCH = re.compile(r"buy\s*test", re.I)  # saved-search name, e.g. 'Buy Test - 92660', "Your 'Buy Test 1' Search"
+FOR_SALE = re.compile(r"\bfor[- ]sale\b|\bhomes? for sale\b", re.I)   # v1.2.19: for-sale wording (no rental alert in ./inbox uses it)
+BUY_ENDED = "buy test ended"                  # v1.2.19: for-sale mail is skipped and marked seen, never saved anywhere
 SKIP = re.compile(r"verif|welcome|one-time code|confirm your|confirmation:|email changed|has been modified|email (?:address )?(?:was |has been )?(?:changed|updated)|password|sign in|log in", re.I)
 LISTING = re.compile(r"\$\s?\d{1,3}(?:,\d{3})+|\$\s?\d{4}|\$\s?\d+(?:\.\d+)?\s?[KM]\b", re.I)
 LINK = re.compile(r"homedetails|/home/|/pad\b|click\.mail\.zillow\.com|redmail\d*\.redfin\.com|hotpads\.com/|realtor\.com", re.I)
@@ -84,7 +86,9 @@ def route(frm, subj, body):
         return None, "account email, no listings in body"
     if not ((LISTING.search(body) and LINK.search(body)) or DETAIL.search(body)):   # v1.2.15b: a real alert always shows a price + listing link; else it would parse to 0 homes and trip emailwatch
         return None, "no listings in body"
-    if s in BUY_SITES or BUY_SEARCH.search(subj) or BUY_SEARCH.search(body): return "buy", s
+    if s in BUY_SITES or BUY_SEARCH.search(subj) or BUY_SEARCH.search(body) or FOR_SALE.search(subj) or FOR_SALE.search(body):
+        return None, BUY_ENDED + (f" ({search_name(body)})" if search_name(body) else "")   # v1.2.19: no buy-test folder
+    if s not in ("zillow", "redfin", "hotpads"): return None, f"not a rental alert site ({s})"   # v1.2.19: rentals only from these three
     return "rental", s
 
 def search_name(body):
@@ -105,7 +109,7 @@ def _ts(m):
     try: return datetime.datetime.fromisoformat(str(t).replace("Z", "+00:00")).timestamp()
     except Exception: return None
 
-def handle(m, key, fetch=True):
+def handle(m, key, fetch=True, via="listener"):
     """Process one message summary/event. Returns the written path or None. Never sends anything."""
     mid = m.get("message_id") or m.get("id")
     if not mid: return None
@@ -127,16 +131,14 @@ def handle(m, key, fetch=True):
         head = (f"<!-- from: {frm} | subject: {subj} -->\n"
                 f"--- listener {time.strftime('%F %T %Z')} · received {recv} · message_id {mid}\n"
                 f"From: {frm}\nTo: {to}\nSubject: {subj}\n\n")
-        name = f"{site}-{safe_id(mid)}.txt"
-        if kind == "buy":
-            path = os.path.join(BUYTEST, "inbox", name); dest = f"buytest inbox/{name}" + (f" ({search_name(body)})" if search_name(body) else "")
-        else:
-            path = p("inbox", name); dest = f"inbox/{name}"
+        name = f"{site}-am-{safe_id(mid)}.txt"   # v1.2.19: same name from the listener and the per-pass catch-up
+        path = p("inbox", name); dest = f"inbox/{name}"
         write_atomic(path, head + body)
-        ids.add(mid); skip_log("routed", frm, subj, dest + " [listener]")
+        ids.add(mid); skip_log("routed", frm, subj, dest + f" [{via}]")
         return path
 
-def catch_up(key, quiet=False):
+def catch_up(key, quiet=False, via="listener", deadline=None):
+    """deadline: time.monotonic() value; stops between messages once passed (v1.2.19 per-pass catch-up)."""
     q, token, n = urllib.parse.quote(INBOX), None, 0
     for _ in range(20):
         page = get(f"/inboxes/{q}/messages?limit=100" + (f"&page_token={urllib.parse.quote(token)}" if token else ""), key)
@@ -144,7 +146,8 @@ def catch_up(key, quiet=False):
         with Ids() as ids: seen = ids.seen()
         for m in got:
             try:
-                if handle(m, key): n += 1
+                if deadline and time.monotonic() > deadline: log(f"catch-up [{via}]: deadline, rest next pass"); return n
+                if handle(m, key, via=via): n += 1
             except Exception as e: log(f"catch-up message error {type(e).__name__}: {str(e)[:120]}")
         token = page.get("next_page_token")
         if not token or all(norm_id(m.get("message_id") or m.get("id")) in seen for m in got): break

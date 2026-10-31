@@ -32,7 +32,7 @@ def main():
     os.makedirs("out", exist_ok=True); os.makedirs("inbox", exist_ok=True)
     global GATED
     if (yaml.safe_load(open("CRITERIA.yaml")).get("inbox_pull") or "") == "routine":   # v1.2.15: the routine (+ mail_listener.py) own the pull; key may be set for the listener
-        GATED = True; return 0
+        GATED = True; return catch_up_pass()   # v1.2.19: free, no-AI catch-up of the listener's inbox every pass
     key = os.environ.get("AGENTMAIL_API_KEY")
     if not key: print("fetch_inbox: AGENTMAIL_API_KEY not set; skipped"); return 0
     inbox = (yaml.safe_load(open("CRITERIA.yaml")).get("alert_inbox") or "").strip()
@@ -65,6 +65,24 @@ def main():
     print(f"fetch_inbox: {n} new alert email(s) saved")
     return 0
 
+CATCHUP_OK = False
+
+def catch_up_pass(limit=50):
+    """v1.2.19: list unseen messages in the listener's inbox (ern@agentmail.to; never the routine's grokbot inbox)
+    and route them with the listener's own rules and seen check. Fail-safe: any error just logs; stops at `limit` s."""
+    global CATCHUP_OK
+    key = os.environ.get("AGENTMAIL_API_KEY")
+    if not key: print("fetch_inbox catch-up: AGENTMAIL_API_KEY not set; skipped"); return 0
+    try: sys.path.insert(0, _SRC); import mail_listener as L
+    except Exception as e: print(f"fetch_inbox catch-up: error {type(e).__name__}: {str(e)[:120]}"); return 0
+    if L.INBOX in ("ern@mail.grokbot.com", "errnsterr@agentmail.to"): print("fetch_inbox catch-up: protected inbox; skipped"); return 0
+    try:
+        n = L.catch_up(key, quiet=True, via="pass catch-up", deadline=time.monotonic() + limit)
+    except Exception as e:
+        print(f"fetch_inbox catch-up: error {type(e).__name__}: {str(e)[:120]}"); return 0
+    CATCHUP_OK = True
+    print(f"fetch_inbox catch-up: {n} new alert email(s) saved"); return 0
+
 def heartbeat():
     os.makedirs("out", exist_ok=True); open(os.path.join("out", "routine_heartbeat.txt"), "w").write(time.strftime("%F %T %Z") + " fetch_inbox.py\n")
 
@@ -74,5 +92,5 @@ if __name__ == "__main__":
     signal.signal(signal.SIGALRM, _late); signal.alarm(60)
     try: rc = main()
     except Exception as e: print(f"fetch_inbox: error {type(e).__name__}: {str(e)[:120]}"); sys.exit(0)   # never block the loop
-    if os.environ.get("AGENTMAIL_API_KEY") and not GATED: heartbeat()   # only when this script is the sync (else the routine writes it)
+    if os.environ.get("AGENTMAIL_API_KEY") and (not GATED or CATCHUP_OK): heartbeat()   # v1.2.19: a clean catch-up counts as a sync   # only when this script is the sync (else the routine writes it)
     sys.exit(rc)
