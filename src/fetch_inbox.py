@@ -26,8 +26,13 @@ def skip_log(why, frm, subj):
     os.makedirs("logs", exist_ok=True)
     with open(os.path.join("logs", "email_skips.log"), "a") as f: f.write(f"{time.strftime('%F %T %Z')}\t{why}\t{frm}\t{subj[:120]}\n")
 
+GATED = False
+
 def main():
     os.makedirs("out", exist_ok=True); os.makedirs("inbox", exist_ok=True)
+    global GATED
+    if (yaml.safe_load(open("CRITERIA.yaml")).get("inbox_pull") or "") == "routine":   # v1.2.15: the routine (+ mail_listener.py) own the pull; key may be set for the listener
+        GATED = True; return 0
     key = os.environ.get("AGENTMAIL_API_KEY")
     if not key: print("fetch_inbox: AGENTMAIL_API_KEY not set; skipped"); return 0
     inbox = (yaml.safe_load(open("CRITERIA.yaml")).get("alert_inbox") or "").strip()
@@ -68,5 +73,5 @@ if __name__ == "__main__":
     signal.signal(signal.SIGALRM, _late); signal.alarm(60)
     try: rc = main()
     except Exception as e: print(f"fetch_inbox: error {type(e).__name__}: {str(e)[:120]}"); sys.exit(0)   # never block the loop
-    if os.environ.get("AGENTMAIL_API_KEY"): heartbeat()   # only when this script is the sync (else the routine writes it)
+    if os.environ.get("AGENTMAIL_API_KEY") and not GATED: heartbeat()   # only when this script is the sync (else the routine writes it)
     sys.exit(rc)

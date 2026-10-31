@@ -1,0 +1,11 @@
+[
+ {"message_id":"<r1@hotpads>","from":"HotPads <searches@alerts.hotpads.com>","subject":"New rental at 504 35th St in 92663 (from $7.45K)","text":"504 35th St, Newport Beach, CA 92663 $7,450/mo 3 bd 2 ba https://hotpads.com/504-35th-st/pad","expect":"rental:hotpads"},
+ {"message_id":"<r2@zillow>","from":"Zillow <instant-updates@mail.zillow.com>","subject":"New Rental Match at $2434/mo in 'For Rent in 92625, 92661, 92662, 92663, Costa Mesa'","text":"$2,434/mo 2 bds 1 ba 1 Main St https://www.zillow.com/homedetails/1_zpid/","expect":"rental:zillow"},
+ {"message_id":"<b1@redfin>","from":"Redfin <listings@redfin.com>","subject":"New in Newport Beach at $4.57M","text":"Buy Test - 92660 (https://redmail3.redfin.com/u/click?x) $4,570,000 4 beds https://www.redfin.com/CA/Newport-Beach/1-A/home/1","expect":"buy:redfin"},
+ {"message_id":"<b2@zillow>","from":"Zillow <instant-updates@mail.zillow.com>","subject":"Price Cut: 2750 San Carlos Ln, Costa Mesa, CA 92626. Your 'Buy Test 1' Search.","text":"$1,350,000 https://www.zillow.com/homedetails/2_zpid/","expect":"buy:zillow"},
+ {"message_id":"<b3@realtor>","from":"realtor.com <consumer@e.mail.realtor.com>","subject":"New listing in Costa Mesa","text":"$1,250,000 3 bd https://www.realtor.com/realestateandhomes-detail/x","expect":"buy:realtor"},
+ {"message_id":"<s1@redfin>","from":"Redfin <donotreply@redfin.com>","subject":"Verify your account","text":"Click to verify https://www.redfin.com/verify?t=1","expect":"skip"},
+ {"message_id":"<s2@zillow>","from":"Zillow <no-reply@confirmation.zillow.com>","subject":"Welcome to Zillow - new listings for you","text":"$3,100/mo 2 bd https://www.zillow.com/homedetails/3_zpid/","expect":"rental:zillow"},
+ {"message_id":"<n1@other>","from":"Cloudflare <noreply@cloudflare.com>","subject":"Your invoice","text":"$20","expect":"ignore"},
+ {"message_id":"<e1@hotpads>","from":"HotPads <searches@alerts.hotpads.com>","subject":"New rental","text":"","expect":"skip"}
+]

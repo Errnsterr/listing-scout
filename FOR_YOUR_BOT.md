@@ -64,7 +64,7 @@ Generic only. Skill name: `listing-scout`. `drafts/`, `__pycache__/` and `*.pyc`
 | `docs/SAMPLE_MESSAGE.txt` | Every text, rentals and buying (experimental), rendered for a made-up Los Angeles household |
 | `docs/CHANGELOG.md` | What changed in each version |
 | `FOR_YOU.md` | One-page human steps (plain language) |
-| `VERSION` | 1.2.9. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
+| `VERSION` | 1.2.15. Update = `git pull` or download the new release archive, and keep `CRITERIA.yaml`, `state.json`, `outbox.json`, `logs/`, `out/` |
 | `LICENSE` | MIT. Copyright errnsterr |
 | `src/style.py` | The one text formatter and style check |
 | `src/scout.py` | Checks property-manager pages and alert emails, matches, dedupes, renders alerts and the snapshot |

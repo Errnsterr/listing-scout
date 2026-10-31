@@ -11,6 +11,7 @@ photon: {project_id: "", user_limit: null}   # secret goes in env PHOTON_API_KEY
 replies: false                   # true = co-deciders reply naturally ("yes", "no, too far", "love the kitchen"), relayed verbatim (needs the reply listener)
 feedback_email: ""                 # Make it better: a bug or idea someone confirms with a clear yes is emailed here by YOUR bot (words + version + last text kind only). "" = off (default; the owner sets their own).
 inbox_pull: routine              # routine = a 10-minute bot routine copies alert emails into ./inbox (no key); api = AGENTMAIL_API_KEY via the secure flow
+mail_listener: false             # v1.2.15: true = instant alert copy over an AgentMail WebSocket (needs AGENTMAIL_API_KEY); routine stays as backup
 inbox_routine_minutes: 10        # how often that routine runs; "email sync stalled" waits this + 3 h (blank = the plan's interval)
 daily_cap: 0                     # 0 = off (instant); N = at most N alert texts a day, extras in one evening text (owner says yes first)
 loop_minutes: 5                  # how often the script checks listings (default 5); plan_mode does not change it

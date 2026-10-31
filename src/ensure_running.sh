@@ -46,3 +46,12 @@ if python3 -c "import yaml,sys;sys.exit(0 if yaml.safe_load(open('CRITERIA.yaml'
     echo $! > logs/listen.pid; echo "$(date '+%F %T %Z') reply listener (re)started, pid $!" >> logs/loop.log
   fi
 fi
+# --- v1.2.15 instant email listener (paste at the END of ensure_running.sh). DISABLED unless CRITERIA.yaml has mail_listener: true.
+# Exactly one copy (logs/mail_listener.pid), same rules as the reply listener. Needs AGENTMAIL_API_KEY in $ENVF; never sends texts.
+if python3 -c "import yaml,sys;sys.exit(0 if yaml.safe_load(open('CRITERIA.yaml')).get('mail_listener') else 1)" && [ -n "$AGENTMAIL_API_KEY" ]; then
+  mp=$(cat logs/mail_listener.pid 2>/dev/null)
+  if ! { [ -n "$mp" ] && grep -q mail_listener.py /proc/"$mp"/cmdline 2>/dev/null; }; then
+    nohup python3 ${S}mail_listener.py >> logs/mail_listener.out 2>&1 9>&- &
+    echo $! > logs/mail_listener.pid; echo "$(date '+%F %T %Z') mail listener (re)started, pid $!" >> logs/loop.log
+  fi
+fi

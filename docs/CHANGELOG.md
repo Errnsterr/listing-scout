@@ -2,6 +2,12 @@
 
 All notable changes to the Listing Scout template. The current version is in `VERSION`.
 
+## v1.2.15 (October 30, 2026): instant alert emails
+
+- New src/mail_listener.py: holds one AgentMail WebSocket to the alert inbox (`listen_inbox`, env LS_LISTEN_INBOX) and copies each new site alert into inbox/ seconds after it lands. Same routing as the inbox routine: listing-site senders only, account mail skipped unless it shows listings, Realtor.com or "Buy Test" saved searches go only to the buy-test install. Shared out/fetched_ids.txt (locked, append-only), lines in logs/email_skips.log tagged [listener]. Catch-up poll on start and every reconnect; alerts over 24 h old are skipped. Backoff 2 s to 5 min. No AI, sends nothing. Needs AGENTMAIL_API_KEY.
+- Off by default: ensure_running.sh starts it only with `mail_listener: true` in CRITERIA.yaml and the key set. Uses the bundled pure-Python websockets in src/vendor/.
+- fetch_inbox.py does nothing when `inbox_pull: routine` (so setting the key for the listener can't make it poll the wrong inbox or overwrite the routine heartbeat).
+
 ## v1.2.11 (October 27, 2026): survives a box restart on its own
 
 - Automatic backups: every loop pass checks; a snapshot of out/, state.json and CRITERIA.yaml is taken hourly (sooner when the texted record changes) plus once a day. Kept: 48 hourly, 14 daily, in backups/auto/ (chmod 600). Optional off-box mirror (selfheal.local.json "mirror") is encrypted, so no phone number sits there in plain text.
