@@ -1046,8 +1046,8 @@ def build_zipidx(S):
         loc = v.get("loc") or {}; z = loc.get("zip")
         if not z: continue
         ks = set(v.get("bkeys") or [])
-        if v.get("addr") and loc.get("city"):
-            num, st_ = v["addr"].split("|")[:2]; ks.add(f"s:{num}|{st_}|{loc['city']}")
+        if _addr3(v) and loc.get("city"):
+            num, st_ = _addr3(v)[:2]; ks.add(f"s:{num}|{st_}|{loc['city']}")
         for k in ks: idx.setdefault(k, set()).add(z)
     return idx
 
@@ -1119,6 +1119,22 @@ def match_log(msg):
 
 def _close(a, b, pct=0.01): return a is not None and b is not None and abs(a - b) <= pct * max(a, b)
 
+def _addr3(v):
+    """v1.2.20: a stored addr as (num, name, unit), or None if it isn't the 3-part 'num|name|unit' key."""
+    a = v.get("addr") if isinstance(v, dict) else None
+    if not isinstance(a, str): return None
+    p = a.split("|")
+    return tuple(p) if len(p) == 3 else None
+
+def normalize_state_addrs(S):
+    """v1.2.20: pre-v1.2 records stored a space-joined addr ('2 heliotrope'). Move it to legacy_addr so
+    address matching only ever sees 'num|name|unit' keys. Idempotent. Returns how many were moved."""
+    n = 0
+    for v in S.values():
+        if isinstance(v, dict) and v.get("addr") and _addr3(v) is None:
+            v["legacy_addr"] = v.pop("addr"); n += 1
+    return n
+
 def fuzzy_dup(l, S, ak):
     """v1.2.13 (fixes 2, 4, 5): the same home under a different address form. Needs same ZIP, price within 1%,
     and beds equal when both known. (2) no unit vs one unit, only if no other unit of that street is on file;
@@ -1134,16 +1150,17 @@ def fuzzy_dup(l, S, ak):
     if ak:
         num, name, unit = ak.split("|"); base = num.split(" ")[0]; half = num.endswith("1/2")
         for k, v in S.items():
-            if not v.get("addr") or v["addr"] == ak or not ok(k, v): continue
-            n2, nm2, u2 = v["addr"].split("|")
+            p2 = _addr3(v)
+            if not p2 or v["addr"] == ak or not ok(k, v): continue   # v1.2.20: malformed addr never stalls a pass
+            n2, nm2, u2 = p2
             if nm2 != name or n2.split(" ")[0] != base: continue
             h2 = n2.endswith("1/2")
             if half or h2:   # (5) '1/2' is a unit: only against a lettered unit or another '1/2'
                 if (half and h2) or (half and u2 and not unit) or (h2 and unit and not u2): return ("fuzzy", k, "1/2 vs unit")
                 continue
             if bool(unit) == bool(u2): continue   # two different units never merge
-            others = {x["addr"].split("|")[2] for x in S.values() if x.get("addr") and not x.get("gone_since")
-                      and x["addr"].split("|")[:2] == [num, name] and x["addr"].split("|")[2] not in ("", unit, u2)}
+            others = {px[2] for x in S.values() if not x.get("gone_since") and (px := _addr3(x))
+                      and list(px[:2]) == [num, name] and px[2] not in ("", unit, u2)}
             if others: continue   # (2) other units of that street are listed: a bare street is ambiguous
             return ("fuzzy", k, "no unit vs one unit")
         return None
@@ -1648,6 +1665,7 @@ def main():
     for _d in ("out", "logs", "inbox"): os.makedirs(_d, exist_ok=True)   # exported copies ship without these
     C = yaml.safe_load(open(a.criteria))
     st = json.load(open(a.state)) if os.path.exists(a.state) else {"listings": {}}
+    normalize_state_addrs(st.setdefault("listings", {}))   # v1.2.20
     S, now, today = st["listings"], time.time(), date.today().isoformat()
     global ZIPIDX, MATCH_ON; ZIPIDX = build_zipidx(S); MATCH_ON = True
     try: PFACTS = json.load(open(os.path.join("out", "page_facts.json")))
