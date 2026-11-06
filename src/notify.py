@@ -106,6 +106,29 @@ def log_text(r, text, ok, mode):
                                 "text": text}) + "\n")
     except OSError: pass
 
+def _alert_time(x):
+    """When this queued listing landed: the source clock if scout set one, else when it was queued."""
+    l = (x or {}).get("l") or {}
+    for raw in (l.get("alert_ts"), x.get("queued_at") if x else None):
+        if raw is None: continue
+        try: return float(raw)
+        except (TypeError, ValueError): continue
+    return None
+
+def drop_stale(items, now=None):
+    """v1.2.21: drop listings past the text window. No clock at all stays (a retry from the previous pass).
+    Returns (keep, skipped). Skips are logged by id only."""
+    now = time.time() if now is None else now
+    lim = features.alert_max_hours() * 3600
+    keep, skip = [], []
+    for x in items or []:
+        ts = _alert_time(x)
+        if ts is not None and now - ts > lim: skip.append(x)
+        else: keep.append(x)
+    for x in skip:
+        print(f"skipped for age (> {features.alert_max_hours():g} h): {(x.get('l') or {}).get('id') or '?'}")
+    return keep, skip
+
 def places_of(xs, sc):
     return [{"id": x["l"].get("id"), "where": sc.street_line(x["l"]) or sc.street(x["l"]) or sc.area_name(x["l"]) or None} for x in xs]
 
@@ -376,8 +399,11 @@ def main():
         obf = os.path.join(HERE, "outbox.json")
         ob = json.load(open(obf)) if os.path.exists(obf) else {"queue": [], "last_sent": 0}
         new = json.load(open(a[1]))
-        for x in new: x["l"].setdefault("flags", [])
+        for x in new:
+            x["l"].setdefault("flags", [])
+            if not x.get("queued_at"): x["queued_at"] = (x.get("l") or {}).get("alert_ts") or time.time()   # v1.2.21: age while held
         ob["queue"] += new
+        ob["queue"], _ = drop_stale(ob["queue"])   # v1.2.21: a find past the window is not queued and not retried
         today = time.strftime("%F")
         if ob.get("day") != today: ob["day"], ob["texts_today"] = today, 0
         pace = (C.get("pace") or "standouts") if KIND == "home" else "instant"   # pace is a buy-mode setting; rentals stay instant
@@ -450,6 +476,11 @@ def main():
         obf = os.path.join(HERE, "outbox.json"); ob = json.load(open(obf)) if os.path.exists(obf) else {"queue": [], "last_sent": 0}
         for r in recipients():
             held = ob.get("held", {}).get(r["name"]) or []
+            held, skipped = drop_stale(held)   # v1.2.21: overnight holds past the window are not texted
+            if skipped and really:
+                if held: ob.setdefault("held", {})[r["name"]] = held
+                else: ob.get("held", {}).pop(r["name"], None)
+                json.dump(ob, open(obf, "w"), indent=1)
             if held and not paused(r) and send_parts(r, sc.render_parts(held, C), really) and really:
                 record_numbered(sc.shown(held, C))   # replies by number attach to this bundle, like every other send
                 ob["held"].pop(r["name"], None); json.dump(ob, open(obf, "w"), indent=1)
@@ -460,6 +491,9 @@ def main():
     elif a[0] == "evening":   # Daily cap: everything held today goes out as one text after 6 PM (never during Sleep hours)
         obf = os.path.join(HERE, "outbox.json"); ob = json.load(open(obf)) if os.path.exists(obf) else {}
         ev = ob.get("evening") or []
+        ev, skipped = drop_stale(ev)   # v1.2.21: an evening hold past the window is dropped, not sent at 6 PM
+        if skipped and really:
+            ob["evening"] = ev; json.dump(ob, open(obf, "w"), indent=1)
         if not ev or ((features.local_hour(C) < 18 or features.in_quiet(C)) and "--now" not in a): print("evening: nothing to send yet"); return
         sc = _sc(); oks = [send_parts(r, sc.render_parts(ev, C, head=style.evening_bundle_intro(len(ev), KIND)), really) for r in recipients() if not paused(r) and r.get("mode") != "digest"]
         if really and oks and all(oks): record_numbered(sc.shown(ev, C)); ob["evening"] = []; json.dump(ob, open(obf, "w"), indent=1)

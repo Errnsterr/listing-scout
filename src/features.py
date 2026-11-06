@@ -246,6 +246,13 @@ def local_hour(C, ts=None): return local_now(C, ts).hour
 def local_str(C, fmt="%F %T %Z", ts=None): return local_now(C, ts).strftime(fmt)
 
 ROUTINE_HOURS = {"lean": 12, "standard": 2, "hands_on": 1}   # how often the inbox-reader routine runs per plan (docs/COSTS.md)
+def alert_max_hours():
+    """v1.2.21: text a listing only within this many hours of it landing.
+    A hosting pause or a long pass still fits; a multi-hour catch-up does not.
+    Same knob as mail_listener (LS_CATCHUP_HOURS, default 4; was 24)."""
+    try: return float(os.environ.get("LS_CATCHUP_HOURS", "4"))
+    except (TypeError, ValueError): return 4.0
+
 def email_stale_limit(C):
     """Seconds before 'email sync stalled' is worth a note: routine interval + 3h drift. api pull runs every loop.
     inbox_routine_minutes (if set) overrides the plan's interval."""

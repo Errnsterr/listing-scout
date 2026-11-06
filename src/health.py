@@ -5,6 +5,23 @@
   python3 src/health.py --restart --quiet   # safe every 10 minutes: prints nothing and exits 0 when all is well
 The weekly bot routine runs this with --restart and tells the owner only if something is wrong."""
 import os, sys, re, json, time, subprocess, yaml
+
+def recent_photon_unrecovered(text, window=5000):
+    """v1.2.21: a Photon miss counts only when no later 'sent:' recovered it.
+    'Not sent:' stays in the log after a timeout that then goes through; that must not
+    keep health not OK (the repeat is what raises the two-in-a-row heads-up)."""
+    if not text: return False
+    tail = text[-window:]
+    if len(text) > window:
+        cut = tail.find("\n")
+        tail = tail[cut + 1:] if cut >= 0 else ""
+    last = None
+    for line in tail.splitlines():
+        s = line.strip()
+        if s.startswith("Not sent:"): last = "fail"
+        elif s.startswith("sent:"): last = "ok"
+    return last == "fail"
+
 _SRC = os.path.dirname(os.path.abspath(__file__))
 HERE = os.path.dirname(_SRC) if os.path.basename(_SRC) == "src" else _SRC
 os.chdir(HERE)
@@ -42,7 +59,7 @@ lastrun = err.split("== SOURCES ==")[-1]
 bad = [l.split(" | ")[0] for l in lastrun.splitlines() if " | ERROR | " in l]
 if bad: issues.append("sources with errors on the last check: " + ", ".join(bad))
 nl = open("logs/notify.log").read() if os.path.exists("logs/notify.log") else ""
-if "Not sent:" in nl[-5000:]: issues.append("a recent text was not accepted by Photon (see logs/notify.log)")
+if recent_photon_unrecovered(nl): issues.append("a recent text was not accepted by Photon (see logs/notify.log)")
 # Texts failing for 30+ minutes: every send since the last success failed, and the first of them is 30+ min old
 sends = [json.loads(x) for x in open("logs/sends.jsonl")] if os.path.exists("logs/sends.jsonl") else []
 sends = [x for x in sends if not x.get("dry_run")]

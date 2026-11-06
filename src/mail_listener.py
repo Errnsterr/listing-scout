@@ -7,7 +7,7 @@ message.received, fetches the full message by REST, and routes it exactly like t
   for-sale alert (Realtor.com/move.com sender, a 'Buy Test' search, or for-sale wording) -> skipped as 'buy test ended', marked seen (v1.2.19)
   ids -> <root>/out/fetched_ids.txt (shared with the routine), lines -> <root>/logs/email_skips.log
 On start (and after every reconnect) a catch-up poll lists the inbox for anything missed.
-Alerts older than LS_CATCHUP_HOURS (default 24) are marked seen and skipped (stale rule).
+Alerts older than LS_CATCHUP_HOURS (default 4) are marked seen and skipped (stale rule).
 Key: AGENTMAIL_API_KEY from env (never printed). Usage:
   mail_listener.py            run forever (auto-reconnect, backoff 2s..5min)
   mail_listener.py --check    read-only: connect + subscribe + count messages; writes nothing
@@ -20,7 +20,22 @@ BUYTEST = os.environ.get("LS_BUYTEST", os.path.join(os.path.dirname(os.path.absp
 INBOX = os.environ.get("LS_LISTEN_INBOX", "ern@agentmail.to")
 API = os.environ.get("LS_AGENTMAIL_API", "https://api.agentmail.to/v0")
 WS = os.environ.get("LS_AGENTMAIL_WS", "wss://ws.agentmail.to/v0")
-STALE_H = float(os.environ.get("LS_CATCHUP_HOURS", "24"))
+def stale_hours():
+    """v1.2.21: same window as features.alert_max_hours (default 4, was 24). Read at use, not import."""
+    try: return float(os.environ.get("LS_CATCHUP_HOURS", "4"))
+    except (TypeError, ValueError): return 4.0
+
+def msg_ts(m):
+    t = (m or {}).get("timestamp") or (m or {}).get("created_at") or ""
+    try: return datetime.datetime.fromisoformat(str(t).replace("Z", "+00:00")).timestamp()
+    except Exception: return None
+
+def msg_is_stale(m, now=None):
+    """True when the message's own timestamp is older than the text window. No timestamp: not stale."""
+    ts = msg_ts(m)
+    if ts is None: return False
+    return (time.time() if now is None else now) - ts > stale_hours() * 3600
+
 SITES = (("zillow.com", "zillow"), ("redfin.com", "redfin"), ("hotpads.com", "hotpads"), ("realtor.com", "realtor"),
          ("move.com", "realtor"), ("trulia.com", "trulia"), ("rent.com", "rent"), ("apartments.com", "apartments"), ("zumper.com", "zumper"))
 BUY_SITES = {"realtor"}                     # Realtor.com alerts exist only for the buy test
@@ -105,9 +120,7 @@ def write_atomic(path, text):
     os.replace(tmp, path)
 
 def _ts(m):
-    t = m.get("timestamp") or m.get("created_at") or ""
-    try: return datetime.datetime.fromisoformat(str(t).replace("Z", "+00:00")).timestamp()
-    except Exception: return None
+    return msg_ts(m)
 
 def handle(m, key, fetch=True, via="listener"):
     """Process one message summary/event. Returns the written path or None. Never sends anything."""
@@ -117,9 +130,8 @@ def handle(m, key, fetch=True, via="listener"):
         if norm_id(mid) in ids.seen(): return None
         frm = str(m.get("from") or m.get("from_") or ""); subj = m.get("subject") or ""
         if not site_of(frm): ids.add(mid); return None   # not a listing site: ignored quietly (as fetch_inbox.py)
-        ts = _ts(m)
-        if ts and time.time() - ts > STALE_H * 3600:
-            ids.add(mid); skip_log("skipped", frm, subj, f"stale catch-up (> {STALE_H:g} h old)"); return None
+        if msg_is_stale(m):   # v1.2.21: older than the text window; marked seen, never saved, never retried
+            ids.add(mid); skip_log("skipped", frm, subj, f"stale catch-up (> {stale_hours():g} h old); skipped for age"); return None
         full = get(f"/inboxes/{urllib.parse.quote(INBOX)}/messages/{urllib.parse.quote(str(mid))}", key) if fetch else m
         body = full.get("text") or full.get("extracted_text") or full.get("html") or ""
         kind, site = route(frm, subj, body)
