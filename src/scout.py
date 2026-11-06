@@ -607,6 +607,9 @@ def parse_email(src):
     for f in email_files(d):
         try: got = parse_email_file(f)
         except Exception as e: got = []; print(f"email parse error {os.path.basename(f)}: {type(e).__name__}", file=sys.stderr)
+        landed = alert_landed_ts(f)   # v1.2.21: age for the text window (listener received time, else file mtime)
+        if landed:
+            for _l in got: _l.setdefault("alert_ts", landed)
         sender, body = _email_body(f)
         portal = next((v for k, v in PORTALS.items() if k in (sender + body[:5000]).lower()), "Email alert")
         rep[os.path.basename(f)] = {"count": len(got), "portal": portal, "mtime": os.path.getmtime(f)}
@@ -675,9 +678,13 @@ def parse_market(src):
         if time.time() - os.path.getmtime(f) > keep: continue
         try: rows = json.load(open(f))
         except Exception: continue
+        landed = alert_landed_ts(f)
         for r in rows if isinstance(rows, list) else []:
             l = market_row(r) if isinstance(r, dict) else None
-            if l and l["id"] not in ids: ids.add(l["id"]); out.append(l)
+            if l and l["id"] not in ids:
+                ids.add(l["id"])
+                if landed: l["alert_ts"] = landed
+                out.append(l)
     return out
 
 def url_key(u):
@@ -1107,6 +1114,36 @@ def unitless_dup(l, S, ak, loc):
         return ("skip", k)
     k = sorted(hits, key=lambda x: S[x].get("first_seen") or "")[0]
     match_log(f"dup no unit vs {len(units)} units (building) | {l['id']} = {k}"); return ("skip", k)
+
+_LISTENER_RX = re.compile(r"^--- listener .*?\breceived\s+(\d{4}-\d{2}-\d{2}T[\d:.+-]+Z?)", re.M)
+
+def alert_landed_ts(path):
+    """When this alert landed. The listener header's received time if it wrote one (a catch-up
+    can write the file hours later); otherwise the file mtime. A 'received' line that is not
+    that header is not a clock."""
+    ts = None
+    try:
+        m = _LISTENER_RX.search(open(path, errors="replace").read(8000))
+        if m: ts = datetime.fromisoformat(m.group(1).replace("Z", "+00:00")).timestamp()
+    except Exception: ts = None
+    if ts is None:
+        try: ts = os.path.getmtime(path)
+        except OSError: ts = None
+    return ts
+
+def listing_stale(l, now=None):
+    """v1.2.21: past the text window. No alert_ts (a live page just fetched) stays timely."""
+    ts = l.get("alert_ts") if isinstance(l, dict) else None
+    if not ts: return False
+    import features
+    try: return (time.time() if now is None else now) - float(ts) > features.alert_max_hours() * 3600
+    except (TypeError, ValueError): return False
+
+def skip_age(l):
+    import features
+    msg = f"skipped for age (> {features.alert_max_hours():g} h)"
+    match_log(f"{msg} | {l.get('id')}")
+    print(f"{msg}: {l.get('id')}", file=sys.stderr)
 
 MATCH_LOG = os.path.join("logs", "match.log"); MATCH_ON = False   # main() switches it on
 def match_log(msg):
@@ -1787,6 +1824,8 @@ def main():
         S[l["id"]] = rec
         if rec.get("held_review") and not a.all:   # held building: texts once as 'From $X/mo' when it fits (v1.2.10), else stays held
             if not rec.get("held_skipped") and C.get("release_held", True) and held_release_ok(l, C, T_IDS, GONE) and (not held_cap or held_n < held_cap):
+                if not a.seed and listing_stale(l, now):   # v1.2.21: a held card past the text window is skipped for good
+                    rec["held_skipped"] = rec["stale_skipped"] = time.strftime("%F %T %Z"); skip_age(l); continue
                 rec["held_review"] = False; rec["held_released"] = time.strftime("%F %T %Z"); reason = "new"; held_n += 1
             else: continue
         if rec.get("never_text"): continue   # v1.2.16: Ern said skip this home for good
@@ -1797,6 +1836,8 @@ def main():
         if C.get("market_context", True):
             a_["market"] = market_words(l, [x for x in allL if x["eligible"]], C)
         if a.matches_only and not l["match"]: continue
+        if not a.all and not a.seed and listing_stale(l, now):   # v1.2.21: past the window; already in state, so not retried
+            rec["stale_skipped"] = time.strftime("%F %T %Z"); skip_age(l); continue
         msgs.append(a_)
     for k, v in S.items():
         if k not in seen_ids and not v.get("gone_since") and not k.startswith("email:"): v["gone_since"] = now

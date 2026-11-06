@@ -47,12 +47,17 @@ def main():
         got = page.get("messages") or []; msgs += got
         token = page.get("next_page_token")
         if not token or all(norm(m.get("message_id") or m.get("id") or "") in seen for m in got): break
+    try:   # v1.2.21: same age rule as the listener (import is local so a missing module never blocks the pull)
+        sys.path.insert(0, _SRC); import mail_listener as _L
+    except Exception: _L = None
     n = 0
     for m in msgs:
         mid = m.get("message_id") or m.get("id")
         if not mid or norm(mid) in seen: continue
         frm = str(m.get("from") or "").lower(); subj = m.get("subject") or ""
         if not any(d in frm for d in DOMAINS): seen.add(norm(mid)); continue   # not a listing site: ignored quietly
+        if _L and _L.msg_is_stale(m):   # v1.2.21: same 4h window as the listener; marked seen, never saved
+            seen.add(norm(mid)); skip_log(f"skipped for age (> {_L.stale_hours():g} h old)", frm, subj); continue
         full = get(f"/inboxes/{q}/messages/{urllib.parse.quote(str(mid))}", key)
         body, ext = (full.get("html"), "html") if full.get("html") else (full.get("text") or full.get("extracted_text"), "txt")
         seen.add(norm(mid))
